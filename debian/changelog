@@ -1,3 +1,10 @@
+dh-python (5.20230603) UNRELEASED; urgency=medium
+
+  * Reintroduce Breaks+Replaces on python2 needed to help apt in some upgrade
+    scenarios. (Closes: #1036943)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 03 Jun 2023 08:27:53 -0400
+
 dh-python (5.20230130) unstable; urgency=medium
 
   * pybuild.pm: Export SETUPTOOLS_SCM_PRETEND_VERSION for packages using
