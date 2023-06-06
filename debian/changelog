@@ -1,9 +1,9 @@
-dh-python (5.20230603) unstable; urgency=medium
+dh-python (5.20230130+deb12u1) bookworm; urgency=medium
 
   * Reintroduce Breaks+Replaces on python2 needed to help apt in some upgrade
     scenarios. (Closes: #1036943)
 
- -- Stefano Rivera <stefanor@debian.org>  Sat, 03 Jun 2023 10:49:36 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 28 Jun 2023 15:25:52 -0400
 
 dh-python (5.20230130) unstable; urgency=medium
 
