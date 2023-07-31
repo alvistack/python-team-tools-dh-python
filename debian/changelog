@@ -1,3 +1,9 @@
+dh-python (6.20230604) UNRELEASED; urgency=medium
+
+  * Add pybuild plugin to build meson packages.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 31 Jul 2023 13:12:09 +0200
+
 dh-python (6.20230603) experimental; urgency=medium
 
   * Bump major version, post-bookworm.
