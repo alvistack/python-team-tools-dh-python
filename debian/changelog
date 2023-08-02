@@ -1,9 +1,9 @@
-dh-python (6.20230604) UNRELEASED; urgency=medium
+dh-python (6.20230802) unstable; urgency=medium
 
   * Add pybuild plugin to build meson packages.
   * Update pydist fallback.
 
- -- Stefano Rivera <stefanor@debian.org>  Mon, 31 Jul 2023 13:12:09 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 02 Aug 2023 11:05:40 +0200
 
 dh-python (6.20230603) experimental; urgency=medium
 
