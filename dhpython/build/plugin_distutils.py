@@ -104,6 +104,9 @@ class BuildSystem(Base):
             import wheel
         except ImportError:
             raise Exception("wheel is required to build wheels for distutils/setuptools packages. Build-Depend on python3-wheel.")
+        # Don't build a wheel in the deb install layout
+        fpath = join(args['home_dir'], '.pydistutils.cfg')
+        remove(fpath)
         return '{interpreter.binary_dv} -c "import setuptools, runpy; runpy.run_path(\'{setup_py}\')" bdist_wheel {args}'
 
     def build_wheel(self, context, args):
