@@ -3,8 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from dhpython.interpreter import Interpreter
-from dhpython.fs import (
-    fix_merged_RECORD, merge_RECORD, merge_WHEEL, missing_lines, share_files)
+from dhpython.fs import merge_WHEEL, share_files
 
 from tests.common import FakeOptions
 
@@ -35,20 +34,6 @@ class MergeWheelTestCase(TestCase):
             self.assertMultiLineEqual(contents, f.read())
 
 
-class SimpleCombinationTest(MergeWheelTestCase):
-    files = {
-        'a': ('abc', 'def'),
-        'b': ('abc', 'ghi'),
-    }
-    def test_missing_lines(self):
-        r = missing_lines(self.a, self.b)
-        self.assertEqual(r, ['def\n'])
-
-    def test_merge_record(self):
-        merge_RECORD(self.a, self.b)
-        self.assertFileContents(self.b, ('abc', 'ghi', 'def'))
-
-
 class MergeTagsTest(MergeWheelTestCase):
     files = {
         'a': ('foo', 'Tag: A'),
@@ -58,23 +43,6 @@ class MergeTagsTest(MergeWheelTestCase):
     def test_merge_wheel(self):
         merge_WHEEL(self.a, self.b)
         self.assertFileContents(self.b, ('foo', 'Tag: B', 'Tag: A'))
-
-
-class UpdateRecordTest(MergeWheelTestCase):
-    files = {
-        'dist-info/RECORD': ('dist-info/FOO,sha256=b5bb9d8014a0f9b1d61e21e796d7'
-                             '8dccdf1352f23cd32812f4850b878ae4944c,4',),
-        'dist-info/WHEEL': ('foo'),
-    }
-
-    def test_fix_merged_record(self):
-        fix_merged_RECORD(self.RECORD.parent)
-        self.assertFileContents(self.RECORD, (
-            'dist-info/FOO,sha256=b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32'
-            '812f4850b878ae4944c,4',
-            'dist-info/WHEEL,sha256=447fb61fa39a067229e1cce8fc0953bfced53eac85d'
-            '1844f5940f51c1fcba725,6',
-        ))
 
 
 class ShareFilesTestCase(MergeWheelTestCase):
@@ -113,12 +81,6 @@ class HatchlingLicenseTest(ShareFilesTestCase):
         self.assertFalse(
             self.destPath('foo.dist-info/licenses/COPYING').exists())
 
-    def test_removes_license_files_from_record(self):
-        print("Checking", self.destPath('foo.dist-info/RECORD'))
-        self.assertFileContents(self.destPath('foo.dist-info/RECORD'),
-            'foo.dist-info/WHEEL,sha256=447fb61fa39a067229e1cce8fc0953bfced53ea'
-            'c85d1844f5940f51c1fcba725,6\n')
-
 
 class FlitLicenseTest(ShareFilesTestCase):
     files = {
@@ -137,9 +99,3 @@ class FlitLicenseTest(ShareFilesTestCase):
     def test_removes_license_files(self):
         self.assertFalse(self.destPath('foo.dist-info/COPYING.LESSER').exists())
         self.assertFalse(self.destPath('foo.dist-info/COPYING').exists())
-
-    def test_removes_license_files_from_record(self):
-        print("Checking", self.destPath('foo.dist-info/RECORD'))
-        self.assertFileContents(self.destPath('foo.dist-info/RECORD'),
-            'foo.dist-info/WHEEL,sha256=447fb61fa39a067229e1cce8fc0953bfced53ea'
-            'c85d1844f5940f51c1fcba725,6\n')
