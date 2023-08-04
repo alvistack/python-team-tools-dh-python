@@ -221,16 +221,18 @@ class Base:
         elif self.cfg.test_pytest:
             return 'cd {build_dir}; {interpreter} -m pytest {args}'
         elif self.cfg.test_tox:
+            # tox 3 will call pip to install the module. Let it install the
+            # module inside the virtualenv
+            # for tox 4 we build a wheel, don't build it in deb layout.
+            pydistutils_cfg = join(args['home_dir'], '.pydistutils.cfg')
+            if exists(pydistutils_cfg):
+                remove(pydistutils_cfg)
+
             # --installpkg was added in tox 4. Keep tox 3 support for now,
             # for backportability
             r = execute(['tox', '--version', '--quiet'], shell=False)
             major_version = int(r['stdout'].split('.', 1)[0])
             if major_version < 4:
-                # tox will call pip to install the module. Let it install the
-                # module inside the virtualenv
-                pydistutils_cfg = join(args['home_dir'], '.pydistutils.cfg')
-                if exists(pydistutils_cfg):
-                    remove(pydistutils_cfg)
                 return 'cd {build_dir}; tox -c {dir}/tox.ini --sitepackages -e py{version.major}{version.minor} {args}'
 
             wheel = self.built_wheel(context, args)

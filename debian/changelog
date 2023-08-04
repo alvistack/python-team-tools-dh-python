@@ -1,3 +1,10 @@
+dh-python (6.20230803) UNRELEASED; urgency=medium
+
+  * When we build a wheel for tox, with the distutils plugin, make sure
+    our .pydistutils.cfg isn't present, so we build it in the standard layout.
+
+ -- Stefano Rivera <stefanor@debian.org>  Fri, 04 Aug 2023 09:49:23 +0200
+
 dh-python (6.20230802) unstable; urgency=medium
 
   * Add pybuild plugin to build meson packages.

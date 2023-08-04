@@ -99,7 +99,6 @@ class BuildSystem(Base):
         return '{interpreter.binary_dv} {setup_py} build {args}'
 
     @shell_command
-    @create_pydistutils_cfg
     def _bdist_wheel(self, context, args):
         try:
             import wheel
