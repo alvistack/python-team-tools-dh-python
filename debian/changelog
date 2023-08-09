@@ -4,6 +4,8 @@ dh-python (6.20230803) UNRELEASED; urgency=medium
     our .pydistutils.cfg isn't present, so we build it in the standard layout.
   * Remove RECORD files from dist-info, these are incompatible with
     multi-arch.
+  * Support for backporting the pyproject plugin to Python < 3.11. Thanks
+    Stuart Prescott. (Closes: #1043301)
 
  -- Stefano Rivera <stefanor@debian.org>  Fri, 04 Aug 2023 09:49:23 +0200
 
