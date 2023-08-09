@@ -52,6 +52,7 @@ Multi-Arch: foreign
 Depends:
  dh-python (= ${source:Version}),
  python3-build (>> 0.7~),
+ python3 (>> 3.11~) | python3-tomli,
  python3-installer,
  ${misc:Depends},
 Description: Debian helper tools for packaging Python libraries using PEP517

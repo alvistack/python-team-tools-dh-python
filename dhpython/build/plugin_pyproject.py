@@ -25,7 +25,14 @@ import logging
 import os.path as osp
 import shutil
 import sysconfig
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        # Plugin still works, only needed for autodetection
+        pass
 try:
     from installer import install
     from installer.destinations import SchemeDictionaryDestination
