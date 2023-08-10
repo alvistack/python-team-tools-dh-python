@@ -79,9 +79,15 @@ def main(cfg):
 
         # Set _PYTHON_HOST_PLATFORM to ensure debugging symbols on, f.e. i386
         # emded a constant name regardless of the 32/64-bit kernel.
-        host_platform = '{DEB_HOST_ARCH_OS}-{DEB_HOST_ARCH}'.format(**arch_data)
-        # it's not called amd64 in Python
-        host_platform = host_platform.replace('amd64', 'x86_64')
+        special_cases = {
+            'arm-linux-gnueabihf': 'linux-armv7l',
+            'mips64el-linux-gnuabi64': 'linux-mips64',
+            'mipsel-linux-gnu': 'linux-mips',
+            'powerpc64-linux-gnu': 'linux-ppc64',
+            'powerpc64le-linux-gnu': 'linux-ppc64le',
+        }
+        host_platform = special_cases.get(arch_data['DEB_HOST_MULTIARCH'],
+            '{DEB_HOST_ARCH_OS}-{DEB_HOST_GNU_CPU}'.format(**arch_data))
         env.setdefault('_PYTHON_HOST_PLATFORM', host_platform)
 
         if arch_data['DEB_BUILD_ARCH'] != arch_data['DEB_HOST_ARCH']:
