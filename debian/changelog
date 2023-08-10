@@ -7,6 +7,8 @@ dh-python (6.20230803) UNRELEASED; urgency=medium
   * Support for backporting the pyproject plugin to Python < 3.11. Thanks
     Stuart Prescott. (Closes: #1043301)
   * Use values for _PYTHON_HOST_PLATFORM that are closer to Python's defaults.
+  * tox: Pass -x testenv.passenv=_PYTHON_HOST_PLATFORM, so that pip will
+    accept the _PYTHON_HOST_PLATFORM that the test wheel was built with.
 
  -- Stefano Rivera <stefanor@debian.org>  Fri, 04 Aug 2023 09:49:23 +0200
 

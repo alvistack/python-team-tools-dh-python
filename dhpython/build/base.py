@@ -240,11 +240,11 @@ class Base:
             args['wheel'] = wheel
 
             if exists(join(args['dir'], 'tox.ini')):
-                return 'cd {build_dir}; tox -c {dir}/tox.ini --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} {args}'
+                return 'cd {build_dir}; tox -c {dir}/tox.ini --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} -x testenv.passenv=_PYTHON_HOST_PLATFORM {args}'
             elif exists(join(args['dir'], 'pyproject.toml')):
-                return 'cd {build_dir}; tox -c {dir}/pyproject.toml --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} {args}'
+                return 'cd {build_dir}; tox -c {dir}/pyproject.toml --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} -x testenv.passenv=_PYTHON_HOST_PLATFORM {args}'
             elif exists(join(args['dir'], 'setup.cfg')):
-                return 'cd {build_dir}; tox -c {dir}/setup.cfg --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} {args}'
+                return 'cd {build_dir}; tox -c {dir}/setup.cfg --sitepackages --installpkg {wheel} -e py{version.major}{version.minor} -x testenv.passenv=_PYTHON_HOST_PLATFORM {args}'
             else:
                 raise Exception("tox config not found. Expected to find tox.ini, pyproject.toml, or setup.cfg")
         elif self.cfg.test_custom:
