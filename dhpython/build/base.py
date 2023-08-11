@@ -247,7 +247,8 @@ class Base:
             elif exists(join(args['dir'], 'setup.cfg')):
                 tox_config = '{dir}/setup.cfg'
             else:
-                raise Exception("tox config not found. Expected to find tox.ini, pyproject.toml, or setup.cfg")
+                raise Exception("tox config not found. "
+                    "Expected to find tox.ini, pyproject.toml, or setup.cfg")
             cmd = ['cd {build_dir};',
                    'tox',
                    '-c', tox_config,
