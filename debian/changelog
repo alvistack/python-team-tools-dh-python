@@ -12,6 +12,7 @@ dh-python (6.20230803) UNRELEASED; urgency=medium
   * Generate dependencies on using python3-supported-min and
     python3-supported-max.  Allowing dependencies to work correctly on all
     supported python 3 versions.  (Closes: #1028603)
+  * pybuild-auto-pkgtest: Run tox tests against the installed package.
 
  -- Stefano Rivera <stefanor@debian.org>  Fri, 04 Aug 2023 09:49:23 +0200
 

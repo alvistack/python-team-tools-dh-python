@@ -221,24 +221,6 @@ class Base:
         elif self.cfg.test_pytest:
             return 'cd {build_dir}; {interpreter} -m pytest {args}'
         elif self.cfg.test_tox:
-            # --installpkg was added in tox 4. Keep tox 3 support for now,
-            # for backportability
-            r = execute(['tox', '--version', '--quiet'], shell=False)
-            major_version = int(r['stdout'].split('.', 1)[0])
-            if major_version < 4:
-                # tox will call pip to install the module. Let it install the
-                # module inside the virtualenv
-                pydistutils_cfg = join(args['home_dir'], '.pydistutils.cfg')
-                if exists(pydistutils_cfg):
-                    remove(pydistutils_cfg)
-                return 'cd {build_dir}; tox -c {dir}/tox.ini --sitepackages -e py{version.major}{version.minor} {args}'
-
-            wheel = self.built_wheel(context, args)
-            if not wheel:
-                self.build_wheel(context, args)
-                wheel = self.built_wheel(context, args)
-            args['wheel'] = wheel
-
             tox_config = None
             if exists(join(args['dir'], 'tox.ini')):
                 tox_config = '{dir}/tox.ini'
@@ -249,15 +231,38 @@ class Base:
             else:
                 raise Exception("tox config not found. "
                     "Expected to find tox.ini, pyproject.toml, or setup.cfg")
-            cmd = ['cd {build_dir};',
+
+            tox_cmd = ['cd {build_dir};',
                    'tox',
                    '-c', tox_config,
                    '--sitepackages',
-                   '--installpkg', '{wheel}',
                    '-e', 'py{version.major}{version.minor}',
                    '-x', 'testenv.passenv=_PYTHON_HOST_PLATFORM',
-                   '{args}']
-            return ' '.join(cmd)
+            ]
+            if args['autopkgtest']:
+                tox_cmd += ['--skip-pkg-install']
+
+            # --installpkg was added in tox 4. Keep tox 3 support for now,
+            # for backportability
+            r = execute(['tox', '--version', '--quiet'], shell=False)
+            major_version = int(r['stdout'].split('.', 1)[0])
+            if major_version < 4:
+                # tox will call pip to install the module. Let it install the
+                # module inside the virtualenv
+                pydistutils_cfg = join(args['home_dir'], '.pydistutils.cfg')
+                if exists(pydistutils_cfg):
+                    remove(pydistutils_cfg)
+            else:
+                if not args['autopkgtest']:
+                    wheel = self.built_wheel(context, args)
+                    if not wheel:
+                        self.build_wheel(context, args)
+                        wheel = self.built_wheel(context, args)
+                    args['wheel'] = wheel
+                    tox_cmd += ['--installpkg', '{wheel}']
+
+            tox_cmd.append('{args}')
+            return ' '.join(tox_cmd)
         elif self.cfg.test_custom:
             return 'cd {build_dir}; {args}'
         elif args['version'] == '2.7' or args['version'] >> '3.1' or args['interpreter'] == 'pypy':

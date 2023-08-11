@@ -231,6 +231,7 @@ def main(cfg):
 
         args = dict(context['args'])
         args.update({
+            'autopkgtest': cfg.autopkgtest_only,
             'package': package,
             'interpreter': ipreter,
             'version': version,

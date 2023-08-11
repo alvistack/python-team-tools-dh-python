@@ -42,4 +42,6 @@ Depends:
  make,
  pybuild-plugin-pyproject,
  python3-all,
+ python3-pytest,
+ tox
 Restrictions: allow-stderr
