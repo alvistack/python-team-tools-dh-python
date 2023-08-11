@@ -9,6 +9,9 @@ dh-python (6.20230803) UNRELEASED; urgency=medium
   * Use values for _PYTHON_HOST_PLATFORM that are closer to Python's defaults.
   * tox: Pass -x testenv.passenv=_PYTHON_HOST_PLATFORM, so that pip will
     accept the _PYTHON_HOST_PLATFORM that the test wheel was built with.
+  * Generate dependencies on using python3-supported-min and
+    python3-supported-max.  Allowing dependencies to work correctly on all
+    supported python 3 versions.  (Closes: #1028603)
 
  -- Stefano Rivera <stefanor@debian.org>  Fri, 04 Aug 2023 09:49:23 +0200
 

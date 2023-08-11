@@ -414,21 +414,21 @@ def check_environment_marker_restrictions(req, marker_str, impl):
         if op == '<':
             if int_ver <= [3, 0, 0]:
                 return False
-            return '| python3 (>> {})'.format(env_ver)
+            return '| python3-supported-min (>> {})'.format(env_ver)
         elif op == '<=':
-            return '| python3 (>> {})'.format(next_ver)
+            return '| python3-supported-min (>> {})'.format(next_ver)
         elif op == '>=':
             if int_ver < [3, 0, 0]:
                 return True
-            return '| python3 (<< {})'.format(env_ver)
+            return '| python3-supported-max (<< {})'.format(env_ver)
         elif op == '>':
             if int_ver < [3, 0, 0]:
                 return True
-            return '| python3 (<< {})'.format(next_ver)
+            return '| python3-supported-max (<< {})'.format(next_ver)
         elif op in ('==', '==='):
             # === is arbitrary equality (PEP 440)
             if marker == 'python_version' or op == '==':
-                return '| python3 (<< {}) | python3 (>> {})'.format(
+                return '| python3-supported-min (<< {}) | python3-supported-max (>> {})'.format(
                         env_ver, next_ver)
             else:
                 log.info(
@@ -439,7 +439,7 @@ def check_environment_marker_restrictions(req, marker_str, impl):
             ceq_next_ver = int_ver[:2]
             ceq_next_ver[1] += 1
             ceq_next_ver = '.'.join(str(x) for x in ceq_next_ver)
-            return '| python3 (<< {}) | python3 (>> {})'.format(
+            return '| python3-supported-min (<< {}) | python3-supported-max (>> {})'.format(
                     env_ver, ceq_next_ver)
         elif op == '!=':
             log.info('Ignoring != comparison in environment marker, cannot '
