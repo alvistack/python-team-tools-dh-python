@@ -237,7 +237,7 @@ class Base:
                    '-c', tox_config,
                    '--sitepackages',
                    '-e', 'py{version.major}{version.minor}',
-                   '-x', 'testenv.passenv=_PYTHON_HOST_PLATFORM',
+                   '-x', 'testenv.passenv+=_PYTHON_HOST_PLATFORM',
             ]
             if args['autopkgtest']:
                 tox_cmd += ['--skip-pkg-install']
