@@ -185,7 +185,7 @@ class Base:
 
         for root, dirs, file_names in walk(context['dir']):
             for name in dirs:
-                if name == '__pycache__':
+                if name == '__pycache__' or name.endswith('egg-info'):
                     dpath = join(root, name)
                     log.debug('removing dir: %s', dpath)
                     try:
