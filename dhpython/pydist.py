@@ -414,7 +414,7 @@ def check_environment_marker_restrictions(req, marker_str, impl):
         if op == '<':
             if int_ver <= [3, 0, 0]:
                 return False
-            return '| python3-supported-min (>> {})'.format(env_ver)
+            return '| python3-supported-min (>= {})'.format(env_ver)
         elif op == '<=':
             return '| python3-supported-min (>> {})'.format(next_ver)
         elif op == '>=':
@@ -424,7 +424,7 @@ def check_environment_marker_restrictions(req, marker_str, impl):
         elif op == '>':
             if int_ver < [3, 0, 0]:
                 return True
-            return '| python3-supported-max (<< {})'.format(next_ver)
+            return '| python3-supported-max (<= {})'.format(next_ver)
         elif op in ('==', '==='):
             # === is arbitrary equality (PEP 440)
             if marker == 'python_version' or op == '==':

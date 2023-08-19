@@ -428,7 +428,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_lt_35_packages(self):
         self.assertIn('python3-python-version-lt35 '
-                      '| python3-supported-min (>> 3.5)', self.d.depends)
+                      '| python3-supported-min (>= 3.5)', self.d.depends)
 
     def test_depends_on_py_version_le_35_packages(self):
         self.assertIn('python3-python-version-le35 '
@@ -444,7 +444,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_gt_35_packages(self):
         self.assertIn('python3-python-version-gt35 '
-                      '| python3-supported-max (<< 3.6)', self.d.depends)
+                      '| python3-supported-max (<= 3.6)', self.d.depends)
 
     def test_depends_on_py_version_eq_35_packages(self):
         self.assertIn(
@@ -475,7 +475,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_full_lt_351_packages(self):
         self.assertIn('python3-python-version-full-lt351 '
-                      '| python3-supported-min (>> 3.5.1)', self.d.depends)
+                      '| python3-supported-min (>= 3.5.1)', self.d.depends)
 
     def test_depends_on_py_version_full_le_351_packages(self):
         self.assertIn('python3-python-version-full-le351 '
@@ -497,7 +497,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_full_gt_351_packages(self):
         self.assertIn('python3-python-version-full-gt351 '
-                      '| python3-supported-max (<< 3.5.2)', self.d.depends)
+                      '| python3-supported-max (<= 3.5.2)', self.d.depends)
 
     def test_depends_on_py_version_full_eq_351_packages(self):
         self.assertIn('python3-python-version-full-eq351 '
@@ -530,7 +530,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_sys_implementation_lt35_packages(self):
         self.assertIn('python3-implementation-version-lt35 '
-                      '| python3-supported-min (>> 3.5)',
+                      '| python3-supported-min (>= 3.5)',
                       self.d.depends)
 
     def test_depends_on_sys_implementation_ge35_packages(self):
