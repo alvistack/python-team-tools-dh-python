@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --buildsystem=none
+
+override_dh_install:
+	dh_install
+	PYTHONPATH=../.. DH_VERBOSE=1 ../../dh_python3
+
+override_dh_auto_build:
+
+override_dh_auto_install:
+	mkdir -p debian/python3-foo/usr/lib/python3/dist-packages
+	cp -a Foo.egg-info lib/* debian/python3-foo/usr/lib/python3/dist-packages

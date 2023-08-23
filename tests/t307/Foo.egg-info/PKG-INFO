@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: Foo
+Version: 0.1
+Summary: package with private Python extension
+Home-page: http://www.debian.org/
+Author: Maximilian Engelhardt
+Author-email: maxi@daemonizer.de
+Requires: cachy
+Provides: lib.foo

@@ -481,6 +481,8 @@ class Scan:
                 self.result['requires.txt'].add(join(dpath, 'requires.txt'))
             if 'namespace_packages.txt' in file_names:
                 self.result['nsp.txt'].add(join(dpath, 'namespace_packages.txt'))
+            if 'PKG-INFO' in file_names:
+                self.result['egg-info'].add(join(dpath, 'PKG-INFO'))
             if 'SOURCES.txt' in file_names:
                 os.remove(join(dpath, 'SOURCES.txt'))
                 file_names.remove('SOURCES.txt')

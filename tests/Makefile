@@ -1,8 +1,8 @@
 #!/usr/bin/make -f
 
 # enable or disable tests here:
-#TESTS := test301 test302 test303 test304 test305 test306 testpb01 testpb02 testpb03 testpb04 testpb05 testpb06 testpb07 testa01 testa02 testa03
-TESTS := test301 test302 test303 test304 test305 test306
+#TESTS := test301 test302 test303 test304 test305 test306 test307 testpb01 testpb02 testpb03 testpb04 testpb05 testpb06 testpb07 testa01 testa02 testa03
+TESTS := test301 test302 test303 test304 test305 test306 test307
 
 all: $(TESTS)
 
