@@ -411,6 +411,9 @@ def check_environment_marker_restrictions(req, marker_str, impl):
         prev_ver[version_parts - 1] -= 1
         prev_ver = '.'.join(str(x) for x in prev_ver)
 
+        # We try to do something somewhat sensible with micro versions
+        # even though we don't currently emit them in python3-supported-min/max
+
         if op == '<':
             if int_ver <= [3, 0, 0]:
                 return False
