@@ -432,7 +432,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_le_35_packages(self):
         self.assertIn('python3-python-version-le35 '
-                      '| python3-supported-min (>> 3.6)', self.d.depends)
+                      '| python3-supported-min (>> 3.5)', self.d.depends)
 
     def test_depends_on_py_version_ge_27_packages(self):
         self.assertIn('python3-python-version-ge27',
@@ -444,12 +444,12 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_gt_35_packages(self):
         self.assertIn('python3-python-version-gt35 '
-                      '| python3-supported-max (<= 3.6)', self.d.depends)
+                      '| python3-supported-max (<= 3.5)', self.d.depends)
 
     def test_depends_on_py_version_eq_35_packages(self):
         self.assertIn(
-            'python3-python-version-eq35 | python3-supported-min (<< 3.5) '
-            '| python3-supported-max (>> 3.6)', self.d.depends)
+            'python3-python-version-eq35 | python3-supported-max (<< 3.5) '
+            '| python3-supported-min (>= 3.6)', self.d.depends)
 
     def test_depends_on_py_version_ne_35_packages(self):
         # Can't be represented in Debian depends
@@ -457,18 +457,18 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_aeq_35_packages(self):
         self.assertIn(
-            'python3-python-version-aeq35 | python3-supported-min (<< 3.5) '
-            '| python3-supported-max (>> 3.6)', self.d.depends)
+            'python3-python-version-aeq35 | python3-supported-max (<< 3.5) '
+            '| python3-supported-min (>> 3.5)', self.d.depends)
 
     def test_depends_on_py_version_ceq_35_packages(self):
         self.assertIn(
-            'python3-python-version-ceq35 | python3-supported-min (<< 3.5) '
-            '| python3-supported-max (>> 3.6)', self.d.depends)
+            'python3-python-version-ceq35 | python3-supported-max (<< 3.5) '
+            '| python3-supported-min (>= 3.6)', self.d.depends)
 
     def test_depends_on_py_version_weq_35_packages(self):
         self.assertIn(
-            'python3-python-version-weq35 | python3-supported-min (<< 3.5) '
-            '| python3-supported-max (>> 3.6)', self.d.depends)
+            'python3-python-version-weq35 | python3-supported-max (<< 3.5) '
+            '| python3-supported-min (>= 3.6)', self.d.depends)
 
     def test_skips_py_version_full_lt_300_packages(self):
         self.assertNotInDepends('python3-python-version-full-lt300')
@@ -479,7 +479,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_full_le_351_packages(self):
         self.assertIn('python3-python-version-full-le351 '
-                      '| python3-supported-min (>> 3.5.2)', self.d.depends)
+                      '| python3-supported-min (>> 3.5.1)', self.d.depends)
 
     def test_depends_on_py_version_full_ge_351_packages(self):
         self.assertIn('python3-python-version-full-ge351 '
@@ -497,12 +497,12 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_full_gt_351_packages(self):
         self.assertIn('python3-python-version-full-gt351 '
-                      '| python3-supported-max (<= 3.5.2)', self.d.depends)
+                      '| python3-supported-max (<= 3.5.1)', self.d.depends)
 
     def test_depends_on_py_version_full_eq_351_packages(self):
         self.assertIn('python3-python-version-full-eq351 '
-                      '| python3-supported-min (<< 3.5.1) '
-                      '| python3-supported-max (>> 3.5.2)', self.d.depends)
+                      '| python3-supported-max (<< 3.5.1) '
+                      '| python3-supported-min (>> 3.5.1)', self.d.depends)
 
     def test_depends_on_py_version_full_ne_351_packages(self):
         # Can't be represented in Debian depends
@@ -514,13 +514,13 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_py_version_full_ceq_351_packages(self):
         self.assertIn('python3-python-version-full-ceq351 '
-                      '| python3-supported-min (<< 3.5.1) '
-                      '| python3-supported-max (>> 3.6)', self.d.depends)
+                      '| python3-supported-max (<< 3.5.1) '
+                      '| python3-supported-min (>= 3.6)', self.d.depends)
 
     def test_depends_on_py_version_full_weq_35_packages(self):
         self.assertIn('python3-python-version-full-weq35 '
-                      '| python3-supported-min (<< 3.5) '
-                      '| python3-supported-max (>> 3.6)', self.d.depends)
+                      '| python3-supported-max (<< 3.5) '
+                      '| python3-supported-min (>= 3.6)', self.d.depends)
 
     def test_depends_on_sys_cpython_packages(self):
         self.assertIn('python3-implementation-name-cpython', self.d.depends)
