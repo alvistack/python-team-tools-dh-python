@@ -118,6 +118,8 @@ testfiles
     before test step and removed before install step.
     By default only `pyproject.toml` and `pytest.ini` files, and `test`
     and `tests` directories are copied to build directory.
+    If `testfiles` are provided, it overrides these defaults, if
+    still required they need to be explicitly specified.
 
 BUILD SYSTEM ARGUMENTS
 ----------------------

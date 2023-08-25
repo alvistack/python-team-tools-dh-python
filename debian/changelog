@@ -6,6 +6,8 @@ dh-python (6.20230814) UNRELEASED; urgency=medium
     Sprickerhof for noticing and sending an MR.
   * Remove *.egg-info directories in clean step, as part of Debian's wider
     effort to improve clean targets. Thanks Stuart Prescott for the patch.
+  * Explain that setting pybuild.testfiles overrides the defaults in
+    pybuild(1). (Closes: #1042802)
 
  -- Stefano Rivera <stefanor@debian.org>  Wed, 23 Aug 2023 11:38:42 +0200
 
