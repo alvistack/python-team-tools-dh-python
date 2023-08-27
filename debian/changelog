@@ -2,6 +2,8 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
 
   * Align detection of nocheck with debhelper, thanks Victor Westerhuis.
   * Remove more license files from dist-info, thanks Christoph Anton Mitterer.
+  * Clean .tox directories. Previously the code to do this was unreachable.
+    (Closes: #1049950)
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
 

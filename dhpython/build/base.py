@@ -162,13 +162,12 @@ class Base:
         return result
 
     def clean(self, context, args):
-        if self.cfg.test_tox:
-            tox_dir = join(args['dir'], '.tox')
-            if isdir(tox_dir):
-                try:
-                    rmtree(tox_dir)
-                except Exception:
-                    log.debug('cannot remove %s', tox_dir)
+        tox_dir = join(args['dir'], '.tox')
+        if isdir(tox_dir):
+            try:
+                rmtree(tox_dir)
+            except Exception:
+                log.debug('cannot remove %s', tox_dir)
 
         for fn in self.CLEAN_FILES:
             path = join(context['dir'], fn)
