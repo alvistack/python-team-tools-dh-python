@@ -41,7 +41,7 @@ def main(cfg):
     from dhpython.debhelper import DebHelper, build_options
     from dhpython.version import Version, build_sorted, get_requested_versions
     from dhpython.interpreter import Interpreter
-    from dhpython.tools import execute, move_matching_files
+    from dhpython.tools import dpkg_architecture, execute, move_matching_files
 
     if cfg.list_systems:
         for name, Plugin in sorted(build.plugins.items()):
@@ -70,13 +70,8 @@ def main(cfg):
     if 'DEB_PYTHON_INSTALL_LAYOUT' not in env:
         env['DEB_PYTHON_INSTALL_LAYOUT'] = 'deb'
 
-    arch_data = {}
-    if exists('/usr/bin/dpkg-architecture'):
-        res = execute('/usr/bin/dpkg-architecture')
-        for line in res['stdout'].splitlines():
-            key, value = line.strip().split('=', 1)
-            arch_data[key] = value
-
+    arch_data = dpkg_architecture()
+    if arch_data:
         # Set _PYTHON_HOST_PLATFORM to ensure debugging symbols on, f.e. i386
         # emded a constant name regardless of the 32/64-bit kernel.
         special_cases = {

@@ -250,6 +250,18 @@ class memoize:
         return self.cache[key]
 
 
+@memoize
+def dpkg_architecture():
+    """Parse dpkg-architecture output"""
+    arch_data = {}
+    if exists('/usr/bin/dpkg-architecture'):
+        res = execute('/usr/bin/dpkg-architecture')
+        for line in res['stdout'].splitlines():
+            key, value = line.strip().split('=', 1)
+            arch_data[key] = value
+    return arch_data
+
+
 def pyinstall(interpreter, package, vrange):
     """Install local files listed in pkg.pyinstall files as public modules."""
     srcfpath = "./debian/%s.pyinstall" % package
