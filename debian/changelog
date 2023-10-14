@@ -1,3 +1,10 @@
+dh-python (6.20230826) UNRELEASED; urgency=medium
+
+  * Align detection of nocheck with debhelper, thanks Victor Westerhuis.
+  * Remove more license files from dist-info, thanks Christoph Anton Mitterer.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
+
 dh-python (6.20230825) unstable; urgency=medium
 
   * Parse .egg-info/PKG-INFO for Requirements. distutils-extra has been using
