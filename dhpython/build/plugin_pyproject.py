@@ -41,6 +41,7 @@ except ModuleNotFoundError:
     SchemeDictionaryDestination = WheelFile = install = None
 
 from dhpython.build.base import Base, shell_command
+from dhpython.tools import dpkg_architecture
 
 log = logging.getLogger('dhpython')
 
@@ -106,16 +107,34 @@ class BuildSystem(Base):
         self.build_wheel(context, args)
         self.unpack_wheel(context, args)
 
+    def _backend_config_settings(self):
+        backend = self._build_backend()
+        if backend == "mesonpy":
+            arch_data = dpkg_architecture()
+            return [
+                "compile-args=--verbose",
+                # From Debhelper's meson.pm
+                "setup-args=--wrap-mode=nodownload",
+                "setup-args=--prefix=/usr",
+                "setup-args=--sysconfdir=/etc",
+                "setup-args=--localstatedir=/var",
+                "setup-args=--libdir=lib/" + arch_data["DEB_HOST_MULTIARCH"],
+            ]
+        return []
+
     @shell_command
     def build_wheel(self, context, args):
         """ build a wheel using the PEP517 builder defined by upstream """
         log.info('Building wheel for %s with "build" module',
                  args['interpreter'])
+        config_settings = self._backend_config_settings()
         context['ENV']['FLIT_NO_NETWORK'] = '1'
         context['ENV']['HOME'] = args['home_dir']
         return ('{interpreter} -m build '
                 '--skip-dependency-check --no-isolation --wheel '
-                '--outdir ' + args['home_dir'] +
+                '--outdir ' + args['home_dir'] + ' ' +
+                ' '.join(('--config-setting ' + setting)
+                         for setting in config_settings) +
                 ' {args}'
                )
 
