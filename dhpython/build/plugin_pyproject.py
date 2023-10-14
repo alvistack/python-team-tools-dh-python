@@ -67,23 +67,25 @@ class BuildSystem(Base):
         # Temporarily reduce the threshold while we're in beta
         result -= 20
 
-        try:
-            with open('pyproject.toml', 'rb') as f:
-                pyproject = tomllib.load(f)
-            if pyproject.get('build-system', {}).get('build-backend'):
-                result += 10
-            else:
-                # Not a PEP517 built package
-                result = 0
-        except NameError:
-            # No toml, no autdetection
-            result = 0
-        except FileNotFoundError:
-            # Not a PEP517 package
-            result = 0
+        if self._build_backend():
+            result += 10
+
         if result > 100:
             return 100
         return result
+
+    def _build_backend(self):
+        """Retrieve the build-system from pyproject.toml, where possible"""
+        try:
+            with open('pyproject.toml', 'rb') as f:
+                pyproject = tomllib.load(f)
+            return pyproject.get('build-system', {}).get('build-backend')
+        except NameError:
+            # No toml, no autdetection
+            return None
+        except FileNotFoundError:
+            # Not a PEP517 package
+            return None
 
     def clean(self, context, args):
         super().clean(context, args)
