@@ -4,6 +4,7 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
   * Remove more license files from dist-info, thanks Christoph Anton Mitterer.
   * Clean .tox directories. Previously the code to do this was unreachable.
     (Closes: #1049950)
+  * Add test-coverage for distutils-extra, missed in 6.20230825.
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
 
