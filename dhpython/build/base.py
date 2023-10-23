@@ -265,6 +265,9 @@ class Base:
         elif self.cfg.test_custom:
             return 'cd {build_dir}; {args}'
         elif args['version'] == '2.7' or args['version'] >> '3.1' or args['interpreter'] == 'pypy':
+            # Temporary: Until Python 3.12 is established, and packages without
+            # test suites have explicitly disabled tests.
+            args['ignore_no_tests'] = True
             return 'cd {build_dir}; {interpreter} -m unittest discover -v {args}'
 
     def build_wheel(self, context, args):
@@ -333,7 +336,10 @@ def shell_command(func):
         command = command.format(**quoted_args)
 
         output = self.execute(context, args, command, log_file)
-        if output['returncode'] != 0:
+        if output['returncode'] == 5 and args.get('ignore_no_tests', False):
+            # Temporary hack (see Base.test)
+            pass
+        elif output['returncode'] != 0:
             msg = 'exit code={}: {}'.format(output['returncode'], command)
             if log_file:
                 msg += '\nfull command log is available in {}'.format(log_file)

@@ -5,6 +5,9 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
   * Clean .tox directories. Previously the code to do this was unreachable.
     (Closes: #1049950)
   * Add test-coverage for distutils-extra, missed in 6.20230825.
+  * pybuild: Ignore an exit code of 5, for no tests found, from
+    unittest.discover for now. When we are ready to break packages and fix
+    #1024971, this will change.
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
 
