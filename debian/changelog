@@ -8,6 +8,8 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
   * pybuild: Ignore an exit code of 5, for no tests found, from
     unittest.discover for now. When we are ready to break packages and fix
     #1024971, this will change.
+  * Build-Depends: python3-setuptools to avoid FTBFS with
+    Python 3.12 as a supported version.
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
 
