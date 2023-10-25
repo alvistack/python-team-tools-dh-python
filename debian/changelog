@@ -1,4 +1,4 @@
-dh-python (6.20230826) UNRELEASED; urgency=medium
+dh-python (6.20231025) unstable; urgency=medium
 
   * Align detection of nocheck with debhelper, thanks Victor Westerhuis.
   * Remove more license files from dist-info, thanks Christoph Anton Mitterer.
@@ -15,7 +15,7 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
   * Don't clean egg-info/SOURCES.txt for packages using setuptools-scm, as
     they may be depending on it to locate package_data. (Closes: #1052854)
 
- -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 25 Oct 2023 20:08:06 +0200
 
 dh-python (6.20230825) unstable; urgency=medium
 
