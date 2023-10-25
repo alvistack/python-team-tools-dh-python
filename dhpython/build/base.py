@@ -26,6 +26,7 @@ from os.path import exists, isdir, join
 from pathlib import Path
 from subprocess import Popen, PIPE
 from shutil import rmtree, copyfile, copytree
+from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
 from dhpython.tools import execute
 try:
@@ -182,9 +183,16 @@ class Base:
                 except Exception:
                     log.debug('cannot remove %s', path)
 
+        dh = DebHelper(build_options())
+        # Plugins that rely on repository contents to build MANIFEST
+        clean_sources_txt = set(
+            ('python3-setuptools-scm', 'python3-setuptools-git')
+        ).intersection(set(dh.build_depends))
+
         for root, dirs, file_names in walk(context['dir']):
             for name in dirs:
-                if name == '__pycache__' or name.endswith('.egg-info'):
+                if name == '__pycache__' or (
+                        clean_sources_txt and name.endswith('.egg-info')):
                     dpath = join(root, name)
                     log.debug('removing dir: %s', dpath)
                     try:
@@ -201,6 +209,15 @@ class Base:
                         remove(fpath)
                     except Exception:
                         log.debug('cannot remove %s', fpath)
+            if root.endswith('.egg-info'):
+                for fn in file_names:
+                    if fn != 'SOURCES.txt':
+                        fpath = join(root, fn)
+                        log.debug('removing: %s', fpath)
+                        try:
+                            remove(fpath)
+                        except Exception:
+                            log.debug('cannot remove %s', fpath)
 
     def configure(self, context, args):
         raise NotImplementedError("configure method not implemented in %s" % self.NAME)

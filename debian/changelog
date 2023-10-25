@@ -12,6 +12,8 @@ dh-python (6.20230826) UNRELEASED; urgency=medium
     Python 3.12 as a supported version.
   * Also, Depends: python3-setuptools for now, to avoid adding it
     in other packages.
+  * Don't clean egg-info/SOURCES.txt for packages using setuptools-scm, as
+    they may be depending on it to locate package_data. (Closes: #1052854)
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 14 Oct 2023 11:31:46 +0200
 
