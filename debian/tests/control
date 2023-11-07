@@ -31,6 +31,7 @@ Depends:
  python3-poetry-core,
  python3-pytest,
  python3-setuptools,
+ python3-setuptools-scm,
  tox (>= 4),
 Restrictions: allow-stderr
 
