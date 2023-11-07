@@ -1,3 +1,10 @@
+dh-python (6.20231026) UNRELEASED; urgency=medium
+
+  * Correct logic for leaving SOURCES.txt when cleaning egg-info, it was
+    inverted by mistake.
+
+ -- Stefano Rivera <stefanor@debian.org>  Tue, 07 Nov 2023 15:34:47 +0200
+
 dh-python (6.20231025) unstable; urgency=medium
 
   * Align detection of nocheck with debhelper, thanks Victor Westerhuis.

@@ -185,7 +185,7 @@ class Base:
 
         dh = DebHelper(build_options())
         # Plugins that rely on repository contents to build MANIFEST
-        clean_sources_txt = set(
+        clean_sources_txt = not set(
             ('python3-setuptools-scm', 'python3-setuptools-git')
         ).intersection(set(dh.build_depends))
 
