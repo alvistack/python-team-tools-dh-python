@@ -2,6 +2,7 @@ dh-python (6.20231026) UNRELEASED; urgency=medium
 
   * Correct logic for leaving SOURCES.txt when cleaning egg-info, it was
     inverted by mistake.
+  * Don't trip over LICENSES directories in .dist-info. (Closes: #1055008)
 
  -- Stefano Rivera <stefanor@debian.org>  Tue, 07 Nov 2023 15:34:47 +0200
 

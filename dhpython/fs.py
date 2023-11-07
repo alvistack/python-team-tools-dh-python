@@ -96,11 +96,12 @@ def share_files(srcdir, dstdir, interpreter, options):
                 fpath1 = Scan.rename_ext(fpath1, interpreter, version)
                 i = split(fpath1)[-1]
         if srcdir.endswith(".dist-info"):
-            if i.startswith(('LICENCE', 'LICENSE', 'COPYING', 'NOTICE', 'AUTHORS')):
-                os.remove(fpath1)
-                continue
-            elif isdir(fpath1) and i in ('licenses', 'license_files'):
-                rmtree(fpath1)
+            if (i.startswith(('LICENCE', 'LICENSE', 'COPYING', 'NOTICE', 'AUTHORS'))
+                    or i in ('licenses', 'license_files')):
+                if isdir(fpath1):
+                    rmtree(fpath1)
+                else:
+                    os.remove(fpath1)
                 continue
         fpath2 = join(dstdir, i)
         if not isdir(fpath1) and not exists(fpath2):

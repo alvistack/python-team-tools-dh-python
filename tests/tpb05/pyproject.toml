@@ -7,7 +7,7 @@ name = "foo"
 description = "an example module"
 version = "0.1"
 authors = ["Stefano Rivera <stefanor@debian.org>"]
-license = "Expat"
+license = "Expat AND BSD-3 AND ISC"
 
 [tool.poetry.dependencies]
 cachy = "^0.3.0"
