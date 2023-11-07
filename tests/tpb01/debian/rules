@@ -16,7 +16,7 @@ override_dh_auto_test:
 
 override_dh_auto_clean:
 	../../pybuild --clean
-	rm -rf .pybuild foo.egg-info
+	rm -rf .pybuild
 
 override_dh_installinit:
 	DH_VERBOSE=1 ../../dh_python3
