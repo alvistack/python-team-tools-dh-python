@@ -151,7 +151,7 @@ class TestControlNoBinaryPackages(DebHelperTestCase):
     parse_control = False
 
     def test_throws_error(self):
-        msg = ('Unable to parse debian/control, found less than 2 paragraphs')
+        msg = 'Unable to parse debian/control, found less than 2 paragraphs'
         with self.assertRaisesRegex(Exception, msg):
             DebHelper(self.build_options())
 
