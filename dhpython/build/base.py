@@ -24,18 +24,11 @@ from glob import glob1
 from os import remove, walk
 from os.path import exists, isdir, join
 from pathlib import Path
+from shlex import quote
 from shutil import rmtree, copyfile, copytree, which
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
 from dhpython.tools import execute
-try:
-    from shlex import quote
-except ImportError:
-    # shlex.quote is new in Python 3.3
-    def quote(s):
-        if not s:
-            return "''"
-        return "'" + s.replace("'", "'\"'\"'") + "'"
 
 log = logging.getLogger('dhpython')
 
