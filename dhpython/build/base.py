@@ -25,7 +25,7 @@ from os import remove, walk
 from os.path import exists, isdir, join
 from pathlib import Path
 from subprocess import Popen, PIPE
-from shutil import rmtree, copyfile, copytree
+from shutil import rmtree, copyfile, copytree, which
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
 from dhpython.tools import execute
@@ -120,9 +120,8 @@ class Base:
     @classmethod
     def is_usable(cls):
         for command in cls.REQUIRED_COMMANDS:
-            process = Popen(['which', command], stdout=PIPE, stderr=PIPE)
-            out, err = process.communicate()
-            if process.returncode != 0:
+            pth = which(command)
+            if not pth:
                 raise RequiredCommandMissingException(command)
 
     def detect(self, context):
