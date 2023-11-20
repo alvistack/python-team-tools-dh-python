@@ -135,8 +135,7 @@ def so2pyver(fpath):
 
     cmd = "readelf -Wd '%s'" % fpath
     with Popen(cmd, stdout=PIPE, shell=True) as process:
-        encoding = locale.getdefaultlocale()[1] or 'utf-8'
-        match = SHAREDLIB_RE.search(str(process.stdout.read(), encoding=encoding))
+        match = SHAREDLIB_RE.search(str(process.stdout.read(), encoding="UTF-8"))
         if match:
             return Version(match.groups()[0])
 
