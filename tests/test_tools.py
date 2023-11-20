@@ -21,12 +21,14 @@ class TestRelpath(unittest.TestCase):
 
 class TestMoveMatchingFiles(unittest.TestCase):
     def setUp(self):
-        self.tmpdir = TemporaryDirectory()
+        self.tmpdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tmpdir.cleanup)
         os.makedirs(self.tmppath('foo/bar/a/b/c/spam'))
         for path in ('foo/bar/a/b/c/spam/file.so',
                      'foo/bar/a/b/c/spam/file.py'):
-            open(self.tmppath(path), 'w').close()
+            with open(self.tmppath(path), 'wb') as fh:
+                # create a 0 byte file for the test
+                pass
 
         move_matching_files(self.tmppath('foo/bar/'),
                             self.tmppath('foo/baz/'),

@@ -24,6 +24,7 @@ import logging
 import platform
 import os
 import re
+import subprocess
 from functools import partial
 from os.path import exists, isdir, join
 from subprocess import PIPE, Popen
@@ -275,13 +276,13 @@ def guess_dependency(impl, req, version=None, bdep=None,
     dpkg_query = dpkg_query_tpl.format(ci_regexp(safe_name(name)))
 
     log.debug("invoking dpkg -S %s", dpkg_query)
-    process = Popen(('/usr/bin/dpkg', '-S', dpkg_query),
-                    stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
+    process = subprocess.run(
+        ('/usr/bin/dpkg', '-S', dpkg_query),
+        check=False, encoding="UTF-8", capture_output=True,
+    )
     if process.returncode == 0:
         result = set()
-        stdout = str(stdout, 'utf-8')
-        for line in stdout.split('\n'):
+        for line in process.stdout.split('\n'):
             if not line.strip():
                 continue
             pkg, path = line.split(':', 1)
@@ -296,7 +297,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
             log.debug('dependency: found a result with dpkg -S')
             return result.pop() + env_marker_alts
     else:
-        log.debug('dpkg -S did not find package for %s: %s', name, stderr)
+        log.debug('dpkg -S did not find package for %s: %s', name, process.stderr)
 
     pname = sensible_pname(impl, name)
     log.info('Cannot find package that provides %s. '

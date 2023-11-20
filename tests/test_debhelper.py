@@ -15,7 +15,7 @@ class DebHelperTestCase(unittest.TestCase):
         return build_options(**self.options)
 
     def setUp(self):
-        self.tempdir = TemporaryDirectory()
+        self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tempdir.cleanup)
 
         old_wd = os.getcwd()

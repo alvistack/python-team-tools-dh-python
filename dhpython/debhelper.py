@@ -245,9 +245,8 @@ class DebHelper:
                 if new_data:
                     data += '\n# Automatically added by {}'.format(basename(argv[0])) +\
                             '{}\n# End automatically added section\n'.format(new_data)
-                    fp = open(fn, 'w', encoding='utf-8')
-                    fp.write(data)
-                    fp.close()
+                    with open(fn, 'w', encoding='utf-8') as fp:
+                        fp.write(data)
 
     def save_substvars(self):
         for package, settings in self.packages.items():
@@ -282,9 +281,8 @@ class DebHelper:
                     data += "%s=%s\n" % (name, ', '.join(items))
             data = data.replace('\n\n', '\n')
             if data:
-                fp = open(fn, 'w', encoding='utf-8')
-                fp.write(data)
-                fp.close()
+                with open(fn, 'w', encoding='utf-8') as fp:
+                    fp.write(data)
 
     def save_rtupdate(self):
         for package, settings in self.packages.items():
@@ -297,7 +295,8 @@ class DebHelper:
                 makedirs(d)
             fn = "%s/%s.rtupdate" % (d, package)
             if exists(fn):
-                data = open(fn, 'r', encoding='utf-8').read()
+                with open(fn, 'r', encoding='utf-8') as fp:
+                    data = fp.read()
             else:
                 data = "#! /bin/sh\nset -e"
             for dname, args in values:
@@ -307,9 +306,8 @@ class DebHelper:
                 if cmd not in data:
                     data += "\n%s" % cmd
             if data:
-                fp = open(fn, 'w', encoding='utf-8')
-                fp.write(data)
-                fp.close()
+                with open(fn, 'w', encoding='utf-8') as fp:
+                    fp.write(data)
                 chmod(fn, 0o755)
 
     def save_log(self):

@@ -87,7 +87,7 @@ class DependenciesTestCase(unittest.TestCase):
                 stats['dist-info'].add(fn)
 
         if write_files:
-            self.tempdir = TemporaryDirectory()
+            self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
             self.addCleanup(self.tempdir.cleanup)
             old_wd = os.getcwd()
             os.chdir(self.tempdir.name)

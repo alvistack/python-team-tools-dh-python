@@ -51,7 +51,7 @@ class ShareFilesTestCase(MergeWheelTestCase):
 
     def setUp(self):
         super().setUp()
-        self.destdir = TemporaryDirectory()
+        self.destdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.destdir.cleanup)
         share_files(self.tempdir.name, self.destdir.name,
                     Interpreter(self.impl),

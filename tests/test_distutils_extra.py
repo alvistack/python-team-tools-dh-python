@@ -34,7 +34,7 @@ class TestDistutilsExtra(unittest.TestCase):
     def test_depends_on_bar(self):
         self.d = Dependencies(self.pkg, self.impl)
         stats = deepcopy(self.stats)
-        self.tempdir = TemporaryDirectory()
+        self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tempdir.cleanup)
         old_wd = os.getcwd()
         os.chdir(self.tempdir.name)
