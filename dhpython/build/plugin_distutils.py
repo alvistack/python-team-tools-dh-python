@@ -125,7 +125,10 @@ class BuildSystem(Base):
         # remove egg-info dirs from build_dir
         for fname in glob1(args['build_dir'], '*.egg-info'):
             fpath = join(args['build_dir'], fname)
-            rmtree(fpath) if isdir(fpath) else remove(fpath)
+            if isdir(fpath):
+                rmtree(fpath)
+            else:
+                remove(fpath)
 
         return '{interpreter.binary_dv} {setup_py} install --root {destdir} {args}'
 

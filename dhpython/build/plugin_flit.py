@@ -119,7 +119,8 @@ class BuildSystem(Base):
         if osp.exists(args['interpreter'].binary()):
             log.debug("removing '%s' (and everything under it)",
                       args['build_dir'])
-            osp.isdir(args['build_dir']) and shutil.rmtree(args['build_dir'])
+            if osp.isdir(args['build_dir']):
+                shutil.rmtree(args['build_dir'])
         return 0  # no need to invoke anything
 
     def configure(self, context, args):

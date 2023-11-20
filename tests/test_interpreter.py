@@ -15,11 +15,15 @@ class TestInterpreter(unittest.TestCase):
 
     @unittest.skipUnless(exists('/usr/bin/pypy'), 'pypy is not installed')
     def test_pypy(self):
-        sorted(Interpreter.parse('pypy').items()) == \
-            [('debug', None), ('name', 'pypy'), ('options', ()), ('path', ''), ('version', None)]
-        sorted(Interpreter.parse('#! /usr/bin/pypy --foo').items()) == \
-            [('debug', None), ('name', 'pypy'), ('options', ('--foo',)), ('path', '/usr/bin/'), ('version', None)]
-        Interpreter('pypy').sitedir(version='2.0') == '/usr/lib/pypy/dist-packages/'
+        self.assertEqual(
+            sorted(Interpreter.parse('pypy').items()),
+            [('debug', None), ('name', 'pypy'), ('options', ()), ('path', ''), ('version', None)])
+        self.assertEqual(
+            sorted(Interpreter.parse('#! /usr/bin/pypy --foo').items()),
+            [('debug', None), ('name', 'pypy'), ('options', ('--foo',)), ('path', '/usr/bin/'), ('version', None)])
+        self.assertEqual(
+            Interpreter('pypy').sitedir(version='2.0'),
+            '/usr/lib/pypy/dist-packages/')
 
     @unittest.skipUnless(exists('/usr/bin/python2.6'), 'python2.6 is not installed')
     def test_python26(self):

@@ -231,7 +231,8 @@ def execute(command, cwd=None, env=None, log_output=None, shell=True):
     log.debug('invoking: %s', command)
     with Popen(command, **args) as process:
         stdout, stderr = process.communicate()
-        close and log_output.close()
+        if close:
+            log_output.close()
         return {
             "returncode": process.returncode,
             "stdout": stdout and str(stdout, 'utf-8'),

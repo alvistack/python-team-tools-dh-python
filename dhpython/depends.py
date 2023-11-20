@@ -240,6 +240,7 @@ class Dependencies:
                 # TODO: should options.recommends and options.suggests be
                 # removed from requires.txt?
                 deps = parse_pydep(self.impl, fn, bdep=self.bdep, **section_options)
+                # pylint: disable=expression-not-assigned
                 [self.depend(i) for i in deps['depends']]
                 [self.recommend(i) for i in deps['recommends']]
                 [self.suggest(i) for i in deps['suggests']]
@@ -252,6 +253,7 @@ class Dependencies:
             for fpath in stats['dist-info']:
                 deps = parse_requires_dist(self.impl, fpath, bdep=self.bdep,
                                            **section_options)
+                # pylint: disable=expression-not-assigned
                 [self.depend(i) for i in deps['depends']]
                 [self.recommend(i) for i in deps['recommends']]
                 [self.suggest(i) for i in deps['suggests']]
@@ -274,6 +276,7 @@ class Dependencies:
                     log.warning('cannot find requirements file: %s', fn)
                     continue
             deps = parse_pydep(self.impl, fpath, bdep=self.bdep, **section_options)
+            # pylint: disable=expression-not-assigned
             [self.depend(i) for i in deps['depends']]
             [self.recommend(i) for i in deps['recommends']]
             [self.suggest(i) for i in deps['suggests']]
