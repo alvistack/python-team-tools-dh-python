@@ -89,11 +89,11 @@ if cpython3[1]:
 
 
 if __name__ == '__main__':
-    from sys import argv, stderr
-    if len(argv) != 3:
-        print('invalid number of arguments', file=stderr)
-        exit(1)
-    if argv[1] == 'default':
-        print('.'.join(str(i) for i in DEFAULT[argv[2]]))
-    elif argv[1] == 'supported':
-        print(','.join(('.'.join(str(i) for i in v) for v in SUPPORTED[argv[2]])))
+    import sys
+    if len(sys.argv) != 3:
+        print('invalid number of arguments', file=sys.stderr)
+        sys.exit(1)
+    if sys.argv[1] == 'default':
+        print('.'.join(str(i) for i in DEFAULT[sys.argv[2]]))
+    elif sys.argv[1] == 'supported':
+        print(','.join(('.'.join(str(i) for i in v) for v in SUPPORTED[sys.argv[2]])))
