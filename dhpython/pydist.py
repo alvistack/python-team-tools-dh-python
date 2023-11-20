@@ -27,7 +27,6 @@ import re
 import subprocess
 from functools import partial
 from os.path import exists, isdir, join
-from subprocess import PIPE, Popen
 
 if __name__ == '__main__':
     import sys

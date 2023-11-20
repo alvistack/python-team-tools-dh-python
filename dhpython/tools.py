@@ -22,7 +22,6 @@
 import logging
 import os
 import re
-import locale
 from datetime import datetime
 from glob import glob
 from pickle import dumps

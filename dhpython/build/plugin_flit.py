@@ -19,10 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from fnmatch import fnmatch
 from pathlib import Path
 import copy
-import csv
 import logging
 import os
 import os.path as osp

@@ -24,7 +24,6 @@ from glob import glob1
 from os import remove, walk
 from os.path import exists, isdir, join
 from pathlib import Path
-from subprocess import Popen, PIPE
 from shutil import rmtree, copyfile, copytree, which
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException

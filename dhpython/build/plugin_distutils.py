@@ -101,6 +101,7 @@ class BuildSystem(Base):
     @shell_command
     def _bdist_wheel(self, context, args):
         try:
+            # pylint: disable=unused-import
             import wheel
         except ImportError:
             raise Exception("wheel is required to build wheels for distutils/setuptools packages. Build-Depend on python3-wheel.")
