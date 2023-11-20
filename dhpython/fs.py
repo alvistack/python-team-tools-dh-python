@@ -517,7 +517,6 @@ class Scan:
         return dname.endswith('.dist-info')
 
     def handle_dist_dir(self, dpath, file_names):
-        path, dname = dpath.rsplit('/', 1)
         if self.is_dbg_package and self.options.clean_dbg_pkg:
             rmtree(dpath)
             return
@@ -532,7 +531,7 @@ class Scan:
         if self.is_dbg_package and self.options.clean_dbg_pkg:
             # remove empty directories in -dbg packages
             proot = self.proot + '/usr/lib'
-            for root, dirs, file_names in os.walk(proot, topdown=False):
+            for root, _, file_names in os.walk(proot, topdown=False):
                 if '-packages/' in root and not file_names:
                     try:
                         os.removedirs(root)

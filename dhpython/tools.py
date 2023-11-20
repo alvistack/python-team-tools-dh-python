@@ -80,7 +80,7 @@ def move_matching_files(src, dst, pattern, sub=None, repl=''):
     if sub:
         sub = re.compile(sub).sub
         repl = repl or ''
-    for root, dirs, filenames in os.walk(src):
+    for root, _, filenames in os.walk(src):
         for fn in filenames:
             spath = join(root, fn)
             if match(spath):

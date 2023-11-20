@@ -313,7 +313,7 @@ class DebHelper:
     def save_log(self):
         if not self.options.write_log:
             return
-        for package, settings in self.packages.items():
+        for package, _ in self.packages.items():
             with open('debian/{}.debhelper.log'.format(package),
                       'a', encoding='utf-8') as f:
                 f.write(self.command + '\n')

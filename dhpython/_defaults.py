@@ -69,7 +69,7 @@ def from_file(fpath):
         raise ValueError("missing interpreter: %s" % fpath)
     command = "{} --version".format(fpath)
     with Popen(command, shell=True, stdout=PIPE) as process:
-        stdout, stderr = process.communicate()
+        stdout, _ = process.communicate()
         stdout = str(stdout, 'utf-8')
 
     print(stdout)

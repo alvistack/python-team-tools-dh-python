@@ -26,7 +26,7 @@ class TestMoveMatchingFiles(unittest.TestCase):
         os.makedirs(self.tmppath('foo/bar/a/b/c/spam'))
         for path in ('foo/bar/a/b/c/spam/file.so',
                      'foo/bar/a/b/c/spam/file.py'):
-            with open(self.tmppath(path), 'wb') as fh:
+            with open(self.tmppath(path), 'wb'):
                 # create a 0 byte file for the test
                 pass
 

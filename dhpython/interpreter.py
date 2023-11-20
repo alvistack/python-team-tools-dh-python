@@ -345,7 +345,7 @@ class Interpreter:
         """Return multiarch tag."""
         version = Version(version or self.version)
         try:
-            soabi, multiarch = self._get_config(version)[:2]
+            _, multiarch = self._get_config(version)[:2]
         except Exception:
             log.debug('cannot get multiarch', exc_info=True)
             # interpreter without multiarch support
@@ -363,7 +363,7 @@ class Interpreter:
         version = Version(version or self.version)
         # NOTE: it's not the same as magic_tag
         try:
-            soabi, multiarch = self._get_config(version)[:2]
+            soabi, _ = self._get_config(version)[:2]
         except Exception:
             log.debug('cannot get soabi', exc_info=True)
             # interpreter without soabi support
