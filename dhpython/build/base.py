@@ -283,6 +283,7 @@ class Base:
 
     def built_wheel(self, context, args):
         """Return the path to any built wheels we can find"""
+        # pylint: disable=unused-argument
         wheels = list(Path(args['home_dir']).glob('*.whl'))
         n_wheels = len(wheels)
         if n_wheels > 1:
@@ -302,6 +303,7 @@ class Base:
         return execute(command, context['dir'], env, log_file)
 
     def print_args(self, context, args):
+        # pylint: disable=unused-argument
         cfg = self.cfg
         if len(cfg.print_args) == 1 and len(cfg.interpreter) == 1 and '{version}' not in cfg.interpreter[0]:
             i = cfg.print_args[0]

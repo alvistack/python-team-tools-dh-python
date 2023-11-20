@@ -82,6 +82,7 @@ class Interpreter:
 
     def __init__(self, value=None, path=None, name=None, version=None,
                  debug=None, impl=None, options=None):
+        # pylint: disable=unused-argument
         params = locals()
         del params['self']
         del params['value']

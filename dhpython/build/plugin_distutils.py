@@ -100,6 +100,7 @@ class BuildSystem(Base):
 
     @shell_command
     def _bdist_wheel(self, context, args):
+        # pylint: disable=unused-argument
         try:
             # pylint: disable=unused-import
             import wheel

@@ -48,6 +48,7 @@ class Version:
         >>> Version('0.0')
         Version('0.0')
         """
+        # pylint: disable=unused-argument
         if isinstance(value, (tuple, list)):
             value = '.'.join(str(i) for i in value)
         if isinstance(value, Version):
