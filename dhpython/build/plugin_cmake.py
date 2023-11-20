@@ -29,7 +29,7 @@ class BuildSystem(Base):
 
     @shell_command
     def clean(self, context, args):
-        super(BuildSystem, self).clean(context, args)
+        super().clean(context, args)
         return 'dh_auto_clean --buildsystem=cmake'
 
     @shell_command

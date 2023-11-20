@@ -27,7 +27,7 @@ class BuildSystem(Base):
 
     @shell_command
     def clean(self, context, args):
-        super(BuildSystem, self).clean(context, args)
+        super().clean(context, args)
         return args['args']
 
     @shell_command
@@ -45,4 +45,4 @@ class BuildSystem(Base):
     @shell_command
     @copy_test_files()
     def test(self, context, args):
-        return args['args'] or super(BuildSystem, self).test(context, args)
+        return args['args'] or super().test(context, args)

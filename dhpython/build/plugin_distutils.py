@@ -73,7 +73,7 @@ class BuildSystem(Base):
     CLEAN_FILES = Base.CLEAN_FILES | {'build'}
 
     def detect(self, context):
-        result = super(BuildSystem, self).detect(context)
+        result = super().detect(context)
         if _setup_tpl in self.DETECTED_REQUIRED_FILES:
             context['args']['setup_py'] = self.DETECTED_REQUIRED_FILES[_setup_tpl][0]
         else:
@@ -83,7 +83,7 @@ class BuildSystem(Base):
     @shell_command
     @create_pydistutils_cfg
     def clean(self, context, args):
-        super(BuildSystem, self).clean(context, args)
+        super().clean(context, args)
         if exists(args['interpreter'].binary()):
             return '{interpreter} {setup_py} clean {args}'
         return 0  # no need to invoke anything
@@ -143,4 +143,4 @@ class BuildSystem(Base):
                 if fp.read().find(b'test_suite') > 0:
                     # TODO: is that enough to detect if test target is available?
                     return '{interpreter} {setup_py} test {args}'
-        return super(BuildSystem, self).test(context, args)
+        return super().test(context, args)
