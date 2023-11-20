@@ -233,9 +233,11 @@ def execute(command, cwd=None, env=None, log_output=None, shell=True):
     with Popen(command, **args) as process:
         stdout, stderr = process.communicate()
         close and log_output.close()
-        return dict(returncode=process.returncode,
-                    stdout=stdout and str(stdout, 'utf-8'),
-                    stderr=stderr and str(stderr, 'utf-8'))
+        return {
+            "returncode": process.returncode,
+            "stdout": stdout and str(stdout, 'utf-8'),
+            "stderr": stderr and str(stderr, 'utf-8'),
+        }
 
 
 class memoize:
