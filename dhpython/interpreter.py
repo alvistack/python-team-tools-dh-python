@@ -202,8 +202,8 @@ class Interpreter:
             data = fp.read(96)
             if b"\0" in data:
                 raise ValueError('cannot parse binary file')
-        # make sure only first line is checkeed
-        data = str(data, 'utf-8').split('\n')[0]
+        # make sure only first line is checked
+        data = str(data, 'utf-8').split('\n', maxsplit=1)[0]
         if not data.startswith('#!'):
             raise ValueError("doesn't look like a shebang: %s" % data)
 
