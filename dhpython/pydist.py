@@ -176,7 +176,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
         version = Version(version)
 
     # some upstreams have weird ideas for distribution name...
-    name, rest = re.compile('([^!><=~ \(\)\[;]+)(.*)').match(req).groups()
+    name, rest = re.compile(r'([^!><=~ \(\)\[;]+)(.*)').match(req).groups()
     # TODO: check stdlib and dist-packaged for name.py and name.so files
     req = safe_name(name) + rest
 
@@ -603,7 +603,7 @@ GROUP_RE = re.compile(r'\$(\d+)')
 
 
 def _pl2py(pattern):
-    """Convert Perl RE patterns used in uscan to Python's
+    r"""Convert Perl RE patterns used in uscan to Python's
 
     >>> print(_pl2py('foo$3'))
     foo\g<3>

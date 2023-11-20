@@ -27,7 +27,7 @@ from sys import argv
 from dhpython import DEPENDS_SUBSTVARS, PKG_NAME_TPLS, RT_LOCATIONS, RT_TPLS
 
 log = logging.getLogger('dhpython')
-parse_dep = re.compile('''[,\s]*
+parse_dep = re.compile(r'''[,\s]*
     (?P<name>[^\s:]+)(?::any)?
     \s*
     \(?(?P<version>([>=<]{2,}|=)\s*[^\)]+)?\)?

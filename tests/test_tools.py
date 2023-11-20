@@ -30,7 +30,7 @@ class TestMoveMatchingFiles(unittest.TestCase):
 
         move_matching_files(self.tmppath('foo/bar/'),
                             self.tmppath('foo/baz/'),
-                            'spam/.*\.so$')
+                            r'spam/.*\.so$')
 
     def tmppath(self, *path):
         return os.path.join(self.tmpdir.name, *path)

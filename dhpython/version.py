@@ -350,15 +350,15 @@ class VersionRange:
         for item in value.split(','):
             item = item.strip()
 
-            match = re.match('>=\s*([\d\.]+)', item)
+            match = re.match(r'>=\s*([\d\.]+)', item)
             if match:
                 minv = match.group(1)
                 continue
-            match = re.match('<<\s*([\d\.]+)', item)
+            match = re.match(r'<<\s*([\d\.]+)', item)
             if match:
                 maxv = match.group(1)
                 continue
-            match = re.match('^[\d\.]+$', item)
+            match = re.match(r'^[\d\.]+$', item)
             if match:
                 hardcoded.add(match.group(0))
 
