@@ -128,10 +128,10 @@ def share_files(srcdir, dstdir, interpreter, options):
             elif i == "RECORD":
                 os.remove(fpath1)
             else:
-                log.warn("No merge driver for dist-info file %s", i)
+                log.warning("No merge driver for dist-info file %s", i)
         else:
             # The files differed so we cannot collapse them.
-            log.warn('Paths differ: %s and %s', fpath1, fpath2)
+            log.warning('Paths differ: %s and %s', fpath1, fpath2)
             if options.verbose and not i.endswith(('.so', '.a')):
                 with open(fpath1, encoding="UTF-8") as fp1:
                     fromlines = fp1.readlines()
@@ -178,7 +178,7 @@ def merge_WHEEL(src, dst):
             if line.startswith("Tag: "):
                 fh.write(line)
             else:
-                log.warn("WHEEL merge discarded line %s", line)
+                log.warning("WHEEL merge discarded line %s", line)
 
     return len(missing)
 
@@ -425,7 +425,7 @@ class Scan:
             # TODO: what about symlinks pointing to this file
             new_fpath = join(path, new_fn)
             if exists(new_fpath):
-                log.warn('destination file exist, '
+                log.warning('destination file exist, '
                          'cannot rename %s to %s', fname, new_fn)
             else:
                 log.info('renaming %s to %s', fname, new_fn)

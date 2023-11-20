@@ -335,7 +335,7 @@ def shell_command(func):
             if isinstance(command, int):  # final result
                 return command
         if not command:
-            log.warn('missing command '
+            log.warning('missing command '
                      '(plugin=%s, method=%s, interpreter=%s, version=%s)',
                      self.NAME, func.__name__,
                      args.get('interpreter'), args.get('version'))

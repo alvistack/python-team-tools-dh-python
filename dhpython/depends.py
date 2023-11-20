@@ -271,7 +271,7 @@ class Dependencies:
             if not exists(fpath):
                 fpath = fn
                 if not exists(fpath):
-                    log.warn('cannot find requirements file: %s', fn)
+                    log.warning('cannot find requirements file: %s', fn)
                     continue
             deps = parse_pydep(self.impl, fpath, bdep=self.bdep, **section_options)
             [self.depend(i) for i in deps['depends']]

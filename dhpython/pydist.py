@@ -669,7 +669,7 @@ def _translate(version, rules, standard):
                     pattern = re.compile(tmp[0], re.I)
             version = pattern.sub(_pl2py(tmp[1]), version, count)
         else:
-            log.warn('unknown rule ignored: %s', rule)
+            log.warning('unknown rule ignored: %s', rule)
     if standard == 'PEP386':
         version = PEP386_PRE_VER_RE.sub(r'~\g<1>', version)
     elif standard == 'PEP440':
