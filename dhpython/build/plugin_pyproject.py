@@ -146,9 +146,9 @@ class BuildSystem(Base):
         for extra in ('scripts', 'data'):
             path = Path(args["home_dir"]) / extra
             if osp.exists(path):
-                log.warning(f'{extra.title()} directory already exists, '
-                            'skipping unpack. '
-                            'Is the Python package being built twice?')
+                log.warning('%s directory already exists, skipping unpack. '
+                            'Is the Python package being built twice?',
+                            extra.title())
                 return
             extras[extra] = path
         destination = SchemeDictionaryDestination(
