@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 from dhpython.depends import Dependencies
 
-from test_depends import FakeOptions, prime_pydist
+from .test_depends import FakeOptions, prime_pydist
 
 
 class TestDistutilsExtra(unittest.TestCase):

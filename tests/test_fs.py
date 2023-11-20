@@ -5,13 +5,13 @@ from unittest import TestCase
 from dhpython.interpreter import Interpreter
 from dhpython.fs import merge_WHEEL, share_files
 
-from tests.common import FakeOptions
+from .common import FakeOptions
 
 
 class MergeWheelTestCase(TestCase):
     files = {}
     def setUp(self):
-        self.tempdir = TemporaryDirectory()
+        self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tempdir.cleanup)
         temp_path = Path(self.tempdir.name)
         for fn, contents in self.files.items():

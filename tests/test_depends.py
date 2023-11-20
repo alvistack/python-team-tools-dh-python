@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from dhpython.depends import Dependencies
 from dhpython.version import Version
 
-from tests.common import FakeOptions
+from .common import FakeOptions
 
 
 def pep386(d):
