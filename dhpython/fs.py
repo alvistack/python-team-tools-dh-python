@@ -133,9 +133,9 @@ def share_files(srcdir, dstdir, interpreter, options):
             # The files differed so we cannot collapse them.
             log.warn('Paths differ: %s and %s', fpath1, fpath2)
             if options.verbose and not i.endswith(('.so', '.a')):
-                with open(fpath1) as fp1:
+                with open(fpath1, encoding="UTF-8") as fp1:
                     fromlines = fp1.readlines()
-                with open(fpath2) as fp2:
+                with open(fpath2, encoding="UTF-8") as fp2:
                     tolines = fp2.readlines()
                 diff = difflib.unified_diff(fromlines, tolines, fpath1, fpath2)
                 sys.stderr.writelines(diff)
@@ -152,11 +152,11 @@ def share_files(srcdir, dstdir, interpreter, options):
 
 def missing_lines(src, dst):
     """Find all the lines in the text file src that are not in dst"""
-    with open(dst) as fh:
+    with open(dst, encoding="UTF-8") as fh:
         current = {k: None for k in fh.readlines()}
 
     missing = []
-    with open(src) as fh:
+    with open(src, encoding="UTF-8") as fh:
         for line in fh.readlines():
             if line not in current:
                 missing.append(line)
@@ -173,7 +173,7 @@ def merge_WHEEL(src, dst):
     """
     log.debug("Merging WHEEL file %s into %s", src, dst)
     missing = missing_lines(src, dst)
-    with open(dst, "at") as fh:
+    with open(dst, "at", encoding="UTF-8") as fh:
         for line in missing:
             if line.startswith("Tag: "):
                 fh.write(line)
@@ -187,7 +187,7 @@ def write_INSTALLER(distdir):
     """Write 'debain' as the INSTALLER"""
     log.debug("Writing INSTALLER in %s", distdir)
     installer = join(distdir, "INSTALLER")
-    with open(installer, "w") as f:
+    with open(installer, "w", encoding="UTF-8") as f:
         f.write("debian\n")
 
 

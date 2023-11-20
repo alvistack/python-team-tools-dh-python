@@ -95,7 +95,7 @@ class DependenciesTestCase(unittest.TestCase):
 
         for fn, lines in write_files.items():
             os.makedirs(os.path.dirname(fn))
-            with open(fn, 'w') as f:
+            with open(fn, 'w', encoding="UTF-8") as f:
                 f.write('\n'.join(lines))
 
         cleanup = prime_pydist(self.impl, self.pydist)

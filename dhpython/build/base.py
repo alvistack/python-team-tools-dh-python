@@ -80,7 +80,7 @@ def copy_test_files(dest='{build_dir}',
                        and name in add_to_args:
                         args['args'] = name
             if files_to_remove and filelist:
-                with open(filelist.format(**args), 'a') as fp:
+                with open(filelist.format(**args), 'a', encoding="UTF-8") as fp:
                     fp.writelines(files_to_remove)
 
             return func(self, context, args, *oargs, **kwargs)

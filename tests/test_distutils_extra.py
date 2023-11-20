@@ -39,7 +39,7 @@ class TestDistutilsExtra(unittest.TestCase):
         old_wd = os.getcwd()
         os.chdir(self.tempdir.name)
         self.addCleanup(os.chdir, old_wd)
-        with open(self.tempdir.name + '/PKG-INFO', 'w') as f:
+        with open(self.tempdir.name + '/PKG-INFO', 'w', encoding="UTF-8") as f:
             f.write("""Metadata-Version: 2.1
 Name: gTranscribe
 Version: 0.11

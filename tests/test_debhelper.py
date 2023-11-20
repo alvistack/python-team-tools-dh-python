@@ -23,7 +23,7 @@ class DebHelperTestCase(unittest.TestCase):
         self.addCleanup(os.chdir, old_wd)
 
         os.mkdir('debian')
-        with open('debian/control', 'w') as f:
+        with open('debian/control', 'w', encoding="UTF-8") as f:
             f.write('\n'.join(self.control))
         if self.parse_control:
             self.dh = DebHelper(self.build_options(), impl=self.impl)
@@ -181,9 +181,9 @@ class TestRemainingPackages(DebHelperTestCase):
 
     def setUp(self):
         super().setUp()
-        with open('debian/python3-foo.debhelper.log', 'w') as f:
+        with open('debian/python3-foo.debhelper.log', 'w', encoding="UTF-8") as f:
             f.write('dh_python3\n')
-        with open('debian/python3-foo-ext.debhelper.log', 'w') as f:
+        with open('debian/python3-foo-ext.debhelper.log', 'w', encoding="UTF-") as f:
             f.write('dh_foobar\n')
         self.dh = DebHelper(self.build_options(), impl=self.impl)
 
