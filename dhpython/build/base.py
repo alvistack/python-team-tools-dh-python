@@ -288,7 +288,7 @@ class Base:
         n_wheels = len(wheels)
         if n_wheels > 1:
             raise Exception(f"Expecting to have built exactly 1 wheel, but found {n_wheels}")
-        elif n_wheels == 1:
+        if n_wheels == 1:
             return str(wheels[0])
         return None
 
