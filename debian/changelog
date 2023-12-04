@@ -1,3 +1,10 @@
+dh-python (6.20231108) UNRELEASED; urgency=medium
+
+  * dh_python3: Fix file filtering bug that left dot-directories in binary
+    packages. (Closes: #1055919)
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 04 Dec 2023 19:52:50 -0400
+
 dh-python (6.20231107) unstable; urgency=medium
 
   * Correct logic for leaving SOURCES.txt when cleaning egg-info, it was
