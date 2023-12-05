@@ -116,7 +116,7 @@ def main(cfg):
             try:
                 tmp_plugin = Plugin(cfg)
             except Exception as err:
-                log.warn('cannot initialize %s plugin: %s', Plugin.NAME,
+                log.warning('cannot initialize %s plugin: %s', Plugin.NAME,
                          err, exc_info=cfg.verbose)
                 continue
             tmp_context = {'ENV': env, 'args': {}, 'dir': cfg.dir}
