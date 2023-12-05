@@ -46,7 +46,7 @@ def main(cfg):
     if cfg.list_systems:
         for name, Plugin in sorted(build.plugins.items()):
             print(name, '\t', Plugin.DESCRIPTION)
-        exit(0)
+        sys.exit(0)
 
     nocheck = False
     if 'DEB_BUILD_OPTIONS' in environ:
@@ -106,7 +106,7 @@ def main(cfg):
         Plugin = build.plugins.get(selected_plugin)
         if not Plugin:
             log.error('unrecognized build system: %s', selected_plugin)
-            exit(10)
+            sys.exit(10)
         plugin = Plugin(cfg)
         context = {'ENV': env, 'args': {}, 'dir': cfg.dir}
         plugin.detect(context)
@@ -128,7 +128,7 @@ def main(cfg):
         if not plugin:
             log.error('cannot detect build system, please use --system option'
                       ' or set PYBUILD_SYSTEM env. variable')
-            exit(11)
+            sys.exit(11)
 
     if plugin.SUPPORTED_INTERPRETERS is not True:
         # if versioned interpreter was requested and selected plugin lists
@@ -146,13 +146,13 @@ def main(cfg):
     for interpreter in cfg.interpreter:
         if plugin.SUPPORTED_INTERPRETERS is not True and interpreter not in plugin.SUPPORTED_INTERPRETERS:
             log.error('interpreter %s not supported by %s', interpreter, plugin)
-            exit(12)
+            sys.exit(12)
     log.debug('detected build system: %s (certainty: %s%%)', plugin.NAME, certainty)
 
     if cfg.detect_only:
         if not cfg.really_quiet:
             print(plugin.NAME)
-        exit(0)
+        sys.exit(0)
 
     versions = cfg.versions
     if not versions:
@@ -369,7 +369,7 @@ def main(cfg):
     if func:
         step = func.__func__.__name__
         if step == 'test' and nocheck:
-            exit(0)
+            sys.exit(0)
         failure = False
         for i in cfg.interpreter:
             ipreter = Interpreter(interpreter.format(version=versions[0]))
@@ -393,13 +393,13 @@ def main(cfg):
                     # one of them fails to make build logs more verbose:
                     failure = True
                     if step not in ('build', 'test', 'autopkgtest'):
-                        exit(13)
+                        sys.exit(13)
                 if step == 'install':
                     move_to_ext_destdir(i, version, c)
         if failure:
             # exit with a non-zero return code if at least one build/test failed
-            exit(13)
-        exit(0)
+            sys.exit(13)
+        sys.exit(0)
 
     ### all functions for interpreters in batches mode ###
     try:
@@ -435,7 +435,7 @@ def main(cfg):
     except Exception as err:
         log.error('plugin %s failed: %s', plugin.NAME, err,
                   exc_info=cfg.verbose)
-        exit(14)
+        sys.exit(14)
 
 
 def parse_args(argv):
