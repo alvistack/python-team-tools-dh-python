@@ -125,6 +125,8 @@ def share_files(srcdir, dstdir, interpreter, options):
             # dist-info file that differs... try merging
             if i == "WHEEL":
                 os.remove(fpath1)
+            elif i == "RECORD":
+                os.remove(fpath1)
             else:
                 log.warn("No merge driver for dist-info file %s", i)
         else:
