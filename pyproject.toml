@@ -1,0 +1,64 @@
+
+[tool.pylint.main]
+persistent = false
+
+[tool.pylint."messages control"]
+disable = [
+    "abstract-method",
+    # "anomalous-backslash-in-string",
+    "arguments-differ",
+    # "assignment-from-no-return",
+    "attribute-defined-outside-init",
+    "broad-exception-caught",
+    "broad-exception-raised",
+    "consider-using-f-string",
+    # "consider-using-sys-exit",
+    # "consider-using-with",
+    "cyclic-import",
+    # "deprecated-method",
+    # "duplicate-string-formatting-argument",
+    "eval-used",
+    # "expression-not-assigned",
+    "fixme",
+    "global-statement",
+    "import-outside-toplevel",
+    "inconsistent-return-statements",
+    "invalid-name",
+    "line-too-long",
+    # "logging-fstring-interpolation",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    # "no-else-raise",
+    "no-else-return",
+    "no-member",
+    "pointless-statement",   # FIXME: dhpython/pydist.py:380:20 looks like a bug?
+    "protected-access",
+    "raise-missing-from",
+    "redefined-argument-from-local",
+    "redefined-outer-name",
+    # "super-with-arguments",
+    "too-few-public-methods",
+    "too-many-arguments",
+    "too-many-boolean-expressions",
+    "too-many-branches",
+    "too-many-instance-attributes",
+    "too-many-locals",
+    "too-many-nested-blocks",
+    "too-many-public-methods",
+    "too-many-return-statements",
+    "too-many-statements",
+    # "unspecified-encoding",
+    # "unused-argument",
+    # "unused-import",
+    # "unused-variable",
+    # "use-dict-literal",
+    # "use-maxsplit-arg",
+    "wrong-import-position",
+]
+
+[tool.pylint.reports]
+reports = false
+
+[tool.pylint.similarities]
+min-similarity-lines = 999
