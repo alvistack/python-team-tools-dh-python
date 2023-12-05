@@ -47,7 +47,7 @@ SUPPORTED = supported('cpython3')
 
 class Scanner(Scan):
     def handle_ext(self, fpath):
-        path, fname = fpath.rsplit('/', 1)
+        _, fname = fpath.rsplit('/', 1)
         tagver = EXTFILE_RE.search(fname)
         if tagver is None:
             # yeah, python3.1 is not covered, but we don't want to
@@ -200,7 +200,7 @@ def main():
         options.vrange = VersionRange(dh.python_version)
 
     interpreter = Interpreter('python3')
-    for package, pdetails in dh.packages.items():
+    for package, _ in dh.packages.items():
         log.debug('processing package %s...', package)
         interpreter.debug = package.endswith('-dbg')
 

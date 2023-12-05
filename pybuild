@@ -567,7 +567,7 @@ def parse_args(argv):
     limit.add_argument('--disable', metavar='ITEMS',
                        help='disable action, interpreter or version')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not args.interpreter:
         args.interpreter = environ.get('PYBUILD_INTERPRETERS', 'python{version}').split()
     if not args.versions:
@@ -589,7 +589,7 @@ def parse_args(argv):
 
 
 if __name__ == '__main__':
-    cfg = parse_args(sys.argv)
+    cfg = parse_args(sys.argv[1:])
     if cfg.really_quiet:
         cfg.quiet = True
         log.setLevel(logging.CRITICAL)
