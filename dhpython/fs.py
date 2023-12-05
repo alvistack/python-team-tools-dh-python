@@ -271,7 +271,7 @@ class Scan:
                         # continue with a subdirectory
                         continue
 
-            for name in dirs:
+            for name in dirs[:]:
                 dpath = join(root, name)
                 if self.is_unwanted_dir(dpath):
                     rmtree(dpath)
