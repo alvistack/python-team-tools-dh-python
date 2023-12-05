@@ -435,6 +435,7 @@ class Scan:
 
     def handle_ext(self, fpath):
         """Handle .so file, return its version if detected."""
+        return None
 
     def handle_public_module(self, fpath):
         pass
