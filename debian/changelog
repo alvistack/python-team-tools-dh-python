@@ -1,3 +1,11 @@
+dh-python (6.20231205) UNRELEASED; urgency=medium
+
+  * When building PEP-517 packages with the mesonpy backend, pass the same
+    options to meson as debhelper would, when building meson packages itself.
+    (Closes: #1041692)
+
+ -- Stefano Rivera <stefanor@debian.org>  Tue, 05 Dec 2023 19:24:13 -0400
+
 dh-python (6.20231204) unstable; urgency=medium
 
   * dh_python3: Fix file filtering bug that left dot-directories in binary
