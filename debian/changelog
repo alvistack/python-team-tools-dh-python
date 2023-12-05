@@ -5,6 +5,7 @@ dh-python (6.20231108) UNRELEASED; urgency=medium
   * Remove dot-files from dist-packages. (See: #1057432)
   * Fix a bug in merging dist-info directories that left INSTALLER files in
     /usr/lib/python3.12/dist-packages.
+  * Update pydist fallback.
 
  -- Stefano Rivera <stefanor@debian.org>  Mon, 04 Dec 2023 19:52:50 -0400
 
