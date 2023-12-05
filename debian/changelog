@@ -1,4 +1,4 @@
-dh-python (6.20231108) UNRELEASED; urgency=medium
+dh-python (6.20231204) unstable; urgency=medium
 
   * dh_python3: Fix file filtering bug that left dot-directories in binary
     packages. (Closes: #1056291)
@@ -7,7 +7,7 @@ dh-python (6.20231108) UNRELEASED; urgency=medium
     /usr/lib/python3.12/dist-packages.
   * Update pydist fallback.
 
- -- Stefano Rivera <stefanor@debian.org>  Mon, 04 Dec 2023 19:52:50 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 04 Dec 2023 21:08:55 -0400
 
 dh-python (6.20231107) unstable; urgency=medium
 
