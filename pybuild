@@ -141,7 +141,8 @@ def main(cfg):
                 if m:
                     ver = m.group('version')
                     updated = set(tpl.format(version=ver) for tpl in tpls)
-                    updated and plugin.SUPPORTED_INTERPRETERS.update(updated)
+                    if updated:
+                        plugin.SUPPORTED_INTERPRETERS.update(updated)
 
     for interpreter in cfg.interpreter:
         if plugin.SUPPORTED_INTERPRETERS is not True and interpreter not in plugin.SUPPORTED_INTERPRETERS:
