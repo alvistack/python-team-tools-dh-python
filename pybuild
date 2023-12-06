@@ -282,14 +282,14 @@ def main(cfg):
         disabled = (get_option('disable', i, version) or '').split()
         for item in disabled:
             if item in (step, '1'):
-                log.debug('disabling {} step for {} {}'.format(step, i, version))
+                log.debug('disabling %s step for %s %s', step, i, version)
                 return True
             if item.startswith(prefix):
                 disabled.append(item[len(prefix):])
         if i in disabled or str(version) in disabled or \
                 i.format(version=version) in disabled or \
                 i.format(version=version.major) in disabled:
-            log.debug('disabling {} step for {} {}'.format(step, i, version))
+            log.debug('disabling %s step for %s %s', step, i, version)
             return True
         return False
 
