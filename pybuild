@@ -256,8 +256,8 @@ def main(cfg):
         # cross compilation support for Python 2.x
         if (version.major == 2 and
             arch_data.get('DEB_BUILD_ARCH') != arch_data.get('DEB_HOST_ARCH')):
-            pp.insert(0, ('/usr/lib/python{0}/plat-{1[DEB_HOST_MULTIARCH]}'
-                         ).format(version, arch_data))
+            pp.insert(0, ('/usr/lib/python{0}/plat-{1}'
+                         ).format(version, arch_data['DEB_HOST_MULTIARCH']))
         env['PYTHONPATH'] = ':'.join(pp)
         # cross compilation support for Python <= 3.8 (see above)
         if version.major == 3:
