@@ -1,8 +1,12 @@
 dh-python (6.20231205) UNRELEASED; urgency=medium
 
+  [ Stefano Rivera ]
   * When building PEP-517 packages with the mesonpy backend, pass the same
     options to meson as debhelper would, when building meson packages itself.
     (Closes: #1041692)
+
+  [ Piotr Ożarowski ]
+  * pydist fallback: add Cython override to point to cython3 package
 
  -- Stefano Rivera <stefanor@debian.org>  Tue, 05 Dec 2023 19:24:13 -0400
 

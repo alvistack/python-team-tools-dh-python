@@ -52,6 +52,7 @@ OVERRIDES = {
         'pil': 'python-pil',
         'Pillow': 'python-pil'},
     'cpython3': {
+        'Cython': 'cython3',
         'pil': 'python3-pil',
         'Pillow': 'python3-pil',
         'pylint': 'pylint',
