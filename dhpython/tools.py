@@ -235,8 +235,8 @@ def execute(command, cwd=None, env=None, log_output=None, shell=True):
             log_output.close()
         return {
             "returncode": process.returncode,
-            "stdout": stdout and str(stdout, 'utf-8'),
-            "stderr": stderr and str(stderr, 'utf-8'),
+            "stdout": stdout is not None and str(stdout, 'utf-8'),
+            "stderr": stderr is not None and str(stderr, 'utf-8'),
         }
 
 
