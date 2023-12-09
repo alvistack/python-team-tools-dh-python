@@ -12,3 +12,11 @@ tests:
   - export DH_PYTHON_DIST=$PWD/pydist
   - ./debian/tests/dh-python
   - ./debian/tests/pybuild
+
+style:
+  before_script:
+  - apt-get update
+  - apt-get -y install --no-install-recommends pylint
+
+  script:
+  - pylint dhpython dh_python3 pybuild
