@@ -373,7 +373,7 @@ def main(cfg):
             sys.exit(0)
         failure = False
         for i in cfg.interpreter:
-            ipreter = Interpreter(interpreter.format(version=versions[0]))
+            ipreter = Interpreter(i.format(version=versions[0]))
             iversions = build_sorted(versions, impl=ipreter.impl)
             if '{version}' not in i and len(versions) > 1:
                 log.info('limiting Python versions to %s due to missing {version}'
@@ -406,7 +406,7 @@ def main(cfg):
     try:
         context_map = {}
         for i in cfg.interpreter:
-            ipreter = Interpreter(interpreter.format(version=versions[0]))
+            ipreter = Interpreter(i.format(version=versions[0]))
             iversions = build_sorted(versions, impl=ipreter.impl)
             if '{version}' not in i and len(versions) > 1:
                 log.info('limiting Python versions to %s due to missing {version}'
