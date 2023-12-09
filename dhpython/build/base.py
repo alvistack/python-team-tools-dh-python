@@ -252,7 +252,10 @@ class Base:
             # --installpkg was added in tox 4. Keep tox 3 support for now,
             # for backportability
             r = execute(['tox', '--version', '--quiet'], shell=False)
-            major_version = int(r['stdout'].split('.', 1)[0])
+            try:
+                major_version = int(r['stdout'].split('.', 1)[0])
+            except ValueError as err:
+                raise Exception(f"tox was installed but broken: stdout='{r['stdout']}', stderr='{r['stderr']}'") from err
             if major_version < 4:
                 # tox will call pip to install the module. Let it install the
                 # module inside the virtualenv
