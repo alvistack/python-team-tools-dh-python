@@ -4,6 +4,8 @@ dh-python (6.20231205) UNRELEASED; urgency=medium
   * When building PEP-517 packages with the mesonpy backend, pass the same
     options to meson as debhelper would, when building meson packages itself.
     (Closes: #1041692)
+  * Handle tab-prefixed debian/control lines in dhpython/debhelper.py,
+    correctly. Strip the tab rather than including it in a package name.
 
   [ Piotr Ożarowski ]
   * pydist fallback: add Cython override to point to cython3 package

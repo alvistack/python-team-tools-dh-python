@@ -32,8 +32,8 @@ class DebHelperTestCase(unittest.TestCase):
 CONTROL = [
     'Source: foo-src',
     'Build-Depends: python3-all,',
-    ' python-all,',
-    ' bar (<< 2) [amd64],',
+    ' python-all',
+    '\t, bar (<< 2) [amd64],',
     ' baz (>= 1.0)',
     'X-Python3-Version: >= 3.1, << 3.10',
     '',
