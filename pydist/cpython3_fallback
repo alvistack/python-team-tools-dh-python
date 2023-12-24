@@ -40,7 +40,7 @@ ClusterShell python3-clustershell
 CommonMark_bkrs python3-commonmark-bkrs
 ConfigArgParse python3-configargparse
 ConsensusCore python3-pbconsensuscore
-Cython cython3-legacy
+Cython cython3
 DBussy python3-dbussy
 DNApi python3-dnapilib
 DSV python3-dsv
