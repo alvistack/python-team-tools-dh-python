@@ -1,4 +1,4 @@
-dh-python (6.20231205) UNRELEASED; urgency=medium
+dh-python (6.20231223) unstable; urgency=medium
 
   [ Stefano Rivera ]
   * When building PEP-517 packages with the mesonpy backend, pass the same
@@ -10,7 +10,7 @@ dh-python (6.20231205) UNRELEASED; urgency=medium
   [ Piotr Ożarowski ]
   * pydist fallback: add Cython override to point to cython3 package
 
- -- Stefano Rivera <stefanor@debian.org>  Tue, 05 Dec 2023 19:24:13 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 23 Dec 2023 20:06:52 -0400
 
 dh-python (6.20231204) unstable; urgency=medium
 
