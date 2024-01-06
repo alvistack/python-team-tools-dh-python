@@ -62,7 +62,7 @@ two files that may provide such rules:
 #. If the *python3-bar* source package ships with a
    `debian/python3-bar.pydist` file (and uses dh_python3), this file
    will be included in the binary package as
-   `/usr/share/dh-python/dist/cpython3/python3-bar`. During the build
+   `/usr/share/python3/dist/python3-bar`. During the build
    of *python3-foo*, dh_python3 will then find and use the file.
 
 Both files have the same format described in
