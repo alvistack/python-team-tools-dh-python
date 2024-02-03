@@ -3,6 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Maximilian Engelhardt <maxi@daemonizer.de>
 Build-Depends: debhelper (>= 12.9), python3-all-dev:any
+Rules-Requires-Root: no
 Standards-Version: 4.5.1
 
 Package: python3-foo

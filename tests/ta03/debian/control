@@ -8,6 +8,7 @@ Build-Depends: debhelper-compat (= 12)
  , python3-pytest
  , python3-tox
  , python3-setuptools
+Rules-Requires-Root: no
 Standards-Version: 3.9.4
 
 Package: python3-foo

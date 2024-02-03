@@ -6,6 +6,7 @@ Build-Depends: debhelper-compat (= 12)
  , python3-all
  , python3-setuptools
  , pybuild-plugin-pyproject
+Rules-Requires-Root: no
 Standards-Version: 3.9.4
 
 Package: python3-foo
