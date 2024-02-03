@@ -223,10 +223,6 @@ class Interpreter:
         >>> i = Interpreter('python')
         >>> i.sitedir(version='3.1')
         '/usr/lib/python3/dist-packages/'
-        >>> i.sitedir(version='2.5')
-        '/usr/lib/python2.5/site-packages/'
-        >>> i.sitedir(version=Version('2.7'))
-        '/usr/lib/python2.7/dist-packages/'
         >>> i.sitedir(version='3.1', gdb=True, package='python3-foo')
         'debian/python3-foo/usr/lib/debug/usr/lib/python3/dist-packages/'
         >>> i.sitedir(version=Version('3.2'))
@@ -238,10 +234,8 @@ class Interpreter:
             raise ValueError("cannot find valid version: %s" % err)
         if self.impl == 'pypy':
             path = '/usr/lib/pypy/dist-packages/'
-        elif version << Version('2.6'):
-            path = "/usr/lib/python%s/site-packages/" % version
         elif version << Version('3.0'):
-            path = "/usr/lib/python%s/dist-packages/" % version
+            raise ValueError(f"The version {version} is no longer supported")
         else:
             path = '/usr/lib/python3/dist-packages/'
 
@@ -325,8 +319,6 @@ class Interpreter:
     def magic_number(self, version=None):
         """Return magic number."""
         version = Version(version or self.version)
-        if self.impl == 'cpython2':
-            return ''
         result = self._execute('import imp; print(imp.get_magic())', version)
         return eval(result)
 
@@ -410,7 +402,9 @@ class Interpreter:
     @property
     def symlinked_include_dir(self):
         """Return path to symlinked include directory."""
-        if self.impl in ('cpython2', 'pypy') or self.debug \
+        # FIXME: This condition looks like it is always True, since the minimum
+        #  supported python version is 3.11
+        if self.impl == 'pypy' or self.debug \
            or self.version >> '3.7' or self.version << '3.3':
             # these interpreters do not provide symlink,
             # others provide it in libpython3.X-dev
@@ -486,20 +480,14 @@ class Interpreter:
         tmp_multiarch = info['multiarch'] or multiarch
 
         result = info['name']
-        if result.endswith('module') and result != 'module' and (
-           self.impl == 'cpython3' and version >> '3.2' or
-           self.impl == 'cpython2' and version == '2.7'):
+        if result.endswith('module') and result != 'module' and self.impl == 'cpython3':
             result = result[:-6]
 
         if tmp_soabi:
             result = "{}.{}".format(result, tmp_soabi)
-            if tmp_multiarch and not (self.impl == 'cpython3' and version << '3.3') and tmp_multiarch not in soabi:
+            if tmp_multiarch and tmp_multiarch not in soabi:
                 result = "{}-{}".format(result, tmp_multiarch)
-        elif self.impl == 'cpython2' and version == '2.7' and tmp_multiarch:
-            result = "{}.{}".format(result, tmp_multiarch)
 
-        if self.debug and self.impl == 'cpython2':
-            result += '_d'
         result += '.so'
         if fname == result:
             return

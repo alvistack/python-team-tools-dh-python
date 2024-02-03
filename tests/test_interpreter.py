@@ -245,10 +245,5 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-310d-MYARCH.so')
 
 
-    def test_version(self):
-        i = Interpreter(impl='cpython2')
-        self.assertEqual(str(i), 'python')
-        self.assertEqual(i.binary('2.7'), '/usr/bin/python2.7')
-
 if __name__ == '__main__':
     unittest.main()

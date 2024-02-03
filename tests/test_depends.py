@@ -665,34 +665,6 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
         raise unittest.SkipTest('Not possible in requires.txt')
 
 
-class TestEnvironmentMarkers27EggInfo(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True)
-    impl = 'cpython2'
-    requires = {
-        'debian/foo/usr/lib/python2.7/dist-packages/foo.egg-info/requires.txt': (
-            "no_markers",
-            "[:os_name == 'posix']",
-            "os_posix",
-            "[:python_version >= '2.6']",
-            "python_version_ge26",
-        )
-    }
-    pydist = py27({
-        'no_markers': 'python-no-markers',
-        'os_posix': 'python-os-posix',
-        'python_version_ge26': 'python-python-version-ge26',
-    })
-
-    def test_depends_on_unmarked_packages(self):
-        self.assertIn('python-no-markers', self.d.depends)
-
-    def test_ignores_posix_packages(self):
-        self.assertNotInDepends('python-os-posix')
-
-    def test_ignores_pyversion_packages(self):
-        self.assertNotInDepends('python-python-version-ge26')
-
-
 class TestIgnoresUnusedModulesDistInfo(DependenciesTestCase):
     options = FakeOptions(guess_deps=True, depends_section=['feature'])
     dist_info_metadata = {

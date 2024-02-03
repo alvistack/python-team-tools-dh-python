@@ -26,11 +26,9 @@ from os.path import exists
 from subprocess import Popen, PIPE
 
 SUPPORTED = {
-    'cpython2': [(2, 7)],
     'cpython3': [(3, 8)],
     'pypy': [(4, 0)]}
 DEFAULT = {
-    'cpython2': (2, 7),
     'cpython3': (3, 8),
     'pypy': (4, 0)}
 
@@ -39,7 +37,8 @@ log = logging.getLogger('dhpython')
 
 def cpython_versions(major):
     result = [None, None]
-    ver = '' if major == 2 else '3'
+    assert major > 2
+    ver = str(major)
     supported = environ.get("DEBPYTHON{}_SUPPORTED".format(ver))
     default = environ.get("DEBPYTHON{}_DEFAULT".format(ver))
     if not supported or not default:
@@ -75,14 +74,9 @@ def from_file(fpath):
     print(stdout)
 
 
-cpython2 = cpython_versions(2)
 cpython3 = cpython_versions(3)
-if cpython2[0]:
-    DEFAULT['cpython2'] = cpython2[0]
 if cpython3[0]:
     DEFAULT['cpython3'] = cpython3[0]
-if cpython2[1]:
-    SUPPORTED['cpython2'] = cpython2[1]
 if cpython3[1]:
     SUPPORTED['cpython3'] = cpython3[1]
 #from_file('/usr/bin/pypy')

@@ -41,8 +41,6 @@ class Dependencies:
         self.ipkg_vtpl = 'python%s-dbg' if dbgpkg else 'python%s'
         if impl == 'cpython3':
             self.ipkg_tpl = 'python3-dbg' if dbgpkg else 'python3'
-        elif impl == 'cpython2':
-            self.ipkg_tpl = 'python2-dbg' if dbgpkg else 'python2'
         elif impl == 'pypy':
             self.ipkg_tpl = 'pypy-dbg' if dbgpkg else 'pypy'
             self.ipkg_vtpl = 'pypy%s-dbg' if dbgpkg else 'pypy%s'
@@ -138,16 +136,6 @@ class Dependencies:
                 self.depend("%s (>= %s~)" % (tpl_tmp, minv))
             if maxv:
                 self.depend("%s (<< %s)" % (tpl_tmp, maxv))
-
-        if self.impl == 'cpython2' and stats['public_vers']:
-            # additional Depends to block python package transitions
-            sorted_vers = sorted(stats['public_vers'])
-            minv = sorted_vers[0]
-            maxv = sorted_vers[-1]
-            if minv <= default(self.impl):
-                self.depend("%s (>= %s~)" % (tpl_ma, minv))
-            if maxv >= default(self.impl):
-                self.depend("%s (<< %s)" % (tpl_ma, maxv + 1))
 
         if self.impl == 'pypy' and stats.get('ext_soabi'):
             # TODO: make sure alternative is used only for the same extension names

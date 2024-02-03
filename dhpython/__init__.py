@@ -20,22 +20,18 @@
 
 import re
 
-PKG_PREFIX_MAP = {'cpython2': 'python',
-                  'cpython3': 'python3',
+PKG_PREFIX_MAP = {'cpython3': 'python3',
                   'pypy': 'pypy'}
 
 # minimum version required for compile/clean scripts:
-MINPYCDEP = {'cpython2': 'python2:any',
-             'cpython3': 'python3:any',
+MINPYCDEP = {'cpython3': 'python3:any',
              'pypy': 'pypy'}
 
 PUBLIC_DIR_RE = {
-    'cpython2': re.compile(r'.*?/usr/lib/python(2\.\d)(?:/|$)'),
     'cpython3': re.compile(r'.*?/usr/lib/python(3(?:\.\d+)?)(?:/|$)'),
     'pypy': re.compile(r'.*?/usr/lib/pypy(?:/|$)')}
 
 INTERPRETER_DIR_TPLS = {
-    'cpython2': r'.*/python2\.\d/',
     'cpython3': r'.*/python3(?:\.\d+)?/',
     'pypy': r'.*/pypy/'}
 
@@ -44,13 +40,6 @@ MULTIARCH_DIR_TPL = re.compile(
 
 # Interpreter site-directories
 OLD_SITE_DIRS = {
-    'cpython2': [
-        '/usr/local/lib/python{}/site-packages',
-        '/usr/local/lib/python{}/dist-packages',
-        '/var/lib/python-support/python{}',
-        '/usr/lib/pymodules/python{}',
-        lambda version: '/usr/lib/python{}/site-packages'.format(version)
-                        if version >= '2.6' else None],
     'cpython3': [
         '/usr/local/lib/python{}/site-packages',
         '/usr/local/lib/python{}/dist-packages',
@@ -65,45 +54,33 @@ OLD_SITE_DIRS = {
 
 # PyDist related
 PYDIST_DIRS = {
-    'cpython2': '/usr/share/python/dist/',
     'cpython3': '/usr/share/python3/dist/',
     'pypy': '/usr/share/pypy/dist/'}
 
 PYDIST_OVERRIDES_FNAMES = {
-    'cpython2': 'debian/pydist-overrides',
     'cpython3': 'debian/py3dist-overrides',
     'pypy': 'debian/pypydist-overrides'}
 
 PYDIST_DPKG_SEARCH_TPLS = {
     # implementation: (dpkg -S query, regex filter)
-    'cpython2': ('*/{}-?*.*-info',
-                 r'/(python2\..|pyshared)/.*.(egg|dist)-info$'),
     'cpython3': ('*python3/*/{}-?*.*-info', r'.(egg|dist)-info$'),
     'pypy': ('*/pypy/dist-packages/{}-?*.*-info', r'.(egg|dist)-info$'),
 }
 
 # DebHelper related
 DEPENDS_SUBSTVARS = {
-    'cpython2': '${python:Depends}',
     'cpython3': '${python3:Depends}',
     'pypy': '${pypy:Depends}',
 }
 PKG_NAME_TPLS = {
-    'cpython2': ('python-', 'python2.'),
     'cpython3': ('python3-', 'python3.'),
     'pypy': ('pypy-',)
 }
 RT_LOCATIONS = {
-    'cpython2': '/usr/share/python/runtime.d/',
     'cpython3': '/usr/share/python3/runtime.d/',
     'pypy': '/usr/share/pypy/runtime.d/',
 }
 RT_TPLS = {
-    'cpython2': '''
-if [ "$1" = rtupdate ]; then
-\tpyclean {pkg_arg} {dname}
-\tpycompile {pkg_arg} {args} {dname}
-fi''',
     'cpython3': '''
 if [ "$1" = rtupdate ]; then
 \tpy3clean {pkg_arg} {dname}

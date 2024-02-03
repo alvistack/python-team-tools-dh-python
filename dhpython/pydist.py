@@ -127,7 +127,7 @@ def validate(fpath):
 def load(impl):
     """Load information about installed Python distributions.
 
-    :param impl: interpreter implementation, f.e. cpython2, cpython3, pypy
+    :param impl: interpreter implementation, f.e. cpython3, pypy
     :type impl: str
     """
     fname = PYDIST_OVERRIDES_FNAMES.get(impl)

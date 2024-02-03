@@ -59,10 +59,9 @@ class DebHelper:
         self.build_depends = {}
         self.python_version = None
         # Note that each DebHelper instance supports ONE interpreter type only
-        # it's not possible to mix cpython2, cpython3 and pypy here
+        # it's not possible to mix cpython3 and pypy here
         self.impl = impl
         self.command = {
-            'cpython2': 'dh_python2',
             'cpython3': 'dh_python3',
             'pypy': 'dh_pypy',
         }[impl]
@@ -115,11 +114,6 @@ class DebHelper:
             if len(self.python_version.split(',')) > 2:
                 raise ValueError('too many arguments provided for '
                                  'X-Python3-Version: min and max only.')
-        elif self.impl == 'cpython2':
-            if 'x-python-version' in paragraphs[0]:
-                self.python_version = paragraphs[0]['x-python-version']
-            elif 'xs-python-version' in paragraphs[0]:
-                self.python_version = paragraphs[0]['xs-python-version']
 
         build_depends = []
         for field in ('build-depends', 'build-depends-indep',

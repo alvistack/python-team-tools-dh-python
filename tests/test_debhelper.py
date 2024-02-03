@@ -133,15 +133,6 @@ class TestControlSkipSinglePkg(DebHelperTestCase):
         self.assertEqual(list(self.dh.packages.keys()),
                          ['python3-foo-ext', 'foo', 'recfoo'])
 
-
-class TestControlBlockParsingPy2(DebHelperTestCase):
-    control = CONTROL
-    impl = 'cpython2'
-
-    def test_parses_packages(self):
-        self.assertEqual(list(self.dh.packages.keys()), ['python-foo'])
-
-
 class TestControlNoBinaryPackages(DebHelperTestCase):
     control = [
         'Source: foo-src',
