@@ -137,6 +137,18 @@ sub pybuild_commands {
 			$ENV{'SETUPTOOLS_SCM_PRETEND_VERSION'} = $version;
 		}
 
+		# When depends on python3-poetry-dynamic-versioning, set
+		# POETRY_DYNAMIC_VERSIONING_BYPASS to upstream version
+		if ((grep /python3-poetry-dynamic-versioning/, @deps) && !$ENV{'POETRY_DYNAMIC_VERSIONING_BYPASS'}) {
+			my $changelog = Dpkg::Changelog::Debian->new(range => {"count" => 1});
+			$changelog->load("debian/changelog");
+			my $version = @{$changelog}[0]->get_version();
+			$version =~ s/-[^-]+$//;  # revision
+			$version =~ s/^\d+://;    # epoch
+			$version =~ s/~/-/;       # ignore tilde versions
+			$ENV{'POETRY_DYNAMIC_VERSIONING_BYPASS'} = $version;
+		}
+
 		# When depends on python{3,}-pbr, set PBR_VERSION to upstream version
 		# Without this, python-pbr tries to detect current
 		# version from pkg metadata or git tag, which fails for debian tags
