@@ -1,3 +1,9 @@
+dh-python (6.20231224) UNRELEASED; urgency=medium
+
+  * Remove hard-coded 3.11 from tests. (Closes: #1064963)
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 28 Feb 2024 10:20:59 -0400
+
 dh-python (6.20231223) unstable; urgency=medium
 
   [ Stefano Rivera ]

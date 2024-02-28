@@ -7,7 +7,7 @@ check:
 	test -f debian/python3-foo/usr/bin/foo
 	test -f debian/python3-bar/usr/bin/bar
 	test -e foo/tests-executed-foo
-	test -e .pybuild/cpython3_3.11_bar/build/tests-executed-bar
+	test -e .pybuild/cpython3_$(shell py3versions -vd)_bar/build/tests-executed-bar
 
 clean:
 	./debian/rules clean
