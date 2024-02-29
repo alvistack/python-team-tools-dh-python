@@ -26,7 +26,7 @@ PKG_PREFIX_MAP = {'cpython3': 'python3'}
 MINPYCDEP = {'cpython3': 'python3:any'}
 
 PUBLIC_DIR_RE = {
-    'cpython3': re.compile(r'.*?/usr/lib/python(3(?:\.\d+)?)(?:/|$)')
+    'cpython3': re.compile(r'.*?/usr/lib/python(3(?:\.\d+)?)(?:/|$)'),
 }
 
 INTERPRETER_DIR_TPLS = {
