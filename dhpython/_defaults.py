@@ -27,10 +27,10 @@ from subprocess import Popen, PIPE
 
 SUPPORTED = {
     'cpython3': [(3, 8)],
-    'pypy': [(4, 0)]}
+}
 DEFAULT = {
     'cpython3': (3, 8),
-    'pypy': (4, 0)}
+}
 
 log = logging.getLogger('dhpython')
 
@@ -79,7 +79,6 @@ if cpython3[0]:
     DEFAULT['cpython3'] = cpython3[0]
 if cpython3[1]:
     SUPPORTED['cpython3'] = cpython3[1]
-#from_file('/usr/bin/pypy')
 
 
 if __name__ == '__main__':

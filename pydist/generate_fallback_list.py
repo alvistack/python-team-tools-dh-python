@@ -41,7 +41,7 @@ else:
         'http://ftp.debian.org/debian/dists/unstable/main/Contents-amd64.gz',
     ]
 
-IGNORED_PKGS = {'python-setuptools', 'python3-setuptools', 'pypy-setuptools'}
+IGNORED_PKGS = {'python3-setuptools'}
 OVERRIDES = {
     'cpython3': {
         'Cython': 'cython3',
@@ -50,7 +50,6 @@ OVERRIDES = {
         'pylint': 'pylint',
         'setuptools': 'python3-pkg-resources',
         'argparse': 'python3 (>= 3.2)'},
-    'pypy': {}
 }
 
 public_egg = re.compile(r'''
@@ -58,9 +57,6 @@ public_egg = re.compile(r'''
     (
         (?P<cpython3>
             (lib/python3/dist-packages)
-        )|
-        (?P<pypy>
-            (lib/pypy/dist-packages)
         )
     )
     /[^/]*\.(dist|egg)-info

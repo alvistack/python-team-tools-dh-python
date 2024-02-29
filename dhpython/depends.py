@@ -37,19 +37,10 @@ class Dependencies:
         bdep = self.bdep = bdep or {}
         self.is_debug_package = dbgpkg = package.endswith('-dbg')
 
-        # TODO: move it to PyPy and CPython{2,3} classes
         self.ipkg_vtpl = 'python%s-dbg' if dbgpkg else 'python%s'
-        if impl == 'cpython3':
-            self.ipkg_tpl = 'python3-dbg' if dbgpkg else 'python3'
-        elif impl == 'pypy':
-            self.ipkg_tpl = 'pypy-dbg' if dbgpkg else 'pypy'
-            self.ipkg_vtpl = 'pypy%s-dbg' if dbgpkg else 'pypy%s'
-        if impl == 'pypy':
-            self.ipkg_tpl_ma = self.ipkg_tpl
-            self.ipkg_vtpl_ma = self.ipkg_vtpl
-        else:
-            self.ipkg_tpl_ma = self.ipkg_tpl + ':any'
-            self.ipkg_vtpl_ma = self.ipkg_vtpl + ':any'
+        self.ipkg_tpl = 'python3-dbg' if dbgpkg else 'python3'
+        self.ipkg_tpl_ma = self.ipkg_tpl + ':any'
+        self.ipkg_vtpl_ma = self.ipkg_vtpl + ':any'
 
         self.python_dev_in_bd = 'python-dev' in bdep or\
                                 'python-all-dev' in bdep or\
@@ -134,13 +125,6 @@ class Dependencies:
             if maxv:
                 self.depend("%s (<< %s)" % (tpl_tmp, maxv))
 
-        if self.impl == 'pypy' and stats.get('ext_soabi'):
-            # TODO: make sure alternative is used only for the same extension names
-            # ie. for foo.ABI1.so, foo.ABI2.so, bar.ABI3,so, bar.ABI4.so generate:
-            # pypy-abi-ABI1 | pypy-abi-ABI2, pypy-abi-ABI3 | pypy-abi-ABI4
-            self.depend('|'.join(soabi.replace('-', '-abi-')
-                                 for soabi in sorted(stats['ext_soabi'])))
-
         if stats['ext_vers']:
             # TODO: what about extensions with stable ABI?
             sorted_vers = sorted(stats['ext_vers'])
@@ -157,7 +141,7 @@ class Dependencies:
             self.depend(MINPYCDEP[self.impl])
 
         for ipreter in stats['shebangs']:
-            self.depend("%s%s" % (ipreter, '' if self.impl == 'pypy' else ':any'))
+            self.depend("%s:any" % ipreter)
 
         supported_versions = supported(self.impl)
         default_version = default(self.impl)

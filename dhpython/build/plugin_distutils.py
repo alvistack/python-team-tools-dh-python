@@ -63,8 +63,7 @@ def create_pydistutils_cfg(func):
 class BuildSystem(Base):
     DESCRIPTION = 'Distutils build system'
     SUPPORTED_INTERPRETERS = {'python', 'python3', 'python{version}',
-                              'python-dbg', 'python3-dbg', 'python{version}-dbg',
-                              'pypy'}
+                              'python-dbg', 'python3-dbg', 'python{version}-dbg'}
     REQUIRED_FILES = [_setup_tpl]
     OPTIONAL_FILES = {'setup.cfg': 1,
                       'requirements.txt': 1,

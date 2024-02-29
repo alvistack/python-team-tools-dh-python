@@ -58,12 +58,9 @@ class DebHelper:
         self.packages = {}
         self.build_depends = {}
         self.python_version = None
-        # Note that each DebHelper instance supports ONE interpreter type only
-        # it's not possible to mix cpython3 and pypy here
         self.impl = impl
         self.command = {
             'cpython3': 'dh_python3',
-            'pypy': 'dh_pypy',
         }[impl]
         skip_tpl = set()
         for name, tpls in PKG_NAME_TPLS.items():
@@ -161,7 +158,7 @@ class DebHelper:
                 continue
 
             if not binary_package.startswith(PKG_NAME_TPLS[impl]):
-                # package doesn't have common prefix (python-, python3-, pypy-)
+                # package doesn't have common prefix (python3-)
                 # so lets check if Depends/Recommends contains the
                 # appropriate substvar
                 if (substvar not in paragraph.get('depends', '')

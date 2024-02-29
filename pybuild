@@ -241,8 +241,6 @@ def main(cfg):
                                       '/usr/lib/python{version}/dist-packages'
                                       ).format(version=version, interpreter=i),
             'home_dir': abspath(home_dir)})
-        if interpreter == 'pypy':
-            args['install_dir'] = '/usr/lib/pypy/dist-packages/'
         env = dict(args.get('ENV', {}))
         pp = env.get('PYTHONPATH', context['ENV'].get('PYTHONPATH'))
         pp = pp.split(':') if pp else []

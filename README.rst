@@ -24,7 +24,6 @@ in Debian.
 
   * ``dh_python3`` works on ``./debian/python3-foo/`` files and other binary
     packages that have ``${python3:Depends}`` in the ``Depends`` field.
-    It ignores Python 2.X and PyPy2 specific directories.
     See ``dh_python3`` manpage for more details.
 
 How it works

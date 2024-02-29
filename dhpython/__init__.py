@@ -20,20 +20,18 @@
 
 import re
 
-PKG_PREFIX_MAP = {'cpython3': 'python3',
-                  'pypy': 'pypy'}
+PKG_PREFIX_MAP = {'cpython3': 'python3'}
 
 # minimum version required for compile/clean scripts:
-MINPYCDEP = {'cpython3': 'python3:any',
-             'pypy': 'pypy'}
+MINPYCDEP = {'cpython3': 'python3:any'}
 
 PUBLIC_DIR_RE = {
-    'cpython3': re.compile(r'.*?/usr/lib/python(3(?:\.\d+)?)(?:/|$)'),
-    'pypy': re.compile(r'.*?/usr/lib/pypy(?:/|$)')}
+    'cpython3': re.compile(r'.*?/usr/lib/python(3(?:\.\d+)?)(?:/|$)')
+}
 
 INTERPRETER_DIR_TPLS = {
     'cpython3': r'.*/python3(?:\.\d+)?/',
-    'pypy': r'.*/pypy/'}
+}
 
 MULTIARCH_DIR_TPL = re.compile(
     '.*/([a-z][^/-]+-(?:linux|kfreebsd|gnu)(?:-[^/-]+)?)(?:/.*|$)')
@@ -47,38 +45,31 @@ OLD_SITE_DIRS = {
         '/usr/lib/python{}/dist-packages',
         '/var/lib/python-support/python{}',
         '/usr/lib/pymodules/python{}'],
-    'pypy': [
-        '/usr/local/lib/pypy/site-packages',
-        '/usr/local/lib/pypy/dist-packages',
-        '/usr/lib/pypy/site-packages']}
+}
 
 # PyDist related
 PYDIST_DIRS = {
     'cpython3': '/usr/share/python3/dist/',
-    'pypy': '/usr/share/pypy/dist/'}
+}
 
 PYDIST_OVERRIDES_FNAMES = {
     'cpython3': 'debian/py3dist-overrides',
-    'pypy': 'debian/pypydist-overrides'}
+}
 
 PYDIST_DPKG_SEARCH_TPLS = {
     # implementation: (dpkg -S query, regex filter)
     'cpython3': ('*python3/*/{}-?*.*-info', r'.(egg|dist)-info$'),
-    'pypy': ('*/pypy/dist-packages/{}-?*.*-info', r'.(egg|dist)-info$'),
 }
 
 # DebHelper related
 DEPENDS_SUBSTVARS = {
     'cpython3': '${python3:Depends}',
-    'pypy': '${pypy:Depends}',
 }
 PKG_NAME_TPLS = {
     'cpython3': ('python3-', 'python3.'),
-    'pypy': ('pypy-',)
 }
 RT_LOCATIONS = {
     'cpython3': '/usr/share/python3/runtime.d/',
-    'pypy': '/usr/share/pypy/runtime.d/',
 }
 RT_TPLS = {
     'cpython3': '''
@@ -86,5 +77,4 @@ if [ "$1" = rtupdate ]; then
 \tpy3clean {pkg_arg} {dname}
 \tpy3compile {pkg_arg} {args} {dname}
 fi''',
-    'pypy': ''
 }

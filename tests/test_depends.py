@@ -131,32 +131,6 @@ class TestRequiresCPython3(DependenciesTestCase):
         self.assertIn('python3-quux (>= 1.0~a1)', self.d.depends)
 
 
-class TestRequiresPyPy(DependenciesTestCase):
-    impl = 'pypy'
-    options = FakeOptions(guess_deps=True)
-    pydist = {
-        'bar': 'pypy-bar',
-        'baz': {'dependency': 'pypy-baz', 'standard': 'PEP386'},
-        'quux': {'dependency': 'pypy-quux', 'standard': 'PEP440'},
-    }
-    requires = {
-        'debian/foo/usr/lib/pypy/dist-packages/foo.egg-info/requires.txt': (
-            'bar',
-            'baz >= 1.0',
-            'quux >= 1.0a1',
-        )
-    }
-
-    def test_depends_on_bar(self):
-        self.assertIn('pypy-bar', self.d.depends)
-
-    def test_depends_on_baz(self):
-        self.assertIn('pypy-baz (>= 1.0)', self.d.depends)
-
-    def test_depends_on_quux(self):
-        self.assertIn('pypy-quux (>= 1.0~a1)', self.d.depends)
-
-
 class TestRequiresCompatible(DependenciesTestCase):
     options = FakeOptions(guess_deps=True)
     pydist = {

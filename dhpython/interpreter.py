@@ -117,7 +117,9 @@ class Interpreter:
                     if self.version.major == 3:
                         self.__dict__['impl'] = 'cpython3'
             elif value == 'pypy':
-                self.__dict__['impl'] = 'pypy'
+                if self.version:
+                    if self.version.major == 3:
+                        self.__dict__['impl'] = 'pypy3'
         elif name == 'version' and value is not None:
             value = Version(value)
             if not self.impl and self.name == 'python':
@@ -228,9 +230,7 @@ class Interpreter:
             version = Version(version or self.version)
         except Exception as err:
             raise ValueError("cannot find valid version: %s" % err)
-        if self.impl == 'pypy':
-            path = '/usr/lib/pypy/dist-packages/'
-        elif version << Version('3.0'):
+        if version << Version('3.0'):
             raise ValueError(f"The version {version} is no longer supported")
         else:
             path = '/usr/lib/python3/dist-packages/'
@@ -368,8 +368,6 @@ class Interpreter:
         >>> Interpreter('python3.8-dbg').include_dir   # doctest: +SKIP
         '/usr/include/python3.8d'
         """
-        if self.impl == 'pypy':
-            return '/usr/lib/pypy/include'
         try:
             result = self._get_config()[2]
             if result:
@@ -398,31 +396,11 @@ class Interpreter:
     @property
     def symlinked_include_dir(self):
         """Return path to symlinked include directory."""
-        # FIXME: This condition looks like it is always True, since the minimum
-        #  supported python version is 3.11
-        if self.impl == 'pypy' or self.debug \
-           or self.version >> '3.7' or self.version << '3.3':
-            # these interpreters do not provide symlink,
-            # others provide it in libpython3.X-dev
-            return
-        try:
-            result = self._get_config()[2]
-            if result:
-                if result.endswith('m'):
-                    return result[:-1]
-                else:
-                    # there's include_dir, but no "m"
-                    return
-        except Exception:
-            result = '/usr/include/{}'.format(self.name)
-            log.debug('cannot get include path', exc_info=True)
-        return result
+        return
 
     @property
     def library_file(self):
         """Return libfoo.so file path."""
-        if self.impl == 'pypy':
-            return ''
         libpl, ldlibrary = self._get_config()[3:5]
         if ldlibrary.endswith('.a'):
             # python3.1-dbg, python3.2, python3.2-dbg returned static lib
@@ -500,8 +478,6 @@ class Interpreter:
         'python3-bar-dbg'
         """
         name = name.replace('_', '-')
-        if self.impl == 'pypy':
-            return 'pypy-{}'.format(name)
         result = 'python3-{}'.format(name)
         if self.debug:
             result += '-dbg'

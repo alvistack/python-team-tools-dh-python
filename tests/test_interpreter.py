@@ -13,18 +13,6 @@ class TestInterpreter(unittest.TestCase):
         if self._triplet:
             environ['DEB_HOST_MULTIARCH'] = self._triplet
 
-    @unittest.skipUnless(exists('/usr/bin/pypy'), 'pypy is not installed')
-    def test_pypy(self):
-        self.assertEqual(
-            sorted(Interpreter.parse('pypy').items()),
-            [('debug', None), ('name', 'pypy'), ('options', ()), ('path', ''), ('version', None)])
-        self.assertEqual(
-            sorted(Interpreter.parse('#! /usr/bin/pypy --foo').items()),
-            [('debug', None), ('name', 'pypy'), ('options', ('--foo',)), ('path', '/usr/bin/'), ('version', None)])
-        self.assertEqual(
-            Interpreter('pypy').sitedir(version='2.0'),
-            '/usr/lib/pypy/dist-packages/')
-
     @unittest.skipUnless(exists('/usr/bin/python3.1'), 'python3.1 is not installed')
     def test_python31(self):
         i = Interpreter('python3.1')
