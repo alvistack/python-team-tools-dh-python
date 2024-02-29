@@ -278,6 +278,8 @@ class Interpreter:
 
     def should_ignore(self, path):
         """Return True if path is used by another interpreter implementation."""
+        if len(INTERPRETER_DIR_TPLS) == 1:
+            return
         cache_key = 'should_ignore_{}'.format(self.impl)
         if cache_key not in self.__class__._cache:
             expr = [v for k, v in INTERPRETER_DIR_TPLS.items() if k != self.impl]
