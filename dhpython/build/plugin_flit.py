@@ -27,6 +27,14 @@ import os.path as osp
 import shutil
 import sysconfig
 try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        # Plugin still works, only needed for autodetection
+        pass
+try:
     from flit.install import Installer
 except ImportError:
     Installer = object
@@ -110,6 +118,19 @@ class BuildSystem(Base):
             return 0
 
         result = super().detect(context)
+        try:
+            with open('pyproject.toml', 'rb') as f:
+                pyproject = tomllib.load(f)
+            if pyproject.get('build-system', {}).get('build-backend') != \
+                    'flit_core.buildapi':
+                # Not a flit built package
+                result = 0
+        except NameError:
+            # No toml, no autdetection
+            result = 0
+        except FileNotFoundError:
+            # Not a pep517 package
+            result = 0
         if result > 100:
             return 100
         return result
