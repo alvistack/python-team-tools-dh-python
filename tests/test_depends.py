@@ -21,15 +21,6 @@ def pep386(d):
     return d
 
 
-def py27(d):
-    """Mark all pydist entries as being for Python 2.7"""
-    for k, v in d.items():
-        if isinstance(v, str):
-            d[k] = {'dependency': v}
-            d[k].setdefault('versions', {Version('2.7')})
-    return d
-
-
 def prime_pydist(impl, pydist):
     """Fake the pydist data for impl. Returns a cleanup function"""
     from dhpython.pydist import load

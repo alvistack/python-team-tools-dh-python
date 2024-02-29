@@ -6,6 +6,10 @@ dh-python (6.20231224) UNRELEASED; urgency=medium
   [ Louis-Philippe Véronneau ]
   * automatically set env var for python3-poetry-dynamic-versioning
 
+  [ Niels Thykier ]
+  * Remove trivially removable code related to cpython << 3.11. This includes
+    some cpython2 code.
+
   [ Stefano Rivera ]
   * Remove hard-coded 3.11 from tests. (Closes: #1064963)
   * Re-instate the flit detection code in the flit plugin, removed by mistake

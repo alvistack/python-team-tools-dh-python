@@ -25,42 +25,6 @@ class TestInterpreter(unittest.TestCase):
             Interpreter('pypy').sitedir(version='2.0'),
             '/usr/lib/pypy/dist-packages/')
 
-    @unittest.skipUnless(exists('/usr/bin/python2.6'), 'python2.6 is not installed')
-    def test_python26(self):
-        i = Interpreter('python2.6')
-        self.assertEqual(i.soabi(), '')
-        self.assertIsNone(i.check_extname('foo.so'))
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
-        self.assertIsNone(i.check_extname('foo/bar/bazmodule.so'))
-
-    @unittest.skipUnless(exists('/usr/bin/python2.6-dbg'), 'python2.6-dbg is not installed')
-    def test_python26dbg(self):
-        i = Interpreter('python2.6-dbg')
-        self.assertEqual(i.soabi(), '')
-        self.assertIsNone(i.check_extname('foo_d.so'))
-        self.assertEqual(i.check_extname('foo.so'), 'foo_d.so')
-        self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), 'foo/bar/bazmodule_d.so')
-
-    @unittest.skipUnless(exists('/usr/bin/python2.7'), 'python2.7 is not installed')
-    def test_python27(self):
-        i = Interpreter('python2.7')
-        self.assertEqual(i.soabi(), '')
-        self.assertEqual(i.check_extname('foo.so'), 'foo.MYARCH.so')
-        self.assertIsNone(i.check_extname('foo.MYARCH_d.so'))
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
-        self.assertIsNone(i.check_extname('foo.OTHER.so'))  # different architecture
-        self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), 'foo/bar/baz.MYARCH.so')
-
-    @unittest.skipUnless(exists('/usr/bin/python2.7-dbg'), 'python2.7-dbg is not installed')
-    def test_python27dbg(self):
-        i = Interpreter('python2.7-dbg')
-        self.assertEqual(i.soabi(), '')
-        self.assertEqual(i.check_extname('foo.so'), 'foo.MYARCH_d.so')
-        self.assertEqual(i.check_extname('foo_d.so'), 'foo.MYARCH_d.so')
-        self.assertIsNone(i.check_extname('foo.MYARCH_d.so'))
-        self.assertIsNone(i.check_extname('foo.OTHER_d.so'))  # different architecture
-        self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), 'foo/bar/baz.MYARCH_d.so')
-
     @unittest.skipUnless(exists('/usr/bin/python3.1'), 'python3.1 is not installed')
     def test_python31(self):
         i = Interpreter('python3.1')

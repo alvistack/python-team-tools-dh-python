@@ -53,9 +53,6 @@ class Dependencies:
 
         self.python_dev_in_bd = 'python-dev' in bdep or\
                                 'python-all-dev' in bdep or\
-                                'python2-dev' in bdep or\
-                                'python2-all-dev' in bdep or\
-                                'python2.7-dev' in bdep or\
                                 'python3-dev' in bdep or\
                                 'python3-all-dev' in bdep
 

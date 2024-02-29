@@ -275,7 +275,7 @@ class Base:
             return ' '.join(tox_cmd)
         elif self.cfg.test_custom:
             return 'cd {build_dir}; {args}'
-        elif args['version'] == '2.7' or args['version'] >> '3.1' or args['interpreter'] == 'pypy':
+        else:
             # Temporary: Until Python 3.12 is established, and packages without
             # test suites have explicitly disabled tests.
             args['ignore_no_tests'] = True

@@ -63,7 +63,7 @@ class Interpreter:
     :attr name: pypy or python (even for python3 and python-dbg) or empty string
     :attr version: interpreter's version
     :attr debug: -dbg version of the interpreter
-    :attr impl: implementation (cpytho2, cpython3 or pypy)
+    :attr impl: implementation (cpython3 or pypy)
     :attr options: options parsed from shebang
     :type path: str
     :type name: str
@@ -116,8 +116,6 @@ class Interpreter:
                 if self.version:
                     if self.version.major == 3:
                         self.__dict__['impl'] = 'cpython3'
-                    else:
-                        self.__dict__['impl'] = 'cpython2'
             elif value == 'pypy':
                 self.__dict__['impl'] = 'pypy'
         elif name == 'version' and value is not None:
@@ -125,8 +123,6 @@ class Interpreter:
             if not self.impl and self.name == 'python':
                 if value.major == 3:
                     self.impl = 'cpython3'
-                else:
-                    self.impl = 'cpython2'
         if name in ('path', 'name', 'impl', 'options') and value is None:
             pass
         elif name == 'debug':
@@ -152,7 +148,7 @@ class Interpreter:
             return self.name
         version = version or self.version or ''
         if consider_default_ver and (not version or version == self.default_version):
-            version = '3' if self.impl == 'cpython3' else '2'
+            version = '3'
         if self.debug:
             return 'python{}-dbg'.format(version)
         return self.name + str(version)
@@ -367,8 +363,8 @@ class Interpreter:
     def include_dir(self):
         """Return INCLUDE_DIR path.
 
-        >>> Interpreter('python2.7').include_dir       # doctest: +SKIP
-        '/usr/include/python2.7'
+        >>> Interpreter('python3.8').include_dir       # doctest: +SKIP
+        '/usr/include/python3.8'
         >>> Interpreter('python3.8-dbg').include_dir   # doctest: +SKIP
         '/usr/include/python3.8d'
         """
@@ -500,29 +496,20 @@ class Interpreter:
         'python3-foo'
         >>> Interpreter('python3.8').suggest_pkg_name('foo_bar')
         'python3-foo-bar'
-        >>> Interpreter('python2.7-dbg').suggest_pkg_name('bar')
-        'python-bar-dbg'
+        >>> Interpreter('python3.8-dbg').suggest_pkg_name('bar')
+        'python3-bar-dbg'
         """
         name = name.replace('_', '-')
         if self.impl == 'pypy':
             return 'pypy-{}'.format(name)
-        version = '3' if self.impl == 'cpython3' else ''
-        result = 'python{}-{}'.format(version, name)
+        result = 'python3-{}'.format(name)
         if self.debug:
             result += '-dbg'
         return result
 
     def _get_config(self, version=None):
         version = Version(version or self.version)
-        # sysconfig module is available since Python 3.2
-        # (also backported to Python 2.7)
-        if self.impl == 'pypy' or self.impl.startswith('cpython') and (
-                version >> '2.6' and version << '3'
-                or version >> '3.1' or version == '3'):
-            cmd = 'import sysconfig as s;'
-        else:
-            cmd = 'from distutils import sysconfig as s;'
-        cmd += 'print("__SEP__".join(i or "" ' \
+        cmd = 'import sysconfig as s; print("__SEP__".join(i or "" ' \
                'for i in s.get_config_vars('\
                '"SOABI", "MULTIARCH", "INCLUDEPY", "LIBPL", "LDLIBRARY")))'
         conf_vars = self._execute(cmd, version).split('__SEP__')
