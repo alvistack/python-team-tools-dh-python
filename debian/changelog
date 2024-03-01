@@ -1,4 +1,4 @@
-dh-python (6.20231224) UNRELEASED; urgency=medium
+dh-python (6.20231224+noflit) UNRELEASED; urgency=medium
 
   [ Jérémy Lal ]
   * Fix pydist path in dh_python3 doc
@@ -12,8 +12,7 @@ dh-python (6.20231224) UNRELEASED; urgency=medium
 
   [ Stefano Rivera ]
   * Remove hard-coded 3.11 from tests. (Closes: #1064963)
-  * Re-instate the flit detection code in the flit plugin, removed by mistake
-    when reducing its score. (Closes: #1061309)
+  * Remove flit plugin, replaced by pyproject. (Closes: #1061309)
   * Drop support for PyPy (2.7), long removed from the archive.
 
  -- Stefano Rivera <stefanor@debian.org>  Wed, 28 Feb 2024 10:24:56 -0400
