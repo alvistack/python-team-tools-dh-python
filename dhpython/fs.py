@@ -65,18 +65,6 @@ def fix_locations(package, interpreter, versions, options):
                 except OSError:
                     pass
 
-        # move files from /usr/include/pythonX.Y/ to …/pythonX.Ym/
-        if interpreter.symlinked_include_dir:
-            srcdir = "debian/%s%s" % (package, interpreter.symlinked_include_dir)
-            if srcdir and isdir(srcdir):
-                dstdir = "debian/%s%s" % (package, interpreter.include_dir)
-                log.debug('moving files from %s to %s', srcdir, dstdir)
-                share_files(srcdir, dstdir, interpreter, options)
-                try:
-                    os.removedirs(srcdir)
-                except OSError:
-                    pass
-
 
 def share_files(srcdir, dstdir, interpreter, options):
     """Try to move as many files from srcdir to dstdir as possible."""
@@ -278,7 +266,6 @@ class Scan:
                 if self.is_unwanted_dir(dpath):
                     rmtree(dpath)
                     dirs.remove(name)
-                    continue
 
             if self.is_dist_dir(root):
                 self.handle_dist_dir(root, file_names)
@@ -336,7 +323,7 @@ class Scan:
                                 else:
                                     self.current_result.setdefault('shebangs', set()).add(res)
 
-                if fext == 'py' and self.handle_public_module(fpath) is not False:
+                if fext == 'py':
                     self.current_result['compile'] = True
 
             if not dirs and not self.current_private_dir:
@@ -437,9 +424,6 @@ class Scan:
         """Handle .so file, return its version if detected."""
         # pylint: disable=unused-argument
         return None
-
-    def handle_public_module(self, fpath):
-        pass
 
     def is_bin_dir(self, dpath):
         """Check if dir is one from PATH ones."""

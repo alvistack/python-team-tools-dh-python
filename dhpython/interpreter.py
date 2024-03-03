@@ -396,11 +396,6 @@ class Interpreter:
         return result
 
     @property
-    def symlinked_include_dir(self):
-        """Return path to symlinked include directory."""
-        return
-
-    @property
     def library_file(self):
         """Return libfoo.so file path."""
         libpl, ldlibrary = self._get_config()[3:5]
