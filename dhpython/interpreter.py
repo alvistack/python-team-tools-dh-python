@@ -232,8 +232,7 @@ class Interpreter:
             raise ValueError("cannot find valid version: %s" % err)
         if version << Version('3.0'):
             raise ValueError(f"The version {version} is no longer supported")
-        else:
-            path = '/usr/lib/python3/dist-packages/'
+        path = '/usr/lib/python3/dist-packages/'
 
         if gdb:
             path = "/usr/lib/debug%s" % path
