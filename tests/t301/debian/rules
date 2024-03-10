@@ -19,7 +19,7 @@ override_dh_install:
 		--suggests 'bar >= 1.0'
 
 clean:
-	rm -rf build
+	rm -rf build Foo.egg-info
 	dh clean
 
 override_dh_auto_build:

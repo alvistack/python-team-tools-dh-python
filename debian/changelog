@@ -14,6 +14,7 @@ dh-python (6.20231224+noflit) UNRELEASED; urgency=medium
   * Remove hard-coded 3.11 from tests. (Closes: #1064963)
   * Remove flit plugin, replaced by pyproject. (Closes: #1061309)
   * Drop support for PyPy (2.7), long removed from the archive.
+  * Improve test cleaning.
 
  -- Stefano Rivera <stefanor@debian.org>  Wed, 28 Feb 2024 10:24:56 -0400
 

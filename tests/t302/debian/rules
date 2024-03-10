@@ -28,3 +28,4 @@ override_dh_auto_install:
 	touch debian/python3-foo/usr/include/python$(DEBPYTHON3_DEFAULT)/foo.h
 
 override_dh_auto_clean:
+	rm -rf Foo.egg-info
