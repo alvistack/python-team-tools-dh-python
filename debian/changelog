@@ -1,4 +1,4 @@
-dh-python (6.20231224+noflit) UNRELEASED; urgency=medium
+dh-python (6.20240310) unstable; urgency=medium
 
   [ Jérémy Lal ]
   * Fix pydist path in dh_python3 doc
@@ -16,7 +16,7 @@ dh-python (6.20231224+noflit) UNRELEASED; urgency=medium
   * Drop support for PyPy (2.7), long removed from the archive.
   * Improve test cleaning.
 
- -- Stefano Rivera <stefanor@debian.org>  Wed, 28 Feb 2024 10:24:56 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 10 Mar 2024 11:41:23 -0400
 
 dh-python (6.20231223) unstable; urgency=medium
 
