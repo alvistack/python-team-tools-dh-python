@@ -1,3 +1,10 @@
+dh-python (6.20240311) UNRELEASED; urgency=medium
+
+  * Remove python3-distutils from dh-python Depends. It doesn't exist as a
+    package for 3.12, and is provided as a compatibility shim by setuptools.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 10 Mar 2024 15:17:29 -0400
+
 dh-python (6.20240310) unstable; urgency=medium
 
   [ Jérémy Lal ]
