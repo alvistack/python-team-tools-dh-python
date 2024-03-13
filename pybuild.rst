@@ -90,20 +90,20 @@ TESTS
     unittest's discover from standard library is used in test step by default.
 
     --test-nose
-        use nose module in test step, remember to add python-nose and/or
-        python3-nose to Build-Depends
+        use nose module in test step, remember to add python3-nose to
+        Build-Depends.
     --test-nose2
-        use nose2 module in test step, remember to add python-nose2 and/or
-        python3-nose2 to Build-Depends
+        use nose2 module in test step, remember to add python3-nose2 to
+        Build-Depends.
     --test-pytest
-        use pytest module in test step, remember to add python-pytest and/or
-        python3-pytest to Build-Depends
+        use pytest module in test step, remember to add python3-pytest
+        to Build-Depends.
     --test-tox
-        use tox command in test step, remember to add tox
-        to Build-Depends. Requires tox.ini file
+        use tox command in test step, remember to add tox to
+        Build-Depends. Requires tox.ini file
     --test-stestr
-        use stestr command in test step, remember to add python-stestr and/or
-        python3-stestr to Build-Depends.
+        use stestr command in test step, remember to add python3-stestr
+        to Build-Depends.
     --test-custom
 	use a custom command in the test step. The full test command is then
 	specified with `--test-args` or by setting the `PYBUILD_TEST_ARGS`
