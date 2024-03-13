@@ -273,6 +273,12 @@ class Base:
 
             tox_cmd.append('{args}')
             return ' '.join(tox_cmd)
+        elif self.cfg.test_stestr:
+            return (
+                'cd {build_dir};'
+                'stestr --config {dir}/.stestr.conf init;'
+                'PYTHON=python{version} stestr --config {dir}/.stestr.conf run'
+            )
         elif self.cfg.test_custom:
             return 'cd {build_dir}; {args}'
         else:

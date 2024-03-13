@@ -101,6 +101,9 @@ TESTS
     --test-tox
         use tox command in test step, remember to add tox
         to Build-Depends. Requires tox.ini file
+    --test-stestr
+        use stestr command in test step, remember to add python-stestr and/or
+        python3-stestr to Build-Depends.
     --test-custom
 	use a custom command in the test step. The full test command is then
 	specified with `--test-args` or by setting the `PYBUILD_TEST_ARGS`

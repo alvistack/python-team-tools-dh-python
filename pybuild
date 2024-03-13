@@ -522,6 +522,9 @@ def parse_args(argv):
     tests.add_argument('--test-tox', action='store_true',
                        default=environ.get('PYBUILD_TEST_TOX') == '1',
                        help='use tox in --test step')
+    tests.add_argument('--test-stestr', action='store_true',
+                       default=environ.get('PYBUILD_TEST_STESTR') == '1',
+                       help='use stestr in --test step')
     tests.add_argument('--test-custom', action='store_true',
                        default=environ.get('PYBUILD_TEST_CUSTOM') == '1',
                        help='use custom command in --test step')
@@ -579,7 +582,7 @@ def parse_args(argv):
         args.versions = versions
 
     if args.test_nose or args.test_nose2 or args.test_pytest or args.test_tox\
-       or args.test_custom or args.system == 'custom':
+       or args.test_stestr or args.test_custom or args.system == 'custom':
         args.custom_tests = True
     else:
         args.custom_tests = False

@@ -169,7 +169,8 @@ sub pybuild_commands {
 				$ENV{'PYBUILD_TEST_NOSE2'} ne '1' and
 				$ENV{'PYBUILD_TEST_NOSE'} ne '1' and
 				$ENV{'PYBUILD_TEST_CUSTOM'} ne '1' and
-				$ENV{'PYBUILD_TEST_TOX'} ne '1') {
+				$ENV{'PYBUILD_TEST_TOX'} ne '1' and
+				$ENV{'PYBUILD_TEST_STESTR'} ne '1') {
 			if (grep {$_ eq 'tox'} @deps and $ENV{'PYBUILD_TEST_TOX'} ne '0') {
 				push @py3opts, '--test-tox'}
 			elsif (grep {$_ eq 'python3-pytest'} @deps and $ENV{'PYBUILD_TEST_PYTEST'} ne '0') {
@@ -178,6 +179,8 @@ sub pybuild_commands {
 				push @py3opts, '--test-nose2'}
 			elsif (grep {$_ eq 'python3-nose'} @deps and $ENV{'PYBUILD_TEST_NOSE'} ne '0') {
 				push @py3opts, '--test-nose'}
+			elsif (grep {$_ eq 'python3-stestr'} @deps and $ENV{'PYBUILD_TEST_STESTR'} ne '0') {
+                               push @py3opts, '--test-stestr'}
 		}
 
 		my $py3all = 0;
