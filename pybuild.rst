@@ -100,7 +100,7 @@ TESTS
         to Build-Depends.
     --test-tox
         use tox command in test step, remember to add tox to
-        Build-Depends. Requires tox.ini file
+        Build-Depends.
     --test-stestr
         use stestr command in test step, remember to add python3-stestr
         to Build-Depends.
