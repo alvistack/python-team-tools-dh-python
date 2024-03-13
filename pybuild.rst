@@ -105,11 +105,10 @@ TESTS
         use stestr command in test step, remember to add python3-stestr
         to Build-Depends.
     --test-custom
-	use a custom command in the test step. The full test command is then
-	specified with `--test-args` or by setting the `PYBUILD_TEST_ARGS`
-	environment variable. Remember to add any needed packages to run the
-	tests to Build-Depends.
-
+        use a custom command in the test step. The full test command is
+        then specified with `--test-args` or by setting the
+        `PYBUILD_TEST_ARGS` environment variable. Remember to add any
+        needed packages to run the tests to Build-Depends.
 
 testfiles
 ~~~~~~~~~
