@@ -2,6 +2,7 @@ dh-python (6.20240311) UNRELEASED; urgency=medium
 
   * Remove python3-distutils from dh-python Depends. It doesn't exist as a
     package for 3.12, and is provided as a compatibility shim by setuptools.
+    (Closes: #1066833)
   * Add support for testing with stestr. Thanks James Page for the patch.
     (Closes: #883004)
 
