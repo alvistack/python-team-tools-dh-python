@@ -1,4 +1,4 @@
-dh-python (6.20240311) UNRELEASED; urgency=medium
+dh-python (6.20240401) unstable; urgency=medium
 
   [ Stefano Rivera ]
   * Remove python3-distutils from dh-python Depends. It doesn't exist as a
@@ -11,7 +11,7 @@ dh-python (6.20240311) UNRELEASED; urgency=medium
   * Add python3-flit-scm to list of build-dependencies requiring
     SETUPTOOLS_SCM_PRETEND_VERSION (Closes: #1067822)
 
- -- Stefano Rivera <stefanor@debian.org>  Mon, 01 Apr 2024 13:21:52 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 01 Apr 2024 13:23:32 -0400
 
 dh-python (6.20240310) unstable; urgency=medium
 
