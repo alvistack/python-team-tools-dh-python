@@ -1,3 +1,4 @@
+import sys
 import unittest
 from os import environ
 from os.path import exists
@@ -237,6 +238,28 @@ class TestInterpreter(unittest.TestCase):
         self.assertIsNone(i.check_extname('foo.cpython-312-OTHER.so'))  # different architecture
         self.assertIsNone(i.check_extname('foo.abi3.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-312d-MYARCH.so')
+
+    def test_python3(self):
+        i = Interpreter('python{}.{}'.format(*sys.version_info[:2]))
+        pyver = '{}{}'.format(*sys.version_info[:2])
+        self.assertEqual(i.soabi(), 'cpython-' + pyver)
+        self.assertEqual(i.check_extname('foo.so'), rf'foo.cpython-{pyver}-MYARCH.so')
+        self.assertIsNone(i.check_extname('foo.cpython-32m.so'))  # different version
+        self.assertIsNone(i.check_extname(f'foo.cpython-{pyver}-OTHER.so'))  # different architecture
+        self.assertEqual(i.check_extname(f'foo.cpython-{pyver}.so'), rf'foo.cpython-{pyver}-MYARCH.so')
+        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), rf'foo/bar/baz.cpython-{pyver}-MYARCH.so')
+
+    @unittest.skipUnless(exists('/usr/bin/python3-dbg'), 'python3-dbg is not installed')
+    def test_python3dbg(self):
+        i = Interpreter('python{}.{}-dbg'.format(*sys.version_info[:2]))
+        pyver = '{}{}'.format(*sys.version_info[:2])
+        self.assertEqual(i.soabi(), f'cpython-{pyver}d')
+        self.assertEqual(i.check_extname('foo.so'), rf'foo.cpython-{pyver}d-MYARCH.so')
+        self.assertIsNone(i.check_extname('foo.cpython-32m.so'))  # different version
+        self.assertIsNone(i.check_extname(f'foo.cpython-{pyver}-OTHER.so'))  # different architecture
+        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), rf'foo/bar/baz.cpython-{pyver}d-MYARCH.so')
 
 if __name__ == '__main__':
     unittest.main()
