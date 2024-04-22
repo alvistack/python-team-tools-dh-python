@@ -261,5 +261,12 @@ class TestInterpreter(unittest.TestCase):
         self.assertIsNone(i.check_extname('foo.abi3.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), rf'foo/bar/baz.cpython-{pyver}d-MYARCH.so')
 
+    def test_bare_module(self):
+        i = Interpreter('python{}.{}'.format(*sys.version_info[:2]))
+        pyver = '{}{}'.format(*sys.version_info[:2])
+        self.assertEqual(i.check_extname('module.so'), rf'module.cpython-{pyver}-MYARCH.so')
+        self.assertEqual(i.check_extname('_module.so'), rf'_module.cpython-{pyver}-MYARCH.so')
+
+
 if __name__ == '__main__':
     unittest.main()

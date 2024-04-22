@@ -450,7 +450,9 @@ class Interpreter:
         tmp_multiarch = info['multiarch'] or multiarch
 
         result = info['name']
-        if result.endswith('module') and result != 'module' and self.impl == 'cpython3':
+        if (result.endswith('module')
+                and result not in ('module', '_module')
+                and self.impl == 'cpython3'):
             result = result[:-6]
 
         if tmp_soabi:
