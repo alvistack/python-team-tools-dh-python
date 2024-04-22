@@ -1,3 +1,9 @@
+dh-python (6.20240402) UNRELEASED; urgency=medium
+
+  * Add support for Python 3.11 and 3.12 in test_interpreter.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 22 Apr 2024 18:33:09 -0400
+
 dh-python (6.20240401) unstable; urgency=medium
 
   [ Stefano Rivera ]
