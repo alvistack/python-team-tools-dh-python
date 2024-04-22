@@ -1,11 +1,11 @@
-dh-python (6.20240402) UNRELEASED; urgency=medium
+dh-python (6.20240422) unstable; urgency=medium
 
   * Add support for Python 3.11 and 3.12 in test_interpreter.
   * Add generic test for the current default Python 3 interpreter in
     test_interpreter.
   * dh_python3: Don't rename _module to module. (Closes: #1068255)
 
- -- Stefano Rivera <stefanor@debian.org>  Mon, 22 Apr 2024 18:33:09 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 22 Apr 2024 18:40:47 -0400
 
 dh-python (6.20240401) unstable; urgency=medium
 
