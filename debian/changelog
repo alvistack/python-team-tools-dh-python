@@ -1,3 +1,9 @@
+dh-python (6.20240423) UNRELEASED; urgency=medium
+
+  * Support dynamic versions in pdm.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 29 Jun 2024 19:03:41 -0700
+
 dh-python (6.20240422) unstable; urgency=medium
 
   * Add support for Python 3.11 and 3.12 in test_interpreter.

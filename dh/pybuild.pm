@@ -137,6 +137,18 @@ sub pybuild_commands {
 			$ENV{'SETUPTOOLS_SCM_PRETEND_VERSION'} = $version;
 		}
 
+		# When depends on python3-pdm-backend, set PDM_BUILD_SCM_VERSION to
+		# upstream version
+		if ((grep /python3-pdm-backend/, @deps) && !$ENV{'PDM_BUILD_SCM_VERSION'}) {
+			my $changelog = Dpkg::Changelog::Debian->new(range => {"count" => 1});
+			$changelog->load("debian/changelog");
+			my $version = @{$changelog}[0]->get_version();
+			$version =~ s/-[^-]+$//;  # revision
+			$version =~ s/^\d+://;    # epoch
+			$version =~ s/~/-/;       # ignore tilde versions
+			$ENV{'PDM_BUILD_SCM_VERSION'} = $version;
+		}
+
 		# When depends on python3-poetry-dynamic-versioning, set
 		# POETRY_DYNAMIC_VERSIONING_BYPASS to upstream version
 		if ((grep /python3-poetry-dynamic-versioning/, @deps) && !$ENV{'POETRY_DYNAMIC_VERSIONING_BYPASS'}) {
