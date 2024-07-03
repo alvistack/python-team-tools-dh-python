@@ -93,13 +93,7 @@ result = {
     'cpython3': {}
 }
 
-# Contents file doesn't contain comment these days
-is_header = not data.startswith('bin')
 for line in data.splitlines():
-    if is_header:
-        if line.startswith('FILE'):
-            is_header = False
-        continue
     try:
         path, desc = line.rsplit(maxsplit=1)
     except ValueError:
