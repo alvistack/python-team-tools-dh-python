@@ -2,6 +2,7 @@ dh-python (6.20240423) UNRELEASED; urgency=medium
 
   * Support dynamic versions in pdm.
   * Remove broken comment detection from pydist fallback generation script.
+  * Update pydist data.
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 29 Jun 2024 19:03:41 -0700
 
