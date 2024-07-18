@@ -134,6 +134,7 @@ sub pybuild_commands {
 			$version =~ s/-[^-]+$//;  # revision
 			$version =~ s/^\d+://;    # epoch
 			$version =~ s/~/-/;       # ignore tilde versions
+			$version =~ s/\+(dfsg|ds)\d*//; # +dfsg / +ds suffixes
 			$ENV{'SETUPTOOLS_SCM_PRETEND_VERSION'} = $version;
 		}
 
@@ -146,6 +147,7 @@ sub pybuild_commands {
 			$version =~ s/-[^-]+$//;  # revision
 			$version =~ s/^\d+://;    # epoch
 			$version =~ s/~/-/;       # ignore tilde versions
+			$version =~ s/\+(dfsg|ds)\d*//; # +dfsg / +ds suffixes
 			$ENV{'PDM_BUILD_SCM_VERSION'} = $version;
 		}
 
@@ -158,6 +160,7 @@ sub pybuild_commands {
 			$version =~ s/-[^-]+$//;  # revision
 			$version =~ s/^\d+://;    # epoch
 			$version =~ s/~/-/;       # ignore tilde versions
+			$version =~ s/\+(dfsg|ds)\d*//; # +dfsg / +ds suffixes
 			$ENV{'POETRY_DYNAMIC_VERSIONING_BYPASS'} = $version;
 		}
 
@@ -171,6 +174,8 @@ sub pybuild_commands {
 			my $version = @{$changelog}[0]->get_version();
 			$version =~ s/-[^-]+$//;  # revision
 			$version =~ s/^\d+://;    # epoch
+			$version =~ s/~/-/;       # ignore tilde versions
+			$version =~ s/\+(dfsg|ds)\d*//; # +dfsg / +ds suffixes
 			$ENV{'PBR_VERSION'} = $version;
 		}
 
