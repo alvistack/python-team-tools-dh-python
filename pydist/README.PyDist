@@ -67,10 +67,12 @@ Examples:
 PEP440
 ``````
 Standards flag: upstream uses versioning schema described in PEP 440.
+If a package declares this, dependencies on it will be versioned.
 
 PEP386
 ``````
 Standards flag: upstream uses versioning schema described in PEP 386.
+If a package declares this, dependencies on it will be versioned.
 
 RULES
 `````
