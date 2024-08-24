@@ -185,9 +185,10 @@ OPTIONS
 -V VERSION_RANGE	specify list of supported Python 3 versions. See
   py3compile(1) for examples
 
--X REGEXPR, --exclude=REGEXPR	exclude items that match given REGEXPR. You may
-  use this option multiple times to build up a list of things to exclude from
-  byte-compilation in private dirs. See also `bcep files`.
+-X REGEXPR, --exclude=REGEXPR	exclude `.py` files that match given
+  REGEXPR from byte-compilation, in a private dir.
+  You may use this option multiple times to build up a list of things to
+  exclude from byte-compilation. See also `bcep files`.
 
 --compile-all	compile all files from given private directory in postinst/rtupdate
   not just the ones provided by the package (i.e. do not pass the --package
