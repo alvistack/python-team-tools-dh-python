@@ -13,6 +13,8 @@ class TestInterpreter(unittest.TestCase):
     def tearDown(self):
         if self._triplet:
             environ['DEB_HOST_MULTIARCH'] = self._triplet
+        else:
+            del environ['DEB_HOST_MULTIARCH']
 
     @unittest.skipUnless(exists('/usr/bin/python3.1'), 'python3.1 is not installed')
     def test_python31(self):
