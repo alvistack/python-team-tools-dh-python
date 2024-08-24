@@ -1,3 +1,10 @@
+dh-python (6.20240604) UNRELEASED; urgency=medium
+
+  * pybuild: Drop support for setup.py test, now that setuptools 72 has
+    removed it.  (Closes: #982298)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 24 Aug 2024 12:13:14 +0200
+
 dh-python (6.20240603) unstable; urgency=medium
 
   * Support dynamic versions in pdm.
