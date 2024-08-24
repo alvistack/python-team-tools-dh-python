@@ -1,11 +1,11 @@
-dh-python (6.20240604) UNRELEASED; urgency=medium
+dh-python (6.20240824) unstable; urgency=medium
 
   * pybuild: Drop support for setup.py test, now that setuptools 72 has
     removed it.  (Closes: #982298)
   * Bump Standards-Version to 4.7.0, no changes needed.
   * dh_python3: Improve documentation for -X / --exclude.
 
- -- Stefano Rivera <stefanor@debian.org>  Sat, 24 Aug 2024 12:13:14 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 24 Aug 2024 16:51:33 +0200
 
 dh-python (6.20240603) unstable; urgency=medium
 
