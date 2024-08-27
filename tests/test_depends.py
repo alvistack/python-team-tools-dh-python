@@ -214,33 +214,33 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         'python_version_gt3': 'python3-python-version-gt3',
         'python_version_lt3': 'python3-python-version-lt3',
         'python_version_lt30': 'python3-python-version-lt30',
-        'python_version_lt35': 'python3-python-version-lt35',
-        'python_version_le35': 'python3-python-version-le35',
+        'python_version_lt313': 'python3-python-version-lt313',
+        'python_version_le313': 'python3-python-version-le313',
         'python_version_ge27': 'python3-python-version-ge27',
-        'python_version_ge35': 'python3-python-version-ge35',
-        'python_version_gt35': 'python3-python-version-gt35',
-        'python_version_eq35': 'python3-python-version-eq35',
-        'python_version_ne35': 'python3-python-version-ne35',
-        'python_version_aeq35': 'python3-python-version-aeq35',
-        'python_version_ceq35': 'python3-python-version-ceq35',
-        'python_version_weq35': 'python3-python-version-weq35',
+        'python_version_ge313': 'python3-python-version-ge313',
+        'python_version_gt313': 'python3-python-version-gt313',
+        'python_version_eq313': 'python3-python-version-eq313',
+        'python_version_ne313': 'python3-python-version-ne313',
+        'python_version_aeq313': 'python3-python-version-aeq313',
+        'python_version_ceq313': 'python3-python-version-ceq313',
+        'python_version_weq313': 'python3-python-version-weq313',
         'python_version_full_lt300': 'python3-python-version-full-lt300',
-        'python_version_full_lt351': 'python3-python-version-full-lt351',
-        'python_version_full_le351': 'python3-python-version-full-le351',
-        'python_version_full_ge351': 'python3-python-version-full-ge351',
-        'python_version_full_ge351a1': 'python3-python-version-full-ge351a1',
-        'python_version_full_ge351b1post1':
-            'python3-python-version-full-ge351b1post1',
-        'python_version_full_gt351': 'python3-python-version-full-gt351',
-        'python_version_full_eq351': 'python3-python-version-full-eq351',
-        'python_version_full_ne351': 'python3-python-version-full-ne351',
-        'python_version_full_aeq351': 'python3-python-version-full-aeq351',
-        'python_version_full_ceq351': 'python3-python-version-full-ceq351',
-        'python_version_full_weq35': 'python3-python-version-full-weq35',
+        'python_version_full_lt3131': 'python3-python-version-full-lt3131',
+        'python_version_full_le3131': 'python3-python-version-full-le3131',
+        'python_version_full_ge3131': 'python3-python-version-full-ge3131',
+        'python_version_full_ge3131a1': 'python3-python-version-full-ge3131a1',
+        'python_version_full_ge3131b1post1':
+            'python3-python-version-full-ge3131b1post1',
+        'python_version_full_gt3131': 'python3-python-version-full-gt3131',
+        'python_version_full_eq3131': 'python3-python-version-full-eq3131',
+        'python_version_full_ne3131': 'python3-python-version-full-ne3131',
+        'python_version_full_aeq3131': 'python3-python-version-full-aeq3131',
+        'python_version_full_ceq3131': 'python3-python-version-full-ceq3131',
+        'python_version_full_weq313': 'python3-python-version-full-weq313',
         'implementation_name_cpython': 'python3-implementation-name-cpython',
         'implementation_name_pypy': 'python3-implementation-name-pypy',
-        'implementation_version_lt35': 'python3-implementation-version-lt35',
-        'implementation_version_ge35': 'python3-implementation-version-ge35',
+        'implementation_version_lt313': 'python3-implementation-version-lt313',
+        'implementation_version_ge313': 'python3-implementation-version-ge313',
         'invalid_marker': 'python3-invalid-marker',
         'extra_feature': 'python3-extra-feature',
         'extra_test': 'python3-extra-test',
@@ -274,48 +274,48 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
             "Requires-Dist: python_version_gt3; python_version > '3'",
             "Requires-Dist: python_version_lt3; python_version < '3'",
             "Requires-Dist: python_version_lt30; python_version < '3.0'",
-            "Requires-Dist: python_version_lt35; python_version < '3.5'",
-            "Requires-Dist: python_version_le35; python_version <= '3.5'",
-            "Requires-Dist: python_version_gt35; python_version > '3.5'",
+            "Requires-Dist: python_version_lt313; python_version < '3.13'",
+            "Requires-Dist: python_version_le313; python_version <= '3.13'",
+            "Requires-Dist: python_version_gt313; python_version > '3.13'",
             "Requires-Dist: python_version_ge27; python_version >= '2.7'",
-            "Requires-Dist: python_version_ge35; python_version >= '3.5'",
-            "Requires-Dist: python_version_eq35; python_version == '3.5'",
-            "Requires-Dist: python_version_ne35; python_version != '3.5'",
-            "Requires-Dist: python_version_aeq35; python_version === '3.5'",
-            "Requires-Dist: python_version_ceq35; python_version ~= '3.5'",
-            "Requires-Dist: python_version_weq35; python_version == '3.5.*'",
+            "Requires-Dist: python_version_ge313; python_version >= '3.13'",
+            "Requires-Dist: python_version_eq313; python_version == '3.13'",
+            "Requires-Dist: python_version_ne313; python_version != '3.13'",
+            "Requires-Dist: python_version_aeq313; python_version === '3.13'",
+            "Requires-Dist: python_version_ceq313; python_version ~= '3.13'",
+            "Requires-Dist: python_version_weq313; python_version == '3.13.*'",
             "Requires-Dist: python_version_full_lt300; "
                 "python_full_version < '3.0.0'",
-            "Requires-Dist: python_version_full_lt351; "
-                "python_full_version < '3.5.1'",
-            "Requires-Dist: python_version_full_le351; "
-                "python_full_version <= '3.5.1'",
-            "Requires-Dist: python_version_full_gt351; "
-                "python_full_version > '3.5.1'",
-            "Requires-Dist: python_version_full_ge351; "
-                "python_full_version >= '3.5.1'",
-            "Requires-Dist: python_version_full_ge351a1; "
-                "python_full_version >= '3.5.1a1'",
-            "Requires-Dist: python_version_full_ge351b1post1; "
-                "python_full_version >= '3.5.1b1.post1'",
-            "Requires-Dist: python_version_full_eq351; "
-                "python_full_version == '3.5.1'",
-            "Requires-Dist: python_version_full_ne351; "
-                "python_full_version != '3.5.1'",
-            "Requires-Dist: python_version_full_aeq351; "
-                "python_full_version === '3.5.1'",
-            "Requires-Dist: python_version_full_ceq351; "
-                "python_full_version ~= '3.5.1'",
-            "Requires-Dist: python_version_full_weq35; "
-                "python_full_version == '3.5.*'",
+            "Requires-Dist: python_version_full_lt3131; "
+                "python_full_version < '3.13.1'",
+            "Requires-Dist: python_version_full_le3131; "
+                "python_full_version <= '3.13.1'",
+            "Requires-Dist: python_version_full_gt3131; "
+                "python_full_version > '3.13.1'",
+            "Requires-Dist: python_version_full_ge3131; "
+                "python_full_version >= '3.13.1'",
+            "Requires-Dist: python_version_full_ge3131a1; "
+                "python_full_version >= '3.13.1a1'",
+            "Requires-Dist: python_version_full_ge3131b1post1; "
+                "python_full_version >= '3.13.1b1.post1'",
+            "Requires-Dist: python_version_full_eq3131; "
+                "python_full_version == '3.13.1'",
+            "Requires-Dist: python_version_full_ne3131; "
+                "python_full_version != '3.13.1'",
+            "Requires-Dist: python_version_full_aeq3131; "
+                "python_full_version === '3.13.1'",
+            "Requires-Dist: python_version_full_ceq3131; "
+                "python_full_version ~= '3.13.1'",
+            "Requires-Dist: python_version_full_weq313; "
+                "python_full_version == '3.13.*'",
             "Requires-Dist: implementation_name_cpython; "
                 "implementation_name == 'cpython'",
             "Requires-Dist: implementation_name_pypy; "
                 "implementation_name == 'pypy'",
-            "Requires-Dist: implementation_version_lt35; "
-                "implementation_version < '3.5'",
-            "Requires-Dist: implementation_version_ge35; "
-                "implementation_version >= '3.5'",
+            "Requires-Dist: implementation_version_lt313; "
+                "implementation_version < '3.13'",
+            "Requires-Dist: implementation_version_ge313; "
+                "implementation_version >= '3.13'",
             "Requires-Dist: invalid_marker; invalid_marker > '1'",
             "Requires-Dist: extra_feature; extra == 'feature'",
             "Requires-Dist: extra_test; extra == 'test'",
@@ -391,101 +391,101 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
     def test_skips_py_version_lt_30_packages(self):
         self.assertNotInDepends('python3-python-version-lt30')
 
-    def test_depends_on_py_version_lt_35_packages(self):
-        self.assertIn('python3-python-version-lt35 '
-                      '| python3-supported-min (>= 3.5)', self.d.depends)
+    def test_depends_on_py_version_lt_313_packages(self):
+        self.assertIn('python3-python-version-lt313 '
+                      '| python3-supported-min (>= 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_le_35_packages(self):
-        self.assertIn('python3-python-version-le35 '
-                      '| python3-supported-min (>> 3.5)', self.d.depends)
+    def test_depends_on_py_version_le_313_packages(self):
+        self.assertIn('python3-python-version-le313 '
+                      '| python3-supported-min (>> 3.13)', self.d.depends)
 
     def test_depends_on_py_version_ge_27_packages(self):
         self.assertIn('python3-python-version-ge27',
                       self.d.depends)
 
-    def test_depends_on_py_version_ge_35_packages(self):
-        self.assertIn('python3-python-version-ge35 '
-                      '| python3-supported-max (<< 3.5)', self.d.depends)
+    def test_depends_on_py_version_ge_313_packages(self):
+        self.assertIn('python3-python-version-ge313 '
+                      '| python3-supported-max (<< 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_gt_35_packages(self):
-        self.assertIn('python3-python-version-gt35 '
-                      '| python3-supported-max (<= 3.5)', self.d.depends)
+    def test_depends_on_py_version_gt_313_packages(self):
+        self.assertIn('python3-python-version-gt313 '
+                      '| python3-supported-max (<= 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_eq_35_packages(self):
+    def test_depends_on_py_version_eq_313_packages(self):
         self.assertIn(
-            'python3-python-version-eq35 | python3-supported-max (<< 3.5) '
-            '| python3-supported-min (>= 3.6)', self.d.depends)
+            'python3-python-version-eq313 | python3-supported-max (<< 3.13) '
+            '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_ne_35_packages(self):
+    def test_depends_on_py_version_ne_313_packages(self):
         # Can't be represented in Debian depends
-        self.assertIn('python3-python-version-ne35', self.d.depends)
+        self.assertIn('python3-python-version-ne313', self.d.depends)
 
-    def test_depends_on_py_version_aeq_35_packages(self):
+    def test_depends_on_py_version_aeq_313_packages(self):
         self.assertIn(
-            'python3-python-version-aeq35 | python3-supported-max (<< 3.5) '
-            '| python3-supported-min (>> 3.5)', self.d.depends)
+            'python3-python-version-aeq313 | python3-supported-max (<< 3.13) '
+            '| python3-supported-min (>> 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_ceq_35_packages(self):
+    def test_depends_on_py_version_ceq_313_packages(self):
         self.assertIn(
-            'python3-python-version-ceq35 | python3-supported-max (<< 3.5) '
-            '| python3-supported-min (>= 3.6)', self.d.depends)
+            'python3-python-version-ceq313 | python3-supported-max (<< 3.13) '
+            '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_weq_35_packages(self):
+    def test_depends_on_py_version_weq_313_packages(self):
         self.assertIn(
-            'python3-python-version-weq35 | python3-supported-max (<< 3.5) '
-            '| python3-supported-min (>= 3.6)', self.d.depends)
+            'python3-python-version-weq313 | python3-supported-max (<< 3.13) '
+            '| python3-supported-min (>= 3.14)', self.d.depends)
 
     def test_skips_py_version_full_lt_300_packages(self):
         self.assertNotInDepends('python3-python-version-full-lt300')
 
-    def test_depends_on_py_version_full_lt_351_packages(self):
-        self.assertIn('python3-python-version-full-lt351 '
-                      '| python3-supported-min (>= 3.5.1)', self.d.depends)
+    def test_depends_on_py_version_full_lt_3131_packages(self):
+        self.assertIn('python3-python-version-full-lt3131 '
+                      '| python3-supported-min (>= 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_le_351_packages(self):
-        self.assertIn('python3-python-version-full-le351 '
-                      '| python3-supported-min (>> 3.5.1)', self.d.depends)
+    def test_depends_on_py_version_full_le_3131_packages(self):
+        self.assertIn('python3-python-version-full-le3131 '
+                      '| python3-supported-min (>> 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_351_packages(self):
-        self.assertIn('python3-python-version-full-ge351 '
-                      '| python3-supported-max (<< 3.5.1)', self.d.depends)
+    def test_depends_on_py_version_full_ge_3131_packages(self):
+        self.assertIn('python3-python-version-full-ge3131 '
+                      '| python3-supported-max (<< 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_351a1_packages(self):
-        # With full PEP-440 parsing this should be (<< 3.5.1~a1)
-        self.assertIn('python3-python-version-full-ge351a1 '
-                      '| python3-supported-max (<< 3.5.0)', self.d.depends)
+    def test_depends_on_py_version_full_ge_3131a1_packages(self):
+        # With full PEP-440 parsing this should be (<< 3.13.1~a1)
+        self.assertIn('python3-python-version-full-ge3131a1 '
+                      '| python3-supported-max (<< 3.13.0)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_351b1post1_packages(self):
-        # With full PEP-440 parsing this should be (<< 3.5.1~b1.post1)
-        self.assertIn('python3-python-version-full-ge351a1 '
-                      '| python3-supported-max (<< 3.5.0)', self.d.depends)
+    def test_depends_on_py_version_full_ge_3131b1post1_packages(self):
+        # With full PEP-440 parsing this should be (<< 3.13.1~b1.post1)
+        self.assertIn('python3-python-version-full-ge3131a1 '
+                      '| python3-supported-max (<< 3.13.0)', self.d.depends)
 
-    def test_depends_on_py_version_full_gt_351_packages(self):
-        self.assertIn('python3-python-version-full-gt351 '
-                      '| python3-supported-max (<= 3.5.1)', self.d.depends)
+    def test_depends_on_py_version_full_gt_3131_packages(self):
+        self.assertIn('python3-python-version-full-gt3131 '
+                      '| python3-supported-max (<= 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_eq_351_packages(self):
-        self.assertIn('python3-python-version-full-eq351 '
-                      '| python3-supported-max (<< 3.5.1) '
-                      '| python3-supported-min (>> 3.5.1)', self.d.depends)
+    def test_depends_on_py_version_full_eq_3131_packages(self):
+        self.assertIn('python3-python-version-full-eq3131 '
+                      '| python3-supported-max (<< 3.13.1) '
+                      '| python3-supported-min (>> 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ne_351_packages(self):
+    def test_depends_on_py_version_full_ne_3131_packages(self):
         # Can't be represented in Debian depends
-        self.assertIn('python3-python-version-full-ne351', self.d.depends)
+        self.assertIn('python3-python-version-full-ne3131', self.d.depends)
 
-    def test_skips_py_version_full_aeq_351_packages(self):
+    def test_skips_py_version_full_aeq_3131_packages(self):
         # Can't be represented in Debian depends
-        self.assertNotInDepends('python3-python-version-full-aeq351')
+        self.assertNotInDepends('python3-python-version-full-aeq3131')
 
-    def test_depends_on_py_version_full_ceq_351_packages(self):
-        self.assertIn('python3-python-version-full-ceq351 '
-                      '| python3-supported-max (<< 3.5.1) '
-                      '| python3-supported-min (>= 3.6)', self.d.depends)
+    def test_depends_on_py_version_full_ceq_3131_packages(self):
+        self.assertIn('python3-python-version-full-ceq3131 '
+                      '| python3-supported-max (<< 3.13.1) '
+                      '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_full_weq_35_packages(self):
-        self.assertIn('python3-python-version-full-weq35 '
-                      '| python3-supported-max (<< 3.5) '
-                      '| python3-supported-min (>= 3.6)', self.d.depends)
+    def test_depends_on_py_version_full_weq_313_packages(self):
+        self.assertIn('python3-python-version-full-weq313 '
+                      '| python3-supported-max (<< 3.13) '
+                      '| python3-supported-min (>= 3.14)', self.d.depends)
 
     def test_depends_on_sys_cpython_packages(self):
         self.assertIn('python3-implementation-name-cpython', self.d.depends)
@@ -493,14 +493,14 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
     def test_depends_on_sys_pypy_packages(self):
         self.assertIn('python3-implementation-name-pypy', self.d.depends)
 
-    def test_depends_on_sys_implementation_lt35_packages(self):
-        self.assertIn('python3-implementation-version-lt35 '
-                      '| python3-supported-min (>= 3.5)',
+    def test_depends_on_sys_implementation_lt313_packages(self):
+        self.assertIn('python3-implementation-version-lt313 '
+                      '| python3-supported-min (>= 3.13)',
                       self.d.depends)
 
-    def test_depends_on_sys_implementation_ge35_packages(self):
-        self.assertIn('python3-implementation-version-ge35 '
-                      '| python3-supported-max (<< 3.5)',
+    def test_depends_on_sys_implementation_ge313_packages(self):
+        self.assertIn('python3-implementation-version-ge313 '
+                      '| python3-supported-max (<< 3.13)',
                       self.d.depends)
 
     def test_ignores_invalid_marker(self):
@@ -561,58 +561,58 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
             "python_version_lt3",
             "[:python_version < '3.0']",
             "python_version_lt30",
-            "[:python_version < '3.5']",
-            "python_version_lt35",
-            "[:python_version <= '3.5']",
-            "python_version_le35",
-            "[:python_version > '3.5']",
-            "python_version_gt35",
+            "[:python_version < '3.13']",
+            "python_version_lt313",
+            "[:python_version <= '3.13']",
+            "python_version_le313",
+            "[:python_version > '3.13']",
+            "python_version_gt313",
             "[:python_version >= '2.7']",
             "python_version_ge27",
-            "[:python_version >= '3.5']",
-            "python_version_ge35",
-            "[:python_version == '3.5']",
-            "python_version_eq35",
-            "[:python_version != '3.5']",
-            "python_version_ne35",
-            "[:python_version === '3.5']",
-            "python_version_aeq35",
-            "[:python_version ~= '3.5']",
-            "python_version_ceq35",
-            "[:python_version == '3.5.*']",
-            "python_version_weq35",
+            "[:python_version >= '3.13']",
+            "python_version_ge313",
+            "[:python_version == '3.13']",
+            "python_version_eq313",
+            "[:python_version != '3.13']",
+            "python_version_ne313",
+            "[:python_version === '3.13']",
+            "python_version_aeq313",
+            "[:python_version ~= '3.13']",
+            "python_version_ceq313",
+            "[:python_version == '3.13.*']",
+            "python_version_weq313",
             "[:python_full_version < '3.0.0']",
             "python_version_full_lt300",
-            "[:python_full_version < '3.5.1']",
-            "python_version_full_lt351",
-            "[:python_full_version <= '3.5.1']",
-            "python_version_full_le351",
-            "[:python_full_version > '3.5.1']",
-            "python_version_full_gt351",
-            "[:python_full_version >= '3.5.1']",
-            "python_version_full_ge351",
-            "[:python_full_version >= '3.5.1a1']",
-            "python_version_full_ge351a1",
-            "[:python_full_version >= '3.5.1b1.post1']",
-            "python_version_full_ge351b1post1",
-            "[:python_full_version == '3.5.1']",
-            "python_version_full_eq351",
-            "[:python_full_version != '3.5.1']",
-            "python_version_full_ne351",
-            "[:python_full_version === '3.5.1']",
-            "python_version_full_aeq351",
-            "[:python_full_version ~= '3.5.1']",
-            "python_version_full_ceq351",
-            "[:python_full_version == '3.5.*']",
-            "python_version_full_weq35",
+            "[:python_full_version < '3.13.1']",
+            "python_version_full_lt3131",
+            "[:python_full_version <= '3.13.1']",
+            "python_version_full_le3131",
+            "[:python_full_version > '3.13.1']",
+            "python_version_full_gt3131",
+            "[:python_full_version >= '3.13.1']",
+            "python_version_full_ge3131",
+            "[:python_full_version >= '3.13.1a1']",
+            "python_version_full_ge3131a1",
+            "[:python_full_version >= '3.13.1b1.post1']",
+            "python_version_full_ge3131b1post1",
+            "[:python_full_version == '3.13.1']",
+            "python_version_full_eq3131",
+            "[:python_full_version != '3.13.1']",
+            "python_version_full_ne3131",
+            "[:python_full_version === '3.13.1']",
+            "python_version_full_aeq3131",
+            "[:python_full_version ~= '3.13.1']",
+            "python_version_full_ceq3131",
+            "[:python_full_version == '3.13.*']",
+            "python_version_full_weq313",
             "[:implementation_name == 'cpython']",
             "implementation_name_cpython",
             "[:implementation_name == 'pypy']",
             "implementation_name_pypy",
-            "[:implementation_version < '3.5']",
-            "implementation_version_lt35",
-            "[:implementation_version >= '3.5']",
-            "implementation_version_ge35",
+            "[:implementation_version < '3.13']",
+            "implementation_version_lt313",
+            "[:implementation_version >= '3.13']",
+            "implementation_version_ge313",
             "[:invalid_marker > '1']",
             "invalid_marker",
             "[feature]",
