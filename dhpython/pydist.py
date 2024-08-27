@@ -107,6 +107,8 @@ DEB_VERS_OPS = {
     '>':  '>>',
     '~=': '>=',
 }
+# Optimize away any dependencies on Python less than:
+MIN_PY_VERSION = [3, 9]
 
 
 def validate(fpath):
@@ -415,17 +417,17 @@ def check_environment_marker_restrictions(req, marker_str, impl):
         # even though we don't currently emit them in python3-supported-min/max
 
         if op == '<':
-            if int_ver <= [3, 0, 0]:
+            if int_ver <= MIN_PY_VERSION:
                 return False
             return f'| python3-supported-min (>= {env_ver})'
         elif op == '<=':
             return f'| python3-supported-min (>> {env_ver})'
         elif op == '>=':
-            if int_ver < [3, 0, 0]:
+            if int_ver < MIN_PY_VERSION:
                 return True
             return f'| python3-supported-max (<< {env_ver})'
         elif op == '>':
-            if int_ver < [3, 0, 0]:
+            if int_ver < MIN_PY_VERSION:
                 return True
             return f'| python3-supported-max (<= {env_ver})'
         elif op == '==':

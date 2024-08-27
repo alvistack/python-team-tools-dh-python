@@ -214,6 +214,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         'python_version_gt3': 'python3-python-version-gt3',
         'python_version_lt3': 'python3-python-version-lt3',
         'python_version_lt30': 'python3-python-version-lt30',
+        'python_version_lt38': 'python3-python-version-lt38',
         'python_version_lt313': 'python3-python-version-lt313',
         'python_version_le313': 'python3-python-version-le313',
         'python_version_ge27': 'python3-python-version-ge27',
@@ -274,6 +275,7 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
             "Requires-Dist: python_version_gt3; python_version > '3'",
             "Requires-Dist: python_version_lt3; python_version < '3'",
             "Requires-Dist: python_version_lt30; python_version < '3.0'",
+            "Requires-Dist: python_version_lt38; python_version < '3.8'",
             "Requires-Dist: python_version_lt313; python_version < '3.13'",
             "Requires-Dist: python_version_le313; python_version <= '3.13'",
             "Requires-Dist: python_version_gt313; python_version > '3.13'",
@@ -390,6 +392,9 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_skips_py_version_lt_30_packages(self):
         self.assertNotInDepends('python3-python-version-lt30')
+
+    def test_skips_py_version_lt_38_packages(self):
+        self.assertNotInDepends('python3-python-version-lt38')
 
     def test_depends_on_py_version_lt_313_packages(self):
         self.assertIn('python3-python-version-lt313 '
@@ -561,6 +566,8 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
             "python_version_lt3",
             "[:python_version < '3.0']",
             "python_version_lt30",
+            "[:python_version < '3.8']",
+            "python_version_lt313",
             "[:python_version < '3.13']",
             "python_version_lt313",
             "[:python_version <= '3.13']",
