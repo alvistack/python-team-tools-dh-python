@@ -1,10 +1,11 @@
-dh-python (6.20240825) UNRELEASED; urgency=medium
+dh-python (6.20240901+no.setuptools) UNRELEASED; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
   * Run pybuild with --verbose in autopkgtests.
+  * Drop the setuptools dependency.
 
- -- Stefano Rivera <stefanor@debian.org>  Tue, 27 Aug 2024 21:29:00 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 01 Sep 2024 15:53:42 +0200
 
 dh-python (6.20240824) unstable; urgency=medium
 
