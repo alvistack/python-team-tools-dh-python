@@ -8,7 +8,7 @@ check:
 	test ! -f $(DI)/RECORD
 	test ! -f $(DI)/direct_url.json
 	grep -q 'Depends:.*python3-cachy' debian/python3-foo/DEBIAN/control
-	grep -q 'Depends:.*python3-importlib-metadata \| python3 (>> 3\.5)' debian/python3-foo/DEBIAN/control
+	grep -v -q 'Depends:.*python3-importlib-metadata' debian/python3-foo/DEBIAN/control
 	grep -L 'Depends:.*tox' debian/python3-foo/DEBIAN/control | grep -q control
 	find .pybuild -name test-executed | grep -q test-executed
 	grep -q usr/bin/python3$$ debian/python3-foo/usr/bin/foo

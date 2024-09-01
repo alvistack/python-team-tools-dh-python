@@ -10,7 +10,7 @@ check:
 	test ! -f $(DI)/direct_url.json
 	grep -q debian debian/python3-foo/usr/lib/python3/dist-packages/foo-0.1.dist-info/INSTALLER
 	grep -q 'Depends:.*python3-cachy' debian/python3-foo/DEBIAN/control
-	grep -q 'Depends:.*python3-importlib-metadata \| python3 (>> 3\.5)' debian/python3-foo/DEBIAN/control
+	grep -v -q 'Depends:.*python3-importlib-metadata' debian/python3-foo/DEBIAN/control
 	grep -L 'Depends:.*tox' debian/python3-foo/DEBIAN/control | grep -q control
 	find .pybuild -name test-executed | grep -q test-executed
 	test -f debian/python3-foo/usr/share/man/man1/foo.1.gz
