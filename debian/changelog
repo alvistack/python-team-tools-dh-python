@@ -1,4 +1,4 @@
-dh-python (6.20240905+exp1) UNRELEASED; urgency=medium
+dh-python (6.20240905+exp1) experimental; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
@@ -8,7 +8,7 @@ dh-python (6.20240905+exp1) UNRELEASED; urgency=medium
     - pybuild: Stop ignoring an exit code of 5, for no tests found.
       (Closes: #1024971)
 
- -- Stefano Rivera <stefanor@debian.org>  Sun, 01 Sep 2024 15:53:42 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 05 Sep 2024 18:51:19 +0200
 
 dh-python (6.20240824) unstable; urgency=medium
 
