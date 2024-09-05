@@ -10,11 +10,11 @@ override_dh_auto_build:
 	../../pybuild --build --verbose
 
 override_dh_auto_install:
-	../../pybuild --install
-	../../pybuild --install
+	../../pybuild --install --verbose
+	../../pybuild --install --verbose
 
 override_dh_auto_test:
-	../../pybuild --test --test-pytest
+	../../pybuild --test --test-pytest --verbose
 
 override_dh_auto_clean:
 	../../pybuild --clean --verbose

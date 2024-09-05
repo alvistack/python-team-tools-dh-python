@@ -2,6 +2,7 @@ dh-python (6.20240825) UNRELEASED; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
+  * Run pybuild with --verbose in autopkgtests.
 
  -- Stefano Rivera <stefanor@debian.org>  Tue, 27 Aug 2024 21:29:00 +0200
 

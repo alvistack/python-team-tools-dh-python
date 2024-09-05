@@ -10,12 +10,12 @@ override_dh_auto_build:
 	../../pybuild -d bar --build --verbose --name=bar
 
 override_dh_auto_install:
-	../../pybuild -d foo --install --name=foo
-	../../pybuild -d bar --install --name=bar
+	../../pybuild -d foo --install --verbose --name=foo
+	../../pybuild -d bar --install --verbose --name=bar
 
 override_dh_auto_test:
-	../../pybuild -d foo --test --name=foo --test-tox --test-args=-v
-	../../pybuild -d bar --test --name=bar --test-pytest -v
+	../../pybuild -d foo --test --verbose --name=foo --test-tox --test-args=-v
+	../../pybuild -d bar --test --verbose --name=bar --test-pytest -v
 
 override_dh_auto_clean:
 	../../pybuild -d foo --clean --verbose --name=foo

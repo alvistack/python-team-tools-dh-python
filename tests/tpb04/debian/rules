@@ -7,16 +7,16 @@ export PYBUILD_EXT_DESTDIR_python3=debian/python3-foo-ext
 	dh $@
 
 override_dh_auto_build:
-	../../pybuild --build
+	../../pybuild --build --verbose
 
 override_dh_auto_install:
-	../../pybuild --install
+	../../pybuild --install --verbose
 
 override_dh_auto_test:
-	../../pybuild --test --test-tox --test-args=-v
+	../../pybuild --test --test-tox --test-args=-v --verbose
 
 override_dh_auto_clean:
-	../../pybuild --clean
+	../../pybuild --clean --verbose
 	rm -rf .pybuild .tox foo.egg-info test-executed
 
 override_dh_installinit:
