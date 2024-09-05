@@ -1,8 +1,10 @@
-dh-python (6.20240825) UNRELEASED; urgency=medium
+dh-python (6.20240905+unittest.0.tests) UNRELEASED; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
   * Run pybuild with --verbose in autopkgtests.
+  * pybuild: Stop ignoring an exit code of 5, for no tests found.
+    (Closes: #1024971)
 
  -- Stefano Rivera <stefanor@debian.org>  Tue, 27 Aug 2024 21:29:00 +0200
 
