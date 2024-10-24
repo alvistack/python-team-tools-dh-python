@@ -7,7 +7,6 @@ from pickle import dumps
 from tempfile import TemporaryDirectory
 
 from dhpython.depends import Dependencies
-from dhpython.version import Version
 
 from .common import FakeOptions
 
