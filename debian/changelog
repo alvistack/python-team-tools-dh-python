@@ -1,4 +1,4 @@
-dh-python (6.20240825) UNRELEASED; urgency=medium
+dh-python (6.20241024) unstable; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
@@ -9,7 +9,7 @@ dh-python (6.20240825) UNRELEASED; urgency=medium
   * Loosen exact Python version dependencies to accept Debian upload
     revisions. (Closes: #1083054)
 
- -- Stefano Rivera <stefanor@debian.org>  Tue, 27 Aug 2024 21:29:00 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 24 Oct 2024 13:20:13 -0700
 
 dh-python (6.20240824) unstable; urgency=medium
 
