@@ -274,7 +274,7 @@ def pyinstall(interpreter, package, vrange):
 
     with open(srcfpath, encoding='utf-8') as fp:
         for line in fp:
-            if not line or line.startswith('#'):
+            if not line.strip() or line.startswith('#'):
                 continue
             details = INSTALL_RE.match(line)
             if not details:
@@ -318,7 +318,7 @@ def pyremove(interpreter, package, vrange):
 
     with open(srcfpath, encoding='utf-8') as fp:
         for line in fp:
-            if not line or line.startswith('#'):
+            if not line.strip() or line.startswith('#'):
                 continue
             details = REMOVE_RE.match(line)
             if not details:
