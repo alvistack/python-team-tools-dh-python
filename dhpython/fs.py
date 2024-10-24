@@ -76,6 +76,9 @@ def share_files(srcdir, dstdir, interpreter, options):
         if i.endswith('.pyc'):  # f.e. when tests were invoked on installed files
             os.remove(fpath1)
             continue
+        if i == ".coverage":  # from running tests with coverage
+            os.remove(fpath1)
+            continue
         if not options.no_ext_rename and splitext(i)[-1] == '.so':
             # try to rename extension here as well (in :meth:`scan` info about
             # Python version is gone)

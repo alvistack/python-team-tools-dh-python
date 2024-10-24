@@ -1,8 +1,18 @@
-dh-python (6.20240905+exp1) experimental; urgency=medium
+dh-python (6.20241024) unstable; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by
     python3 >= 3.9.
   * Run pybuild with --verbose in autopkgtests.
+  * Don't trip over .coverage files. (Closes: #1081618)
+  * Handle blank lines in .pyinstall and .pyremove, thanks Julian Gilbey.
+    (Closes: #1075744)
+  * Loosen exact Python version dependencies to accept Debian upload
+    revisions. (Closes: #1083054)
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 24 Oct 2024 13:20:13 -0700
+
+dh-python (6.20240905+exp1) experimental; urgency=medium
+
   * Upload to experimental with deprecated features disabled:
     - Drop the setuptools dependency.
     - pybuild: Stop ignoring an exit code of 5, for no tests found.
