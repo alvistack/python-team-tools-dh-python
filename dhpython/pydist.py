@@ -228,9 +228,21 @@ def guess_dependency(impl, req, version=None, bdep=None,
                     req_d['operator'] not in (None, '!='):
                 o = _translate_op(req_d['operator'])
                 v = _translate(req_d['version'], item['rules'], item['standard'])
-                d = "%s (%s %s)%s" % (
-                    item['dependency'], o, v, env_marker_alts)
-                if req_d['version2'] and req_d['operator2'] not in (None,'!='):
+                if req_d['operator'] == '==' and req_d['operator2'] is None:
+                    # Loosen for Debian revisions
+                    m = re.search(r"(.*)(\d+)(\D*)$", v)
+                    if m:
+                        max_v = m.group(1) + str((int(m.group(2))) + 1) + m.group(3) + "~"
+                    else:
+                        max_v = v + ".0~"
+                    d = "%s (>= %s)%s, %s (<< %s)%s" % (
+                        item['dependency'], v, env_marker_alts,
+                        item['dependency'], max_v, env_marker_alts,
+                    )
+                else:
+                    d = "%s (%s %s)%s" % (
+                        item['dependency'], o, v, env_marker_alts)
+                if req_d['version2'] and req_d['operator2'] not in (None, '!='):
                     o2 = _translate_op(req_d['operator2'])
                     v2 = _translate(req_d['version2'], item['rules'], item['standard'])
                     d += ", %s (%s %s)%s" % (
