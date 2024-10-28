@@ -1,11 +1,14 @@
 Source: dh-python
 Section: python
 Priority: optional
-Maintainer: Piotr Ożarowski <piotr@debian.org>
-Uploaders:
- Stefano Rivera <stefanor@debian.org>,
+Standards-Version: 4.5.0
+Maintainer: Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+Homepage: https://salsa.debian.org/python-team/tools/dh-python/-/tags
+Vcs-Browser: https://github.com/alvistack/python-team-tools-dh-python
+Vcs-Git: https://github.com/alvistack/python-team-tools-dh-python.git
 Build-Depends:
- debhelper-compat (= 13),
+ debhelper,
+ debhelper-compat (= 10),
  libdpkg-perl,
  libpython3-stdlib,
  python3-all <!nocheck>,
@@ -15,10 +18,6 @@ Build-Depends:
  python3-minimal,
  python3-nose2 <!nocheck>,
  python3-setuptools,
-Standards-Version: 4.7.0
-Vcs-Git: https://salsa.debian.org/python-team/tools/dh-python.git
-Vcs-Browser: https://salsa.debian.org/python-team/tools/dh-python
-Rules-Requires-Root: no
 
 Package: dh-python
 Architecture: all

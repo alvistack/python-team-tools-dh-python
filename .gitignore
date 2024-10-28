@@ -15,3 +15,5 @@ debhelper-build-stamp
 *\.substvars
 */*/debian/files
 debian/files
+.pybuild/
+tests/

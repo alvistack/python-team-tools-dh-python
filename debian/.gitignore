@@ -1,0 +1,3 @@
+dh-python
+pybuild-plugin-autopkgtest
+pybuild-plugin-pyproject
