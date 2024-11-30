@@ -475,8 +475,9 @@ def check_environment_marker_restrictions(req, marker_str, impl):
     return True
 
 
-def parse_pydep(impl, fname, bdep=None, options=None,
-                depends_sec=None, recommends_sec=None, suggests_sec=None):
+def parse_pydep(impl, fname, bdep=None,
+                *, options=None, depends_sec=None, recommends_sec=None,
+                suggests_sec=None):
     depends_sec = depends_sec or []
     recommends_sec = recommends_sec or []
     suggests_sec = suggests_sec or []
@@ -549,8 +550,9 @@ def parse_pydep(impl, fname, bdep=None, options=None,
     return result
 
 
-def parse_requires_dist(impl, fname, bdep=None, options=None, depends_sec=None,
-                        recommends_sec=None, suggests_sec=None):
+def parse_requires_dist(impl, fname, bdep=None,
+                        *, options=None, depends_sec=None, recommends_sec=None,
+                        suggests_sec=None):
     """Extract dependencies from a dist-info/METADATA file"""
     depends_sec = depends_sec or []
     recommends_sec = recommends_sec or []

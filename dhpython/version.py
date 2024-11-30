@@ -41,6 +41,7 @@ class Version:
     # TODO: Upgrade to PEP-440
     def __init__(self, value=None, major=None, minor=None, micro=None,
                  releaselevel=None, serial=None):
+        # pylint: disable=too-many-positional-arguments
         """Construct a new instance.
 
         >>> Version(major=0, minor=0, micro=0, releaselevel=0, serial=0)
