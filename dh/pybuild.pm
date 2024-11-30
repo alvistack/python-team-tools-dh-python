@@ -75,9 +75,8 @@ sub build {
 
 sub install {
 	my $this=shift;
-	my $destdir=shift;
 	foreach my $command ($this->pybuild_commands('install', @_)) {
-		doit(@$command, '--dest-dir', $destdir);
+		doit(@$command);
 	}
 }
 
@@ -111,6 +110,14 @@ sub pybuild_commands {
 
 	if (not grep {$_ eq '--verbose'} @options and $dh{QUIET}) {
 		push @options, '--quiet';
+	}
+
+	# Pass dh's destdir, if it's not the default value
+	if ($step eq 'install') {
+		my $destdir = shift(@options);
+		if ($destdir ne "debian/tmp") {
+			push @options, "--dest-dir=$destdir";
+		}
 	}
 
 	my @deps;
