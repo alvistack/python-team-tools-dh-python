@@ -1,3 +1,10 @@
+dh-python (6.20241025) UNRELEASED; urgency=medium
+
+  * Document how to build multiple python modules in the same source package
+    with --name in pybuild.1. (See: #1088676)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 30 Nov 2024 15:31:50 -0400
+
 dh-python (6.20241024) unstable; urgency=medium
 
   * dh_python3: Suppress generated dependencies that would be satisfied by

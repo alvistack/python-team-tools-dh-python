@@ -197,8 +197,13 @@ DIRECTORIES
       set installation directory [default: .../dist-packages]
   --name NAME
       use this name to guess destination directories
-      ("foo" sets debian/python3-foo)
-      This overrides --dest-dir.
+      (`foo` sets `debian/python3-foo`)
+      This overrides `--dest-dir=debian/tmp` (typically provided by
+      `dh_auto_install`).
+      This name can also be used to keep multiple builds of unrelated
+      python modules separate from each other. Run `pybuild` once with
+      `--name` set to a different value, for each module, at each step
+      of the build.
 
 variables that can be used in `DIR`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
