@@ -4,6 +4,8 @@ dh-python (6.20241025) UNRELEASED; urgency=medium
     with --name in pybuild.1. (See: #1088676)
   * Don't pass dh_auto_install's default destdir to pybuild, allowing it to be
     overridden.
+  * Remove test dependency on the debhelper python-distuils plugin.
+    (Closes: #1090343)
 
  -- Stefano Rivera <stefanor@debian.org>  Sat, 30 Nov 2024 15:31:50 -0400
 

@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 %:
-	dh $@ --buildsystem=python_distutils
+	dh $@
 
 override_dh_auto_install:
 	python3 setup.py install --root=debian/python3-foo/
@@ -25,6 +25,7 @@ clean:
 	dh clean
 
 override_dh_auto_build:
+override_dh_auto_test:
 
 override_dh_auto_clean:
 	#python3 setup.py clean

@@ -1,8 +1,9 @@
 #!/usr/bin/make -f
 %:
-	dh $@ --buildsystem=python_distutils
+	dh $@
 
 override_dh_auto_build:
+override_dh_auto_test:
 override_dh_auto_install:
 
 override_dh_install:

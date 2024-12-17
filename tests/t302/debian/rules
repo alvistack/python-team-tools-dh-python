@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --buildsystem=python_distutils
+	dh $@
 
 override_dh_install:
 	dh_install
@@ -19,6 +19,8 @@ PYTHONS=$(subst $(comma),$(space),$(DEBPYTHON3_SUPPORTED))
 override_dh_auto_build:
 	for ver in $(PYTHONS); do\
 	  python$$ver setup.py build; done
+
+override_dh_auto_test:
 
 override_dh_auto_install:
 	for ver in $(PYTHONS); do\
