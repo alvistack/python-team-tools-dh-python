@@ -1,9 +1,9 @@
-dh-python (6.20241218) UNRELEASED; urgency=medium
+dh-python (6.20250108) unstable; urgency=medium
 
   * Adjust CExtensionsRenameTest to always use the default Python 3 version.
     (Closes: #1092545)
 
- -- Stefano Rivera <stefanor@debian.org>  Wed, 08 Jan 2025 16:48:10 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 08 Jan 2025 17:27:01 -0400
 
 dh-python (6.20241217) unstable; urgency=medium
 
