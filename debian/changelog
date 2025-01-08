@@ -1,3 +1,10 @@
+dh-python (6.20241218) UNRELEASED; urgency=medium
+
+  * Adjust CExtensionsRenameTest to always use the default Python 3 version.
+    (Closes: #1092545)
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 08 Jan 2025 16:48:10 -0400
+
 dh-python (6.20241217) unstable; urgency=medium
 
   * Document how to build multiple python modules in the same source package

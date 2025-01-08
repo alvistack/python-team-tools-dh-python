@@ -108,11 +108,13 @@ class FlitLicenseTest(ShareFilesTestCase):
 
 
 class CExtensionsRenameTest(ShareFilesTestCase):
-    files = {
-        'usr/lib/python3.12/foo.so': ('binary-data'),
-    }
-
-    ext_filename = 'usr/lib/python3.12/foo.so'
+    def setUp(self):
+        ver = Interpreter(self.impl).default_version
+        self.files = {
+            f'usr/lib/python{ver}/foo.so': ('binary-data'),
+        }
+        self.ext_filename = f'usr/lib/python{ver}/foo.so'
+        super().setUp()
 
     def test_python_extensions(self):
         self.share_files()
