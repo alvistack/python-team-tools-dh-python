@@ -1,6 +1,7 @@
 dh-python (6.20250109) UNRELEASED; urgency=medium
 
   * Update pydist data.
+  * Drop the python3-setuptools dependency.
 
  -- Stefano Rivera <stefanor@debian.org>  Thu, 06 Mar 2025 10:53:17 -0400
 
