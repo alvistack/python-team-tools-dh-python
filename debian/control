@@ -24,8 +24,6 @@ Package: dh-python
 Architecture: all
 Multi-Arch: foreign
 Depends:
-# depend on setuptools to help packages migrate from distutils. Remove once 3.12 is default
- python3-setuptools,
  ${misc:Depends},
  ${python3:Depends},
 Provides:

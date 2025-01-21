@@ -1,3 +1,10 @@
+dh-python (6.20250108+exp1) experimental; urgency=medium
+
+  * Upload to experimental.
+    - Without the python3-setuptools dependency.
+
+ -- Stefano Rivera <stefanor@debian.org>  Tue, 21 Jan 2025 08:15:59 -0400
+
 dh-python (6.20250108) unstable; urgency=medium
 
   * Adjust CExtensionsRenameTest to always use the default Python 3 version.
