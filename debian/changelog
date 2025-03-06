@@ -1,3 +1,9 @@
+dh-python (6.20250109) UNRELEASED; urgency=medium
+
+  * Update pydist data.
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 06 Mar 2025 10:53:17 -0400
+
 dh-python (6.20250108) unstable; urgency=medium
 
   * Adjust CExtensionsRenameTest to always use the default Python 3 version.
