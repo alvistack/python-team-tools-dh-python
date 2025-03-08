@@ -285,7 +285,6 @@ PyRSS2Gen python3-pyrss2gen
 PySDL2 python3-sdl2
 PySPH python3-pysph
 PyScreeze python3-pyscreeze
-PySide6 libpyside6-py3-6.7
 PySocks python3-socks
 PyStaticConfiguration python3-staticconf
 PyStemmer python3-stemmer

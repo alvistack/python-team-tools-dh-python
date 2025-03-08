@@ -46,6 +46,7 @@ OVERRIDES = {
     'cpython3': {
         'Cython': 'cython3',
         'Pillow': 'python3-pil',
+        'PySide6': None,
         'argparse': 'python3 (>= 3.2)',
         'pil': 'python3-pil',
         'pylint': 'pylint',
@@ -129,7 +130,8 @@ for impl, details in result.items():
         overrides = OVERRIDES[impl]
         lines = []
         for egg, value in overrides.items():
-            lines.append('{} {}\n'.format(egg, value))
+            if value:
+                lines.append('{} {}\n'.format(egg, value))
         lines.extend(
             '{} {}\n'.format(egg, pkg) for egg, pkg in details.items() if egg not in overrides
         )
