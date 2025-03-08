@@ -45,11 +45,12 @@ IGNORED_PKGS = {'python3-setuptools'}
 OVERRIDES = {
     'cpython3': {
         'Cython': 'cython3',
-        'pil': 'python3-pil',
         'Pillow': 'python3-pil',
+        'argparse': 'python3 (>= 3.2)',
+        'pil': 'python3-pil',
         'pylint': 'pylint',
         'setuptools': 'python3-pkg-resources',
-        'argparse': 'python3 (>= 3.2)'},
+    },
 }
 
 public_egg = re.compile(r'''
