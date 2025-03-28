@@ -102,6 +102,10 @@ for `autodep8` (`debian/tests/autopkgtest-pkg-pybuild.conf`) like this::
     extra_depends=foo, bar
     extra_restrictions=isolation-container, breaks-testbed
 
+You can also limit the set of supported architectures in that file::
+
+    architecture=any-amd64 s390x
+
 SEE ALSO
 ========
 * pybuild(1)

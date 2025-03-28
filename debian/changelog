@@ -1,3 +1,10 @@
+dh-python (6.20250328) UNRELEASED; urgency=medium
+
+  * Document "architecture" field in
+    debian/tests/autopkgtest-pkg-pybuild.conf.
+
+ -- Colin Watson <cjwatson@debian.org>  Fri, 28 Mar 2025 15:33:22 +0000
+
 dh-python (6.20250308) unstable; urgency=medium
 
   * Exclude Pyside6 from cpython3_fallback, maintainers need to explicitly
