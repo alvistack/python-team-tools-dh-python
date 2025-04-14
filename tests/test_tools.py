@@ -70,12 +70,12 @@ class TestFixShebang(unittest.TestCase):
     def test_unversioned(self):
         self.write_shebang("#!/usr/bin/python")
         fix_shebang(self.tmpfile)
-        self.assert_shebang("#! /usr/bin/python2")
+        self.assert_shebang("#! /usr/bin/python3")
 
     def test_python2(self):
         self.write_shebang("#!/usr/bin/python2")
         fix_shebang(self.tmpfile)
-        self.assert_shebang("#! /usr/bin/python2")
+        self.assert_shebang("#!/usr/bin/python2")
 
     def test_python2_7(self):
         self.write_shebang("#!/usr/bin/python2.7")
@@ -85,7 +85,7 @@ class TestFixShebang(unittest.TestCase):
     def test_python3(self):
         self.write_shebang("#!/usr/bin/python3")
         fix_shebang(self.tmpfile)
-        self.assert_shebang("#!/usr/bin/python3")
+        self.assert_shebang("#! /usr/bin/python3")
 
     def test_python3_13(self):
         self.write_shebang("#!/usr/bin/python3.13")
@@ -95,7 +95,7 @@ class TestFixShebang(unittest.TestCase):
     def test_env_unversioned(self):
         self.write_shebang("#!/usr/bin/env python")
         fix_shebang(self.tmpfile)
-        self.assert_shebang("#! /usr/bin/python2")
+        self.assert_shebang("#! /usr/bin/python3")
 
     def test_env_python3(self):
         self.write_shebang("#!/usr/bin/env python3")

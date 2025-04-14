@@ -1,9 +1,15 @@
-dh-python (6.20250328) UNRELEASED; urgency=medium
+dh-python (6.20250414) UNRELEASED; urgency=medium
 
+  [ Colin Watson ]
   * Document "architecture" field in
     debian/tests/autopkgtest-pkg-pybuild.conf.
 
- -- Colin Watson <cjwatson@debian.org>  Fri, 28 Mar 2025 15:33:22 +0000
+  [ Stefano Rivera ]
+  * Parse an unversioned python shebang as being Python 3. This eases handling
+    for setuptools >= 76 which, will emit "/usr/bin/python" shebangs, even
+    when the build is run by "/usr/bin/python3".
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 14 Apr 2025 16:29:05 -0400
 
 dh-python (6.20250308) unstable; urgency=medium
 

@@ -190,7 +190,7 @@ class Interpreter:
             # TODO: do we need "--key value" here?
             result['options'] = tuple(result['options'].split())
         if result['name'] == 'python' and result['version'] is None:
-            result['version'] = '2'
+            result['version'] = '3'
         return result
 
     @classmethod
