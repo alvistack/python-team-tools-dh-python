@@ -9,6 +9,7 @@ dh-python (6.20250414) UNRELEASED; urgency=medium
     for setuptools >= 76 which, will emit "/usr/bin/python" shebangs, even
     when the build is run by "/usr/bin/python3". (Closes: #1103150)
   * Bump Standards-Version to 4.7.2, no changes needed.
+  * Update pydist data.
 
  -- Stefano Rivera <stefanor@debian.org>  Mon, 14 Apr 2025 16:29:05 -0400
 
