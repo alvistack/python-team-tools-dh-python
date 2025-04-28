@@ -68,7 +68,6 @@ def fix_locations(package, interpreter, versions, options):
 
 def share_files(srcdir, dstdir, interpreter, options):
     """Try to move as many files from srcdir to dstdir as possible."""
-    cleanup_actions = []
     for i in os.listdir(srcdir):
         fpath1 = join(srcdir, i)
         if not lexists(fpath1):  # removed in rename_ext
@@ -131,8 +130,6 @@ def share_files(srcdir, dstdir, interpreter, options):
                 diff = difflib.unified_diff(fromlines, tolines, fpath1, fpath2)
                 sys.stderr.writelines(diff)
 
-    for action, args in cleanup_actions:
-        action(dstdir, *args)
     try:
         os.removedirs(srcdir)
     except OSError:
