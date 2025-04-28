@@ -175,7 +175,7 @@ def merge_WHEEL(src, dst):
 
 
 def write_INSTALLER(distdir):
-    """Write 'debain' as the INSTALLER"""
+    """Write 'debian' as the INSTALLER"""
     log.debug("Writing INSTALLER in %s", distdir)
     installer = join(distdir, "INSTALLER")
     with open(installer, "w", encoding="UTF-8") as f:
