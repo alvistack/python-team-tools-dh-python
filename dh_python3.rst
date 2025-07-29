@@ -30,8 +30,6 @@ QUICK GUIDE FOR MAINTAINERS
  * install files to the *standard* locations, add `--install-layout=deb` to
    setup.py's install command if your package is using distutils,
  * add `python3` to dh's --with option, or:
- * `include /usr/share/cdbs/1/class/python-distutils.mk` in debian/rules and
-   depend on `cdbs (>= 0.4.90)`, or:
  * call ``dh_python3`` in the `binary-*` target,
  * add `${python3:Depends}` to Depends
 

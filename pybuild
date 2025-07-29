@@ -602,5 +602,5 @@ if __name__ == '__main__':
     log.debug('version: DEVELV')
     log.debug(sys.argv)
     main(cfg)
-    # let dh/cdbs clean the .pybuild dir
+    # let dh clean the .pybuild dir
     # rmtree(join(cfg.dir, '.pybuild'))
