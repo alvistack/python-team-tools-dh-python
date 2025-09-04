@@ -1,3 +1,10 @@
+dh-python (6.20250904) UNRELEASED; urgency=medium
+
+  * dh_python3: Suppress generated dependencies that would be satisfied by
+    python3 >= 3.11.
+
+ -- Colin Watson <cjwatson@debian.org>  Thu, 04 Sep 2025 02:41:55 +0100
+
 dh-python (6.20250414) unstable; urgency=medium
 
   [ Colin Watson ]

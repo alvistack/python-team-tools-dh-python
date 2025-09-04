@@ -108,7 +108,7 @@ DEB_VERS_OPS = {
     '~=': '>=',
 }
 # Optimize away any dependencies on Python less than:
-MIN_PY_VERSION = [3, 9]
+MIN_PY_VERSION = [3, 11]
 
 
 def validate(fpath):
