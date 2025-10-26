@@ -1,4 +1,4 @@
-if command -v py3clean >/dev/null 2>&1; then
+if command -v py3clean >/dev/null 2>&1 && python3 -c 'pass' 2>/dev/null; then
 	py3clean -p #PACKAGE# #ARGS#
 else
 	dpkg -L #PACKAGE# | sed -En -e '/^(.*)\/(.+)\.py$/s,,rm "\1/__pycache__/\2".*,e'
