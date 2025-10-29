@@ -44,6 +44,10 @@ os.umask(0o22)
 DEFAULT = default('cpython3')
 SUPPORTED = supported('cpython3')
 
+# See /usr/share/doc/debhelper/PROGRAMMING.md.gz
+#
+# INTROSPECTABLE: CONFIG-FILES pkgfile(pyinstall) pkgfile(pyremove) pkgfile(pydist) pkgfile(bcep) pkgfile(py3dist-overrides)
+
 
 class Scanner(Scan):
     def handle_ext(self, fpath):
@@ -271,6 +275,7 @@ def main():
         dependencies.export_to(dh)
 
         pydist_file = join('debian', "%s.pydist" % package)
+
         if exists(pydist_file):
             if not validate_pydist(pydist_file):
                 log.warning("%s.pydist file is invalid", package)
