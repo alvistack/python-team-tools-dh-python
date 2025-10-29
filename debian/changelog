@@ -1,4 +1,4 @@
-dh-python (6.20250904) UNRELEASED; urgency=medium
+dh-python (6.20251029) unstable; urgency=medium
 
   [ Colin Watson ]
   * dh_python3: Suppress generated dependencies that would be satisfied by
@@ -19,7 +19,7 @@ dh-python (6.20250904) UNRELEASED; urgency=medium
   [ Niels Thykier ]
   * dh_python3: Add introspection hints for known configuration files
 
- -- Stefano Rivera <stefanor@debian.org>  Wed, 29 Oct 2025 15:52:26 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 29 Oct 2025 15:53:03 +0200
 
 dh-python (6.20250414) unstable; urgency=medium
 
