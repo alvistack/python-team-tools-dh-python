@@ -9,3 +9,5 @@ class RequiredTest(TestCase):
         open('testfile1.txt').close()
         open('testfile2.txt').close()
         open('testdir/testfile3.txt').close()
+        open('destination/testfile4.txt').close()
+        open('renamed').close()

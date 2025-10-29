@@ -21,7 +21,7 @@
 import logging
 from functools import wraps
 from glob import glob1
-from os import remove, walk
+from os import remove, walk, makedirs
 from os.path import exists, isdir, join
 from pathlib import Path
 from shlex import quote
@@ -56,12 +56,18 @@ def copy_test_files(dest='{build_dir}',
                         break
 
             files_to_remove = set()
-            for name in files_to_copy:
+            for entry in files_to_copy:
+                name, *rest = entry.split(maxsplit=1)
+                dest_suffix = rest[0] if rest else ""
+                if not dest_suffix or dest_suffix.endswith('/'):
+                    dest_suffix = join(dest_suffix, name.rsplit('/', 1)[-1])
+
                 src_dpath = join(args['dir'], name)
-                dst_dpath = join(dest.format(**args), name.rsplit('/', 1)[-1])
+                dst_dpath = join(dest.format(**args), dest_suffix)
                 if exists(src_dpath):
                     if not exists(dst_dpath):
                         log.debug("Copying %s to %s for tests", src_dpath, dst_dpath)
+                        makedirs(dst_dpath.rsplit('/', 1)[0], exist_ok=True)
                         if isdir(src_dpath):
                             copytree(src_dpath, dst_dpath)
                         else:

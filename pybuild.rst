@@ -123,6 +123,11 @@ testfiles
     If `testfiles` are provided, it overrides these defaults, if
     still required they need to be explicitly specified.
 
+    By default, the test files are copied at the root of the build directory.
+    You can optionally specify a destination as second argument in the
+    `testfiles`. If the destination ends with a `/` it is treated as a target
+    directory into which the file will be copied.
+
 BUILD SYSTEM ARGUMENTS
 ----------------------
   Additional arguments passed to the build system.
