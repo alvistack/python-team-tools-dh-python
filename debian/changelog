@@ -16,7 +16,10 @@ dh-python (6.20250904) UNRELEASED; urgency=medium
   [ Simon Chopin ]
   * pybuild: add an optional dest arg to testfiles syntax (Closes: #947800)
 
- -- Colin Watson <cjwatson@debian.org>  Thu, 04 Sep 2025 02:41:55 +0100
+  [ Niels Thykier ]
+  * dh_python3: Add introspection hints for known configuration files
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 29 Oct 2025 15:52:26 +0200
 
 dh-python (6.20250414) unstable; urgency=medium
 
