@@ -8,6 +8,9 @@ dh-python (6.20250904) UNRELEASED; urgency=medium
   * autoscripts/prerm-py3clean: Check for a working /usr/bin/python3,
     the same interpreter used for py3clean.  Addresses: #1109501.
 
+  [ Stefano Rivera ]
+  * Update the list of Python versions we test things for.
+
  -- Colin Watson <cjwatson@debian.org>  Thu, 04 Sep 2025 02:41:55 +0100
 
 dh-python (6.20250414) unstable; urgency=medium
