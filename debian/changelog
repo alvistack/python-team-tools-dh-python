@@ -10,6 +10,8 @@ dh-python (6.20250904) UNRELEASED; urgency=medium
 
   [ Stefano Rivera ]
   * Update the list of Python versions we test things for.
+  * Rename stable ABI extensions to include a multiarch tuple, allowing
+    co-installation.
 
  -- Colin Watson <cjwatson@debian.org>  Thu, 04 Sep 2025 02:41:55 +0100
 

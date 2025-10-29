@@ -39,19 +39,20 @@ SHEBANG_RE = re.compile(r'''
 EXTFILE_RE = re.compile(r'''
     (?P<name>.*?)
     (?:\.
-        (?P<stableabi>abi\d+)
-     |(?:\.
-        (?P<soabi>
-            (?P<impl>cpython|pypy)
-            -
-            (?P<ver>\d{2,})
-            (?P<flags>[a-z]*)
-        )?
         (?:
-            (?:(?<!\.)-)?  # minus sign only if soabi is defined
+            (?P<stableabi>abi\d+)
+            |(?P<soabi>
+                (?P<impl>cpython|pypy)
+                -
+                (?P<ver>\d{2,})
+                (?P<flags>[a-z]*)
+            )
+        )
+        (?:
+            -
             (?P<multiarch>[^/]*?)
         )?
-    ))?
+    )?
     (?P<debug>_d)?
     \.so$''', re.VERBOSE)
 log = logging.getLogger('dhpython')
@@ -426,14 +427,15 @@ class Interpreter:
             # version number is set
             version = Version("%s.%s" % (info['ver'][0], info['ver'][1]))
 
-        if info['stableabi']:
-            # files with stable ABI in name don't need changes
+        if info['stableabi'] and version < Version('3.13'):
+            # We added support for stableabi multiarch filenames in 3.13
+            # (GH-122931)
             return
         if info['debug'] and self.debug is False:
             # do not change Python 2.X extensions already marked as debug
             # (the other way around is acceptable)
             return
-        if info['soabi'] and info['multiarch']:
+        if (info['soabi'] or info['stableabi']) and info['multiarch']:
             # already tagged, nothing we can do here
             return
 
@@ -446,7 +448,7 @@ class Interpreter:
         if info['soabi'] and soabi and info['soabi'] != soabi:
             return
 
-        tmp_soabi = info['soabi'] or soabi
+        tmp_soabi = info['stableabi'] or info['soabi'] or soabi
         tmp_multiarch = info['multiarch'] or multiarch
 
         result = info['name']
@@ -456,9 +458,9 @@ class Interpreter:
             result = result[:-6]
 
         if tmp_soabi:
-            result = "{}.{}".format(result, tmp_soabi)
-            if tmp_multiarch and tmp_multiarch not in soabi:
-                result = "{}-{}".format(result, tmp_multiarch)
+            result = f"{result}.{tmp_soabi}"
+        if tmp_multiarch and tmp_multiarch not in result:
+            result = f"{result}-{tmp_multiarch}"
 
         result += '.so'
         if fname == result:

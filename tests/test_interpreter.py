@@ -66,7 +66,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertIsNone(i.check_extname('foo.cpython-33m.so'))  # different version
         self.assertIsNone(i.check_extname('foo.cpython-313-OTHER.so'))  # different architecture
         self.assertEqual(i.check_extname('foo.cpython-313.so'), r'foo.cpython-313-MYARCH.so')
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-313-MYARCH.so')
 
     @unittest.skipUnless(exists('/usr/bin/python3.13-dbg'), 'python3.13-dbg is not installed')
@@ -76,7 +77,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(i.check_extname('foo.so'), r'foo.cpython-313d-MYARCH.so')
         self.assertIsNone(i.check_extname('foo.cpython-33m.so'))  # different version
         self.assertIsNone(i.check_extname('foo.cpython-313-OTHER.so'))  # different architecture
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-313d-MYARCH.so')
 
     @unittest.skipUnless(exists('/usr/bin/python3.14'), 'python3.14 is not installed')
@@ -87,7 +89,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertIsNone(i.check_extname('foo.cpython-34m.so'))  # different version
         self.assertIsNone(i.check_extname('foo.cpython-314-OTHER.so'))  # different architecture
         self.assertEqual(i.check_extname('foo.cpython-314.so'), r'foo.cpython-314-MYARCH.so')
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-314-MYARCH.so')
 
     @unittest.skipUnless(exists('/usr/bin/python3.14-dbg'), 'python3.14-dbg is not installed')
@@ -97,7 +100,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(i.check_extname('foo.so'), r'foo.cpython-314d-MYARCH.so')
         self.assertIsNone(i.check_extname('foo.cpython-34m.so'))  # different version
         self.assertIsNone(i.check_extname('foo.cpython-314-OTHER.so'))  # different architecture
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), r'foo/bar/baz.cpython-314d-MYARCH.so')
 
     def test_python3(self):
@@ -108,7 +112,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertIsNone(i.check_extname('foo.cpython-32m.so'))  # different version
         self.assertIsNone(i.check_extname(f'foo.cpython-{pyver}-OTHER.so'))  # different architecture
         self.assertEqual(i.check_extname(f'foo.cpython-{pyver}.so'), rf'foo.cpython-{pyver}-MYARCH.so')
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), rf'foo/bar/baz.cpython-{pyver}-MYARCH.so')
 
     @unittest.skipUnless(exists('/usr/bin/python3-dbg'), 'python3-dbg is not installed')
@@ -119,7 +124,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(i.check_extname('foo.so'), rf'foo.cpython-{pyver}d-MYARCH.so')
         self.assertIsNone(i.check_extname('foo.cpython-32m.so'))  # different version
         self.assertIsNone(i.check_extname(f'foo.cpython-{pyver}-OTHER.so'))  # different architecture
-        self.assertIsNone(i.check_extname('foo.abi3.so'))
+        self.assertEqual(i.check_extname('foo.abi3.so'), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname('foo.abi3-OTHER.so'))
         self.assertEqual(i.check_extname('foo/bar/bazmodule.so'), rf'foo/bar/baz.cpython-{pyver}d-MYARCH.so')
 
     def test_bare_module(self):
