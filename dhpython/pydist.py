@@ -206,7 +206,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
     name = req_d['name']
     details = data.get(name.lower())
     if details:
-        log.debug("dependency: module seems to be installed")
+        log.debug("dependency: module %s is known to pydist: %r", name, details)
         for item in details:
             if version and version not in item.get('versions', version):
                 # rule doesn't match version, try next one
