@@ -41,7 +41,7 @@ else:
         'http://ftp.debian.org/debian/dists/unstable/main/Contents-amd64.gz',
     ]
 
-IGNORED_PKGS = {'python3-setuptools'}
+IGNORED_PKGS = set()
 OVERRIDES = {
     'cpython3': {
         'Cython': 'cython3',
@@ -50,7 +50,6 @@ OVERRIDES = {
         'argparse': 'python3 (>= 3.2)',
         'pil': 'python3-pil',
         'pylint': 'pylint',
-        'setuptools': 'python3-pkg-resources',
     },
 }
 

@@ -5210,7 +5210,7 @@ session_info python3-sinfo
 setools python3-setools
 setoptconf python3-setoptconf
 setproctitle python3-setproctitle
-setuptools python3-pkg-resources
+setuptools python3-setuptools
 setuptools_gettext python3-setuptools-gettext
 setuptools_git python3-setuptools-git
 setuptools_protobuf python3-setuptools-protobuf

@@ -1,3 +1,10 @@
+dh-python (6.20251030) UNRELEASED; urgency=medium
+
+  * Remove setuptools -> python3-pkg-resources mapping from pydist,
+    pkg_resources is deprecated upstream.
+
+ -- Stefano Rivera <stefanor@debian.org>  Fri, 28 Nov 2025 19:14:03 -0400
+
 dh-python (6.20251029) unstable; urgency=medium
 
   [ Colin Watson ]

@@ -4,7 +4,7 @@ include ../common.mk
 check:
 	# FIXME: This used to be a 2.7 + 3.x test. It may not be useful any more, without 2.x
 	test -f debian/python3-foo/usr/lib/python3/dist-packages/foo.py
-	grep -q 'Depends:.*python3-pkg-resources' debian/python3-foo/DEBIAN/control
+	grep -q 'Depends:.*python3-setuptools' debian/python3-foo/DEBIAN/control
 	./debian/rules clean
 	test -f foo.egg-info/SOURCES.txt
 	grep -q extra-file foo.egg-info/SOURCES.txt
