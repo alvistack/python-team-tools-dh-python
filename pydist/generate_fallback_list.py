@@ -44,12 +44,12 @@ else:
 IGNORED_PKGS = set()
 OVERRIDES = {
     'cpython3': {
-        'Cython': 'cython3',
-        'Pillow': 'python3-pil',
-        'PySide6': None,
         'argparse': 'python3 (>= 3.2)',
+        'cython': 'cython3',
         'pil': 'python3-pil',
+        'pillow': 'python3-pil',
         'pylint': 'pylint',
+        'pyside6': None,
     },
 }
 
@@ -70,7 +70,7 @@ if isdir('../dhpython'):
     sys.path.append('..')
 else:
     sys.path.append('/usr/share/dh-python/dhpython/')
-from dhpython.pydist import sensible_pname
+from dhpython.pydist import normalize_name, sensible_pname
 
 data = ''
 if not isdir('cache'):
@@ -106,23 +106,24 @@ for line in data.splitlines():
         continue
     match = public_egg(path)
     if match:
-        egg_name = [i.split('-', 1)[0] for i in path.split('/')
-                    if i.endswith(('.egg-info', '.dist-info'))][0]
-        if egg_name.endswith('.egg'):
-            egg_name = egg_name[:-4]
+        dist_name = [i.split('-', 1)[0] for i in path.split('/')
+                     if i.endswith(('.egg-info', '.dist-info'))][0]
+        if dist_name.endswith('.egg'):
+            dist_name = dist_name[:-4]
+        dist_name = normalize_name(dist_name)
 
         impl = next(key for key, value in match.groupdict().items() if value)
 
         if skip_sensible_names and\
-                sensible_pname(impl, egg_name) == pkg_name:
+                sensible_pname(impl, dist_name) == pkg_name:
             continue
 
         if impl not in result:
             continue
 
         processed = result[impl]
-        if egg_name not in processed:
-            processed[egg_name] = pkg_name
+        if dist_name not in processed:
+            processed[dist_name] = pkg_name
 
 for impl, details in result.items():
     with open('{}_fallback'.format(impl), 'w') as fp:
