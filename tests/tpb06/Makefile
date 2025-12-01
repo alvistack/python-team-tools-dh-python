@@ -13,6 +13,9 @@ check:
 	find .pybuild -name test-executed | grep -q test-executed
 	grep -q usr/bin/python3$$ debian/python3-foo/usr/bin/foo
 	find debian/python3-foo/usr/lib/python3/dist-packages/ -name LICENSE | { ! grep -q LICENSE; }
+	set -e; for py in $(shell py3versions -s); do \
+		test -f debian/python3-foo/usr/include/$$py/foo/ext.h; \
+	done
 	test -f debian/python3-foo/usr/share/man/man1/foo.1.gz
 
 clean:

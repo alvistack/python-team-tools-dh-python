@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from contextlib import contextmanager
 from pathlib import Path
 import logging
 import os.path as osp
@@ -37,8 +38,9 @@ try:
     from installer import install
     from installer.destinations import SchemeDictionaryDestination
     from installer.sources import WheelFile
+    from installer.utils import parse_metadata_file
 except ModuleNotFoundError:
-    SchemeDictionaryDestination = WheelFile = install = None
+    SchemeDictionaryDestination = WheelFile = install = parse_metadata_file = None
 
 from dhpython.build.base import Base, shell_command
 from dhpython.tools import dpkg_architecture
@@ -139,12 +141,21 @@ class BuildSystem(Base):
                 ' {args}'
                )
 
+    @contextmanager
+    def opened_wheel(self, context, args):
+        wheel = Path(self.built_wheel(context, args))
+        if wheel.name.startswith('UNKNOWN'):
+            raise Exception(f'UNKNOWN wheel found: {wheel.name}. Does '
+                            'pyproject.toml specify a build-backend?')
+        with WheelFile.open(wheel) as source:
+            yield source
+
     def unpack_wheel(self, context, args):
         """ unpack the wheel into pybuild's normal  """
         log.info('Unpacking wheel built for %s with "installer" module',
                  args['interpreter'])
         extras = {}
-        for extra in ('scripts', 'data'):
+        for extra in ('scripts', 'data', 'include'):
             path = Path(args["home_dir"]) / extra
             if osp.exists(path):
                 log.warning('%s directory already exists, skipping unpack. '
@@ -158,16 +169,13 @@ class BuildSystem(Base):
                 'purelib': args['build_dir'],
                 'scripts': extras['scripts'],
                 'data': extras['data'],
+                'headers': extras['include'],
             },
             interpreter=args['interpreter'].binary_dv,
             script_kind='posix',
         )
 
-        wheel = Path(self.built_wheel(context, args))
-        if wheel.name.startswith('UNKNOWN'):
-            raise Exception(f'UNKNOWN wheel found: {wheel.name}. Does '
-                            'pyproject.toml specify a build-backend?')
-        with WheelFile.open(wheel) as source:
+        with self.opened_wheel(context, args) as source:
             install(
                 source=source,
                 destination=destination,
@@ -184,12 +192,20 @@ class BuildSystem(Base):
             # TODO: Introduce a version check once sysconfig is patched.
             paths = sysconfig.get_paths(scheme='posix_prefix')
 
-        # start by copying the data and scripts
-        for extra in ('data', 'scripts'):
+        # start by copying the data, scripts, and headers
+        for extra in ('data', 'scripts', 'include'):
             src_dir = Path(args['home_dir']) / extra
             if not src_dir.exists():
                 continue
-            target_dir = args['destdir'] + paths[extra]
+            if extra == 'include':
+                with self.opened_wheel(context, args) as source:
+                    metadata = parse_metadata_file(
+                        source.read_dist_info("METADATA")
+                    )
+                    extra_path = osp.join(paths[extra], metadata["Name"])
+            else:
+                extra_path = paths[extra]
+            target_dir = args['destdir'] + extra_path
             log.debug('Copying %s directory contents from %s -> %s',
                       extra, src_dir, target_dir)
             shutil.copytree(

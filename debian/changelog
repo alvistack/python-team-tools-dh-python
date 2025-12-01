@@ -7,6 +7,7 @@ dh-python (6.20251030) UNRELEASED; urgency=medium
 
   [ Colin Watson ]
   * Normalize names in pydist lookups.
+  * pyproject plugin: Support headers (closes: #1115299).
 
  -- Stefano Rivera <stefanor@debian.org>  Fri, 28 Nov 2025 19:14:03 -0400
 
