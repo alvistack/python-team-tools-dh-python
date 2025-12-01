@@ -22,11 +22,13 @@ def pep386(d):
 
 def prime_pydist(impl, pydist):
     """Fake the pydist data for impl. Returns a cleanup function"""
-    from dhpython.pydist import load
+    from dhpython.pydist import load, normalize_name
 
+    normalized_pydist = {}
     for name, entries in pydist.items():
         if not isinstance(entries, list):
-            pydist[name] = entries = [entries]
+            entries = [entries]
+        normalized_pydist[normalize_name(name)] = entries
         for i, entry in enumerate(entries):
             if isinstance(entry, str):
                 entries[i] = entry = {'dependency': entry}
@@ -36,7 +38,7 @@ def prime_pydist(impl, pydist):
             entry.setdefault('versions', set())
 
     key = dumps(((impl,), {}))
-    load.cache[key] = pydist
+    load.cache[key] = normalized_pydist
     return lambda: load.cache.pop(key)
 
 

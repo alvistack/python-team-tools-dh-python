@@ -158,7 +158,7 @@ def load(impl):
                 if not dist:
                     raise Exception('invalid pydist line: %s (in %s)' % (line, fpath))
                 dist = dist.groupdict()
-                name = safe_name(dist['name'])
+                name = normalize_name(dist['name'])
                 dist['versions'] = get_requested_versions(impl, dist['vrange'])
                 dist['dependency'] = dist['dependency'].strip()
                 if dist['rules']:
@@ -180,7 +180,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
     # some upstreams have weird ideas for distribution name...
     name, rest = re.compile(r'([^!><=~ \(\)\[;]+)(.*)').match(req).groups()
     # TODO: check stdlib and dist-packaged for name.py and name.so files
-    req = safe_name(name) + rest
+    req = normalize_name(name) + rest
 
     data = load(impl)
     req_d = REQUIRES_RE.match(req)
@@ -204,7 +204,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
             env_marker_alts = ' ' + action
 
     name = req_d['name']
-    details = data.get(name.lower())
+    details = data.get(normalize_name(name))
     if details:
         log.debug("dependency: module %s is known to pydist: %r", name, details)
         for item in details:
@@ -286,7 +286,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
 
     # search for Egg metadata file or directory (using dpkg -S)
     dpkg_query_tpl, regex_filter = PYDIST_DPKG_SEARCH_TPLS[impl]
-    dpkg_query = dpkg_query_tpl.format(ci_regexp(safe_name(name)))
+    dpkg_query = dpkg_query_tpl.format(ci_regexp(normalize_name(name)))
 
     log.debug("invoking dpkg -S %s", dpkg_query)
     process = subprocess.run(
@@ -312,12 +312,12 @@ def guess_dependency(impl, req, version=None, bdep=None,
     else:
         log.debug('dpkg -S did not find package for %s: %s', name, process.stderr)
 
-    pname = sensible_pname(impl, name)
+    pname = sensible_pname(impl, normalize_name(name))
     log.info('Cannot find package that provides %s. '
              'Please add package that provides it to Build-Depends or '
              'add "%s %s" line to %s or add proper '
              'dependency to Depends by hand and ignore this info.',
-             name, safe_name(name), pname, PYDIST_OVERRIDES_FNAMES[impl])
+             name, normalize_name(name), pname, PYDIST_OVERRIDES_FNAMES[impl])
     # return pname
 
 
@@ -591,17 +591,16 @@ def parse_requires_dist(impl, fname, bdep=None,
     return result
 
 
-def safe_name(name):
-    """Emulate distribute's safe_name."""
-    return re.compile('[^A-Za-z0-9.]+').sub('_', name).lower()
+# https://packaging.python.org/en/latest/specifications/simple-repository-api/#normalized-names
+def normalize_name(name):
+    """Normalize a distribution name."""
+    return re.sub(r"[-_.]+", "-", name).lower()
 
 
-def sensible_pname(impl, egg_name):
-    """Guess Debian package name from Egg name."""
-    egg_name = safe_name(egg_name).replace('_', '-')
-    if egg_name.startswith('python-'):
-        egg_name = egg_name[7:]
-    return '{}-{}'.format(PKG_PREFIX_MAP[impl], egg_name.lower())
+def sensible_pname(impl, dist_name):
+    """Guess Debian package name from normalized distribution name."""
+    dist_name = dist_name.removeprefix("python-")
+    return f"{PKG_PREFIX_MAP[impl]}-{dist_name}"
 
 
 def ci_regexp(name):
