@@ -12,5 +12,6 @@ for deb in $(sed -nr 's/.* ([^ ]*\.deb)$/\1/p' $changes | sort -u); do
     echo "--------------------------------------------------"
     echo "PACKAGE $deb:"
     dpkg-deb --info "$basedir/$deb"
+    dpkg-deb --contents "$basedir/$deb"
 done
 echo "--------------------------------------------------"
