@@ -1,4 +1,4 @@
-dh-python (6.20251203) UNRELEASED; urgency=medium
+dh-python (6.20251204) unstable; urgency=medium
 
   [ Colin Watson ]
   * pyproject plugin: Use correct version-specific include directory when
@@ -9,7 +9,7 @@ dh-python (6.20251203) UNRELEASED; urgency=medium
   * Don't let a package containing one stable ABI module generate wide-open
     python dependencies. (Closes: #1121868)
 
- -- Stefano Rivera <stefanor@debian.org>  Thu, 04 Dec 2025 10:12:11 -0400
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 04 Dec 2025 10:46:17 -0400
 
 dh-python (6.20251201) unstable; urgency=medium
 
