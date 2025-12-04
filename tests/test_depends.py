@@ -7,6 +7,7 @@ from pickle import dumps
 from tempfile import TemporaryDirectory
 
 from dhpython.depends import Dependencies
+from dhpython.version import Version
 
 from .common import FakeOptions
 
@@ -46,18 +47,7 @@ class DependenciesTestCase(unittest.TestCase):
     pkg = 'foo'
     impl = 'cpython3'
     pydist = {}
-    stats = {
-        'compile': False,
-        'dist-info': set(),
-        'egg-info': set(),
-        'ext_no_version': set(),
-        'ext_vers': set(),
-        'nsp.txt': set(),
-        'private_dirs': {},
-        'public_vers': set(),
-        'requires.txt': set(),
-        'shebangs': set(),
-    }
+    stats = {}
     requires = {}
     dist_info_metadata = {}
     options = FakeOptions()
@@ -66,7 +56,21 @@ class DependenciesTestCase(unittest.TestCase):
     def setUp(self):
         self.d = Dependencies(self.pkg, self.impl)
 
-        stats = deepcopy(self.stats)
+        stats = {
+            'compile': False,
+            'dist-info': set(),
+            'egg-info': set(),
+            'ext_no_version': set(),
+            'ext_stableabi': set(),
+            'ext_vers': set(),
+            'nsp.txt': set(),
+            'private_dirs': {},
+            'public_vers': set(),
+            'requires.txt': set(),
+            'shebangs': set(),
+        }
+        stats.update(self.stats)
+
         write_files = {}
         if self.requires:
             for fn, lines in self.requires.items():
@@ -694,3 +698,59 @@ class TestIgnoresUnusedModulesEggInfo(DependenciesTestCase):
             raise unittest.SkipTest("Requires Python >= 3.10")
         with self.assertNoLogs(logger='dhpython', level=logging.INFO):
             self.d.parse(self.prepared_stats, self.options)
+
+
+class TestCExtensionPython3(DependenciesTestCase):
+    stats = {
+        'public_vers': {Version('3')},
+        'ext_vers': {Version('3.14')},
+    }
+
+    def test_python_depends(self):
+        self.assertIn('python3 (>= 3.14~)', self.d.depends)
+        self.assertIn('python3 (<< 3.15)', self.d.depends)
+
+
+class TestCExtensionsPython3(DependenciesTestCase):
+    stats = {
+        'public_vers': {Version('3')},
+        'ext_vers': {Version('3.14'), Version('3.13')},
+    }
+
+    def test_python_depends(self):
+        self.assertIn('python3 (>= 3.13~)', self.d.depends)
+        self.assertIn('python3 (<< 3.15)', self.d.depends)
+
+
+class TestStableABIExtensionPython3(DependenciesTestCase):
+    stats = {
+        'public_vers': {Version('3')},
+        'ext_stableabi': {'foo.abi3.so'},
+    }
+
+    def test_python_depends(self):
+        self.assertIn('python3', self.d.depends)
+
+
+class TestMixedExtensionsPython3(DependenciesTestCase):
+    stats = {
+        'public_vers': {Version('3')},
+        'ext_vers': {Version('3.14'), Version('3.13')},
+        'ext_stableabi': {'foo.abi3.so'},
+    }
+
+    def test_python_depends(self):
+        self.assertIn('python3 (>= 3.13~)', self.d.depends)
+        self.assertIn('python3 (<< 3.15)', self.d.depends)
+
+
+class TestUnversionedExtensionPython3(DependenciesTestCase):
+    stats = {
+        'public_vers': {Version('3')},
+        'ext_no_version': {'foo.so'},
+    }
+
+    def test_python_depends(self):
+        # This test is to maintain the status-quo where this case is only
+        # handled in private modules. That's *probably* OK?
+        self.assertNotInDepends('python3')

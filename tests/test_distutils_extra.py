@@ -22,6 +22,7 @@ class TestDistutilsExtra(unittest.TestCase):
         'dist-info': set(),
         'egg-info': set(('PKG-INFO',)),
         'ext_no_version': set(),
+        'ext_stableabi': set(),
         'ext_vers': set(),
         'nsp.txt': set(),
         'private_dirs': {},

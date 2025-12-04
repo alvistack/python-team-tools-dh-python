@@ -109,7 +109,7 @@ class Dependencies:
 
         if vrange and any((stats['compile'], stats['public_vers'],
                            stats['ext_vers'], stats['ext_no_version'],
-                           stats['shebangs'])):
+                           stats['ext_stableabi'], stats['shebangs'])):
             if any((stats['compile'], stats['public_vers'], stats['shebangs'])):
                 tpl_tmp = tpl_ma
             else:
@@ -126,15 +126,14 @@ class Dependencies:
                 self.depend("%s (<< %s)" % (tpl_tmp, maxv))
 
         if stats['ext_vers']:
-            # TODO: what about extensions with stable ABI?
             sorted_vers = sorted(stats['ext_vers'])
             minv = sorted_vers[0]
             maxv = sorted_vers[-1]
             #self.depend('|'.join(vtpl % i for i in stats['ext_vers']))
-            if minv <= default(self.impl):
-                self.depend("%s (>= %s~)" % (tpl, minv))
-            if maxv >= default(self.impl):
-                self.depend("%s (<< %s)" % (tpl, maxv + 1))
+            self.depend("%s (>= %s~)" % (tpl, minv))
+            self.depend("%s (<< %s)" % (tpl, maxv + 1))
+        elif stats['ext_stableabi']:
+            self.depend("%s" % tpl)
 
         # make sure py{,3}compile binary is available
         if stats['compile'] and self.impl in MINPYCDEP:

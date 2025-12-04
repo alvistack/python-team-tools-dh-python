@@ -221,6 +221,7 @@ class Scan:
                        'private_dirs': {},
                        'compile': False,
                        'ext_vers': set(),
+                       'ext_stableabi': set(),
                        'ext_no_version': set()}
 
         for root, dirs, file_names in os.walk(self.proot):
@@ -317,6 +318,8 @@ class Scan:
                         ver = None
                     if ver:
                         self.current_result.setdefault('ext_vers', set()).add(ver)
+                    elif ext_m["stableabi"]:
+                        self.current_result.setdefault('ext_stableabi', set()).add(fpath)
                     else:
                         self.current_result.setdefault('ext_no_version', set()).add(fpath)
 

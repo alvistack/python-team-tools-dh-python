@@ -2,6 +2,7 @@ dh-python (6.20251204.1) UNRELEASED; urgency=medium
 
   * Fix a regression in 6.20251204: Generate dependencies for packages
     containing stable ABI extensions (Closes: #1121868)
+  * Properly handle Stable ABI extensions.
 
  -- Stefano Rivera <stefanor@debian.org>  Thu, 04 Dec 2025 15:05:43 -0400
 

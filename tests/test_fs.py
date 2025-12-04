@@ -161,6 +161,7 @@ class UnversionedExtensionScanTest(ScanTestCase):
             self.scan.result['ext_no_version'],
             {'debian/python3-test/usr/lib/python3/dist-packages/foo.so'},
         )
+        self.assertEqual(self.scan.result['ext_stableabi'], set())
 
 
 class UnversionedExtensionRenamedScanTest(ScanTestCase):
@@ -173,6 +174,7 @@ class UnversionedExtensionRenamedScanTest(ScanTestCase):
         self.assertEqual(self.scan.result['public_vers'], {Version('3')})
         self.assertEqual(self.scan.result['ext_vers'], {version})
         self.assertEqual(self.scan.result['ext_no_version'], set())
+        self.assertEqual(self.scan.result['ext_stableabi'], set())
 
 
 class StableABIExtensionDependenciesTest(ScanTestCase):
@@ -186,8 +188,9 @@ class StableABIExtensionDependenciesTest(ScanTestCase):
     def test_scan(self):
         self.assertEqual(self.scan.result['public_vers'], {Version('3')})
         self.assertEqual(self.scan.result['ext_vers'], set())
+        self.assertEqual(self.scan.result['ext_no_version'], set())
         self.assertEqual(
-            self.scan.result['ext_no_version'],
+            self.scan.result['ext_stableabi'],
             {
                 'debian/python3-test/usr/lib/python3/dist-packages/'
                 'foo.abi3-x86_64-linux-gnu.so'
@@ -207,3 +210,4 @@ class VersionedExtensionDependenciesTest(ScanTestCase):
         self.assertEqual(self.scan.result['public_vers'], {Version('3')})
         self.assertEqual(self.scan.result['ext_vers'], {Version('3.14')})
         self.assertEqual(self.scan.result['ext_no_version'], set())
+        self.assertEqual(self.scan.result['ext_stableabi'], set())
