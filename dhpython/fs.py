@@ -303,8 +303,7 @@ class Scan:
                 if fext == 'so':
                     if not self.options.no_ext_rename:
                         fpath = self.rename_ext(fpath, interpreter, version)
-                    ver = self.handle_ext(fpath)  # pylint: disable=assignment-from-none
-                    ver = ver or version
+                    ver = version
                     if ver:
                         self.current_result.setdefault('ext_vers', set()).add(ver)
                     else:
@@ -420,11 +419,6 @@ class Scan:
                 os.rename(fpath, new_fpath)
             return new_fpath
         return fpath
-
-    def handle_ext(self, fpath):
-        """Handle .so file, return its version if detected."""
-        # pylint: disable=unused-argument
-        return None
 
     def is_bin_dir(self, dpath):
         """Check if dir is one from PATH ones."""
