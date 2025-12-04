@@ -30,7 +30,7 @@ from shutil import rmtree
 from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
 from dhpython import MULTIARCH_DIR_TPL
 from dhpython.tools import fix_shebang, clean_egg_name
-from dhpython.interpreter import Interpreter
+from dhpython.interpreter import EXTFILE_RE, Interpreter
 
 log = logging.getLogger('dhpython')
 
@@ -98,6 +98,7 @@ def share_files(srcdir, dstdir, interpreter, options):
             # do not rename directories here - all .so files have to be renamed first
             os.renames(fpath1, fpath2)
             continue
+        ext_m = EXTFILE_RE.search(i)
         if islink(fpath1):
             # move symlinks without changing them if they point to the same place
             if not exists(fpath2):
@@ -108,7 +109,7 @@ def share_files(srcdir, dstdir, interpreter, options):
             share_files(fpath1, fpath2, interpreter, options)
         elif cmpfile(fpath1, fpath2, shallow=False):
             os.remove(fpath1)
-        elif i.endswith(('.abi3.so', '.abi4.so')) and interpreter.parse_public_dir(srcdir):
+        elif ext_m and ext_m.group("stableabi") and interpreter.parse_public_dir(srcdir):
             log.warning('%s differs from previous one, removing anyway (%s)', i, srcdir)
             os.remove(fpath1)
         elif srcdir.endswith(".dist-info"):

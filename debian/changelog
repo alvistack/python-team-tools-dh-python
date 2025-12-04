@@ -1,9 +1,13 @@
-dh-python (6.20251202) UNRELEASED; urgency=medium
+dh-python (6.20251203) UNRELEASED; urgency=medium
 
+  [ Colin Watson ]
   * pyproject plugin: Use correct version-specific include directory when
     installing headers.
 
- -- Colin Watson <cjwatson@debian.org>  Thu, 04 Dec 2025 13:25:20 +0000
+  [ Stefano Rivera ]
+  * Handle multiarch tuples when merging stable ABI extensions.
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 04 Dec 2025 10:12:11 -0400
 
 dh-python (6.20251201) unstable; urgency=medium
 
