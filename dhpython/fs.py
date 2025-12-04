@@ -304,6 +304,12 @@ class Scan:
                     if not self.options.no_ext_rename:
                         fpath = self.rename_ext(fpath, interpreter, version)
                     ver = version
+                    # This is a bit of a hack, to fix #1121868.
+                    # Stop one .abi3.so in a package from loosening the
+                    # package's dependencies. Possibly we should be dealing
+                    # with this closer to the source.
+                    if ver == '3':
+                        ver = None
                     if ver:
                         self.current_result.setdefault('ext_vers', set()).add(ver)
                     else:

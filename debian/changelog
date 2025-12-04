@@ -6,6 +6,8 @@ dh-python (6.20251203) UNRELEASED; urgency=medium
 
   [ Stefano Rivera ]
   * Handle multiarch tuples when merging stable ABI extensions.
+  * Don't let a package containing one stable ABI module generate wide-open
+    python dependencies. (Closes: #1121868)
 
  -- Stefano Rivera <stefanor@debian.org>  Thu, 04 Dec 2025 10:12:11 -0400
 
