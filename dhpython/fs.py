@@ -31,6 +31,7 @@ from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
 from dhpython import MULTIARCH_DIR_TPL
 from dhpython.tools import fix_shebang, clean_egg_name
 from dhpython.interpreter import EXTFILE_RE, Interpreter
+from dhpython.version import Version
 
 log = logging.getLogger('dhpython')
 
@@ -300,15 +301,19 @@ class Scan:
                     continue
 
                 fext = splitext(fn)[-1][1:]
-                if fext == 'so':
+                ext_m = EXTFILE_RE.search(fn)
+                if ext_m:
                     if not self.options.no_ext_rename:
                         fpath = self.rename_ext(fpath, interpreter, version)
+                        ext_m = EXTFILE_RE.search(os.path.basename(fpath))
                     ver = version
-                    # This is a bit of a hack, to fix #1121868.
-                    # Stop one .abi3.so in a package from loosening the
-                    # package's dependencies. Possibly we should be dealing
-                    # with this closer to the source.
-                    if ver == '3':
+
+                    if ext_m["ver"]:
+                        assert ext_m["ver"].startswith("3")
+                        if ext_m["ver"] == "3":
+                            ver = None
+                        ver = Version("3." + ext_m["ver"][1:])
+                    else:
                         ver = None
                     if ver:
                         self.current_result.setdefault('ext_vers', set()).add(ver)

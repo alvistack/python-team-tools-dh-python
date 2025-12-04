@@ -1,14 +1,16 @@
+import os
 from tempfile import TemporaryDirectory
 from pathlib import Path
 from unittest import TestCase
 
 from dhpython.interpreter import Interpreter
-from dhpython.fs import merge_WHEEL, share_files
+from dhpython.fs import Scan, merge_WHEEL, share_files
+from dhpython.version import Version
 
 from .common import FakeOptions
 
 
-class MergeWheelTestCase(TestCase):
+class FSTestCase(TestCase):
     files = {}
     def setUp(self):
         self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
@@ -18,9 +20,7 @@ class MergeWheelTestCase(TestCase):
             path = temp_path / fn
             setattr(self, path.name, path)
             path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open('w') as f:
-                f.write('\n'.join(contents))
-                f.write('\n')
+            path.write_text('\n'.join(contents) + '\n')
 
     def assertFileContents(self, path, contents):
         """Assert that the contents of path is contents
@@ -34,7 +34,7 @@ class MergeWheelTestCase(TestCase):
             self.assertMultiLineEqual(contents, f.read())
 
 
-class MergeTagsTest(MergeWheelTestCase):
+class MergeTagsTest(FSTestCase):
     files = {
         'a': ('foo', 'Tag: A'),
         'b': ('foo', 'Tag: B'),
@@ -45,7 +45,7 @@ class MergeTagsTest(MergeWheelTestCase):
         self.assertFileContents(self.b, ('foo', 'Tag: B', 'Tag: A'))
 
 
-class ShareFilesTestCase(MergeWheelTestCase):
+class ShareFilesTestCase(FSTestCase):
     impl = 'cpython3'
     options = {}
 
@@ -125,3 +125,85 @@ class CExtensionsRenameTest(ShareFilesTestCase):
     def test_no_ext_rename(self):
         self.share_files(options={"no_ext_rename": True})
         self.assertTrue(self.destPath(self.ext_filename).exists())
+
+
+class ScanTestCase(FSTestCase):
+    impl = 'cpython3'
+    options = {}
+    package = "python3-test"
+
+    def setUp(self):
+        super().setUp()
+        pwd = os.getcwd()
+        try:
+            os.chdir(self.tempdir.name)
+            self.scan = Scan(
+                interpreter=Interpreter(self.impl),
+                package=self.package,
+                options=FakeOptions(**self.options),
+            )
+        finally:
+            os.chdir(pwd)
+
+
+class UnversionedExtensionScanTest(ScanTestCase):
+    files = {
+        'debian/python3-test/usr/lib/python3/dist-packages/foo.so': "contents",
+    }
+    options = {
+        "no_ext_rename": True,
+    }
+
+    def test_scan(self):
+        self.assertEqual(self.scan.result['public_vers'], {Version('3')})
+        self.assertEqual(self.scan.result['ext_vers'], set())
+        self.assertEqual(
+            self.scan.result['ext_no_version'],
+            {'debian/python3-test/usr/lib/python3/dist-packages/foo.so'},
+        )
+
+
+class UnversionedExtensionRenamedScanTest(ScanTestCase):
+    files = {
+        'debian/python3-test/usr/lib/python3/dist-packages/foo.so': "contents",
+    }
+
+    def test_scan(self):
+        version = Interpreter(self.impl).default_version
+        self.assertEqual(self.scan.result['public_vers'], {Version('3')})
+        self.assertEqual(self.scan.result['ext_vers'], {version})
+        self.assertEqual(self.scan.result['ext_no_version'], set())
+
+
+class StableABIExtensionDependenciesTest(ScanTestCase):
+    files = {
+        (
+            'debian/python3-test/usr/lib/python3/dist-packages/'
+            'foo.abi3-x86_64-linux-gnu.so'
+        ): "contents",
+    }
+
+    def test_scan(self):
+        self.assertEqual(self.scan.result['public_vers'], {Version('3')})
+        self.assertEqual(self.scan.result['ext_vers'], set())
+        self.assertEqual(
+            self.scan.result['ext_no_version'],
+            {
+                'debian/python3-test/usr/lib/python3/dist-packages/'
+                'foo.abi3-x86_64-linux-gnu.so'
+            },
+        )
+
+
+class VersionedExtensionDependenciesTest(ScanTestCase):
+    files = {
+        (
+            'debian/python3-test/usr/lib/python3/dist-packages/'
+            'foo.cpython-314-x86_64-linux-gnu.so'
+        ): "contents",
+    }
+
+    def test_scan(self):
+        self.assertEqual(self.scan.result['public_vers'], {Version('3')})
+        self.assertEqual(self.scan.result['ext_vers'], {Version('3.14')})
+        self.assertEqual(self.scan.result['ext_no_version'], set())
