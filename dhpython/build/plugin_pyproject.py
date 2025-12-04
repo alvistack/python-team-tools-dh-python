@@ -202,7 +202,9 @@ class BuildSystem(Base):
                     metadata = parse_metadata_file(
                         source.read_dist_info("METADATA")
                     )
-                    extra_path = osp.join(paths[extra], metadata["Name"])
+                    extra_path = osp.join(
+                        args['interpreter'].include_dir, metadata["Name"]
+                    )
             else:
                 extra_path = paths[extra]
             target_dir = args['destdir'] + extra_path

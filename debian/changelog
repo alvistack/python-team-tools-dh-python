@@ -1,3 +1,10 @@
+dh-python (6.20251202) UNRELEASED; urgency=medium
+
+  * pyproject plugin: Use correct version-specific include directory when
+    installing headers.
+
+ -- Colin Watson <cjwatson@debian.org>  Thu, 04 Dec 2025 13:25:20 +0000
+
 dh-python (6.20251201) unstable; urgency=medium
 
   [ Stefano Rivera ]
