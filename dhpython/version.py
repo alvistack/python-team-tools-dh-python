@@ -20,6 +20,7 @@
 
 import logging
 import re
+from typing import Iterable
 from os.path import exists
 
 from dhpython import _defaults
@@ -36,11 +37,26 @@ VERSION_RE = re.compile(r'''
 log = logging.getLogger('dhpython')
 Interpreter = None
 
+type V = "str | Version | Iterable[int]"
 
 class Version:
+    major: int
+    minor: int | None
+    micro: int | None
+    releaselevel: str | None
+    serial: int | None
+
     # TODO: Upgrade to PEP-440
-    def __init__(self, value=None, major=None, minor=None, micro=None,
-                 releaselevel=None, serial=None):
+    def __init__(
+        self,
+        value: V | None = None,
+        *,
+        major: int | None = None,
+        minor: int | None = None,
+        micro: int | None = None,
+        releaselevel: str | None = None,
+        serial: int | None = None,
+    ) -> None:
         # pylint: disable=too-many-positional-arguments
         """Construct a new instance.
 
@@ -60,18 +76,20 @@ class Version:
         del comp['self']
         del comp['value']
         if value:
+            assert isinstance(value, str)
             match = VERSION_RE.match(value)
             for name, value in match.groupdict().items() if match else []:
                 if value is not None and comp[name] is None:
-                    comp[name] = value
+                    if name == "releaselevel":
+                        comp[name] = value
+                    else:
+                        comp[name] = int(value)
         for name, value in comp.items():
-            if name != 'releaselevel' and value is not None:
-                value = int(value)
             setattr(self, name, value)
         if self.major is None:
             raise ValueError('major component is required')
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return major.minor or major string.
 
         >>> str(Version(major=3, minor=2, micro=1, releaselevel='final', serial=4))
@@ -84,10 +102,10 @@ class Version:
             result += '.{}'.format(self.minor)
         return result
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(repr(self))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return full version string.
 
         >>> repr(Version(major=3, minor=2, micro=1, releaselevel='final', serial=4))
@@ -103,7 +121,7 @@ class Version:
             result += '.{}'.format(value)
         return result + "')"
 
-    def __add__(self, other):
+    def __add__(self, other: int | str) -> "Version":
         """Return next version.
 
         >>> Version('3.1') + 1
@@ -112,13 +130,13 @@ class Version:
         Version('3')
         """
         result = Version(self)
-        if self.minor is None:
+        if result.minor is None:
             result.major += int(other)
         else:
             result.minor += int(other)
         return result
 
-    def __sub__(self, other):
+    def __sub__(self, other: int | str) -> "Version":
         """Return previous version.
 
         >>> Version('3.1') - 1
@@ -127,7 +145,7 @@ class Version:
         Version('2')
         """
         result = Version(self)
-        if self.minor is None:
+        if result.minor is None:
             result.major -= int(other)
             new = result.major
         else:
@@ -137,26 +155,26 @@ class Version:
             raise ValueError('cannot decrease version further')
         return result
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         try:
-            other = Version(other)
+            other = Version(other)  # type: ignore
         except Exception:
             return False
         return self.__cmp(other) == 0
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         return self.__cmp(other) < 0
 
-    def __le__(self, other):
+    def __le__(self, other: object) -> bool:
         return self.__cmp(other) <= 0
 
-    def __gt__(self, other):
+    def __gt__(self, other: object) -> bool:
         return self.__cmp(other) > 0
 
-    def __ge__(self, other):
+    def __ge__(self, other: object) -> bool:
         return self.__cmp(other) >= 0
 
-    def __lshift__(self, other):
+    def __lshift__(self, other: V) -> bool:
         """Compare major.minor or major only (if minor is not set).
 
         >>> Version('2.6') << Version('2.7')
@@ -177,7 +195,7 @@ class Version:
         else:
             return self.__cmp(other, ignore='micro') < 0
 
-    def __rshift__(self, other):
+    def __rshift__(self, other: V) -> bool:
         """Compare major.minor or major only (if minor is not set).
 
         >>> Version('2.6') >> Version('2.7')
@@ -198,18 +216,27 @@ class Version:
         else:
             return self.__cmp(other, ignore='micro') > 0
 
-    def __cmp(self, other, ignore=None):
+    def __cmp(self, other: object, ignore: str | None = None) -> int:
         if not isinstance(other, Version):
-            other = Version(other)
+            try:
+                other = Version(other)  # type: ignore
+            except Exception:
+                raise ValueError(f"Cannot compare Version with {other!r}")
         for name in ('major', 'minor', 'micro', 'releaselevel', 'serial'):
             if name == ignore:
                 break
-            value1 = getattr(self, name) or 0
-            value2 = getattr(other, name) or 0
             if name == 'releaselevel':
-                rmap = {'alpha': -3, 'beta': -2, 'candidate': -1, 'final': 0}
-                value1 = rmap.get(value1, 0)
-                value2 = rmap.get(value2, 0)
+                rmap: dict[str | None, int] = {
+                    'alpha': -3,
+                    'beta': -2,
+                    'candidate': -1,
+                    'final': 0,
+                }
+                value1 = rmap.get(self.releaselevel, 0)
+                value2 = rmap.get(other.releaselevel, 0)
+            else:
+                value1 = getattr(self, name) or 0
+                value2 = getattr(other, name) or 0
             if value1 == value2:
                 continue
             return (value1 > value2) - (value1 < value2)
@@ -217,7 +244,15 @@ class Version:
 
 
 class VersionRange:
-    def __init__(self, value=None, minver=None, maxver=None):
+    minver: Version | None
+    maxver: Version | None
+
+    def __init__(
+        self,
+        value: str | None = None,
+        minver: V | None = None,
+        maxver: V | None = None,
+    ) -> None:
         if minver:
             self.minver = Version(minver)
         else:
@@ -234,12 +269,12 @@ class VersionRange:
             if maxver and self.maxver is None:
                 self.maxver = maxver
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         if self.minver is not None or self.maxver is not None:
             return True
         return False
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return version range string from given range.
 
         >>> str(VersionRange(minver='3.4'))
@@ -266,7 +301,7 @@ class VersionRange:
         else:
             return '{}-{}'.format(self.minver, self.maxver)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return version range string.
 
         >>> repr(VersionRange('5.0-'))
@@ -276,14 +311,15 @@ class VersionRange:
         """
         result = 'VersionRange('
         if self.minver is not None:
-            result += "minver='{}'".format(self.minver)
+            result += f"minver='{self.minver}'"
+            if self.maxver is not None:
+                result += ", "
         if self.maxver is not None:
-            result += ", maxver='{}'".format(self.maxver)
-        result = result.replace('(, ', '(')
+            result += f"maxver='{self.maxver}'"
         return result + ")"
 
     @staticmethod
-    def parse(value):
+    def parse(value: str) -> tuple[Version | None, Version | None]:
         """Return minimum and maximum Python version from given range.
 
         >>> VersionRange.parse('3.0-')
@@ -317,15 +353,16 @@ class VersionRange:
                 minv = Version(groups[1])
                 return minv, minv
 
-            minv = maxv = None
+            minv_s: str | None = None
+            maxv_s: str | None = None
             if groups[0]:  # maximum version only
-                maxv = groups[1]
+                maxv_s = groups[1]
             else:
-                minv = groups[1]
-                maxv = groups[3]
+                minv_s = groups[1]
+                maxv_s = groups[3]
 
-            minv = Version(minv) if minv else None
-            maxv = Version(maxv) if maxv else None
+            minv = Version(minv_s) if minv_s else None
+            maxv = Version(maxv_s) if maxv_s else None
 
         if maxv and minv and minv > maxv:
             raise ValueError("version range is invalid: %s" % value)
@@ -333,7 +370,7 @@ class VersionRange:
         return minv, maxv
 
     @staticmethod
-    def _parse_pycentral(value):
+    def _parse_pycentral(value: str) -> tuple[Version | None, Version | None]:
         """Parse X-Python3-Version.
 
         >>> VersionRange._parse_pycentral('>= 3.10')
@@ -375,7 +412,7 @@ class VersionRange:
         return Version(minv) if minv else None, Version(maxv) if maxv else None
 
 
-def default(impl):
+def default(impl: str) -> Version:
     """Return default interpreter version for given implementation."""
     if impl not in _defaults.DEFAULT:
         raise ValueError("interpreter implementation not supported: %r" % impl)
@@ -383,7 +420,7 @@ def default(impl):
     return Version(major=ver[0], minor=ver[1])
 
 
-def supported(impl):
+def supported(impl: str) -> list[Version]:
     """Return list of supported interpreter versions for given implementation."""
     if impl not in _defaults.SUPPORTED:
         raise ValueError("interpreter implementation not supported: %r" % impl)
@@ -391,7 +428,11 @@ def supported(impl):
     return [Version(major=v[0], minor=v[1]) for v in versions]
 
 
-def get_requested_versions(impl, vrange=None, available=None):
+def get_requested_versions(
+    impl: str,
+    vrange: str | None = None,
+    available: bool | None = None,
+)-> set[Version]:
     """Return a set of requested and supported Python versions.
 
     :param impl: interpreter implementation
@@ -407,24 +448,22 @@ def get_requested_versions(impl, vrange=None, available=None):
     >>> get_requested_versions('cpython3', '>= 5.0')
     set()
     """
-    if isinstance(vrange, str):
-        vrange = VersionRange(vrange)
+    from dhpython.interpreter import Interpreter
 
-    if not vrange:
+    parsed_vrange: VersionRange | None = None
+    if isinstance(vrange, str):
+        parsed_vrange = VersionRange(vrange)
+
+    if not parsed_vrange:
         versions = set(supported(impl))
     else:
-        minv = Version(major=0, minor=0) if vrange.minver is None else vrange.minver
-        maxv = Version(major=99, minor=99) if vrange.maxver is None else vrange.maxver
+        minv = Version(major=0, minor=0) if parsed_vrange.minver is None else parsed_vrange.minver
+        maxv = Version(major=99, minor=99) if parsed_vrange.maxver is None else parsed_vrange.maxver
         if minv == maxv:
             versions = set([minv] if minv in supported(impl) else tuple())
         else:
             versions = set(v for v in supported(impl) if minv <= v < maxv)
 
-    if available is not None:
-        # to avoid circular imports
-        global Interpreter
-        if Interpreter is None:
-            from dhpython.interpreter import Interpreter
     if available:
         interpreter = Interpreter(impl=impl)
         versions = set(v for v in versions
@@ -437,7 +476,10 @@ def get_requested_versions(impl, vrange=None, available=None):
     return versions
 
 
-def build_sorted(versions, impl='cpython3'):
+def build_sorted(
+    versions: Iterable[V],
+    impl: str='cpython3',
+) -> list[Version]:
     """Return sorted list of versions in a build friendly order.
 
     i.e. default version, if among versions, is sorted last.

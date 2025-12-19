@@ -22,6 +22,7 @@
 
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator, override
 import logging
 import os.path as osp
 import shutil
@@ -30,7 +31,7 @@ try:
     import tomllib
 except ModuleNotFoundError:
     try:
-        import tomli as tomllib
+        import tomli as tomllib  # type: ignore
     except ModuleNotFoundError:
         # Plugin still works, only needed for autodetection
         pass
@@ -40,20 +41,25 @@ try:
     from installer.sources import WheelFile
     from installer.utils import parse_metadata_file
 except ModuleNotFoundError:
-    SchemeDictionaryDestination = WheelFile = install = parse_metadata_file = None
+    SchemeDictionaryDestination = WheelFile = install = parse_metadata_file = None  # type: ignore
 
 from dhpython.build.base import Base, shell_command, create_setuptools_parallel_cfg
+from dhpython.build.types import Context, Args
 from dhpython.tools import dpkg_architecture
 
 log = logging.getLogger('dhpython')
 
 
-def _build_backend():
+def _build_backend() -> str | None:
     """Retrieve the build-system from pyproject.toml, where possible"""
     try:
         with open('pyproject.toml', 'rb') as f:
             pyproject = tomllib.load(f)
-        return pyproject.get('build-system', {}).get('build-backend')
+        backend = pyproject.get('build-system', {}).get('build-backend')
+        if backend is None:
+            return None
+        assert isinstance(backend, str)
+        return backend
     except NameError:
         # No toml, no autdetection
         return None
@@ -69,7 +75,8 @@ class BuildSystem(Base):
     OPTIONAL_FILES = {}
     CLEAN_FILES = Base.CLEAN_FILES | {'build'}
 
-    def detect(self, context):
+    @override
+    def detect(self, context: Context) -> int:
         """Return certainty level that this plugin describes the right build
         system
 
@@ -91,27 +98,28 @@ class BuildSystem(Base):
             return 100
         return result
 
-    def clean(self, context, args):
+    @override
+    def clean(self, context: Context, args: Args) -> None:
         super().clean(context, args)
         if osp.exists(args['interpreter'].binary()):
             log.debug("removing '%s' (and everything under it)",
                       args['build_dir'])
             if osp.isdir(args['build_dir']):
                 shutil.rmtree(args['build_dir'])
-        return 0  # no need to invoke anything
 
-    def configure(self, context, args):
+    @override
+    def configure(self, context: Context, args: Args) -> None:
         if install is None:
             raise Exception("PEP517 plugin dependencies are not available. "
                             "Please Build-Depend on pybuild-plugin-pyproject.")
         # No separate configure step
-        return 0
 
-    def build(self, context, args):
+    @override
+    def build(self, context: Context, args: Args) -> None:
         self.build_wheel(context, args)
         self.unpack_wheel(context, args)
 
-    def _backend_config_settings(self):
+    def _backend_config_settings(self) -> list[str]:
         backend = _build_backend()
         if backend == "mesonpy":
             arch_data = dpkg_architecture()
@@ -128,7 +136,8 @@ class BuildSystem(Base):
 
     @shell_command
     @create_setuptools_parallel_cfg(backend=_build_backend())
-    def build_wheel(self, context, args):
+    @override
+    def build_wheel(self, context: Context, args: Args) -> str:
         """ build a wheel using the PEP517 builder defined by upstream """
         log.info('Building wheel for %s with "build" module',
                  args['interpreter'])
@@ -144,27 +153,30 @@ class BuildSystem(Base):
                )
 
     @contextmanager
-    def opened_wheel(self, context, args):
-        wheel = Path(self.built_wheel(context, args))
+    def opened_wheel(self, context: Context, args: Args) -> Iterator[WheelFile]:
+        wheel_fn = self.built_wheel(context, args)
+        if not wheel_fn:
+            raise AssertionError("Unable to locate a built wheel")
+        wheel = Path(wheel_fn)
         if wheel.name.startswith('UNKNOWN'):
             raise Exception(f'UNKNOWN wheel found: {wheel.name}. Does '
                             'pyproject.toml specify a build-backend?')
         with WheelFile.open(wheel) as source:
             yield source
 
-    def unpack_wheel(self, context, args):
+    def unpack_wheel(self, context: Context, args: Args) -> None:
         """ unpack the wheel into pybuild's normal  """
         log.info('Unpacking wheel built for %s with "installer" module',
                  args['interpreter'])
         extras = {}
         for extra in ('scripts', 'data', 'include'):
             path = Path(args["home_dir"]) / extra
-            if osp.exists(path):
+            if path.exists():
                 log.warning('%s directory already exists, skipping unpack. '
                             'Is the Python package being built twice?',
                             extra.title())
                 return
-            extras[extra] = path
+            extras[extra] = str(path)
         destination = SchemeDictionaryDestination(
             {
                 'platlib': args['build_dir'],
@@ -184,7 +196,8 @@ class BuildSystem(Base):
                 additional_metadata={},
             )
 
-    def install(self, context, args):
+    @override
+    def install(self, context: Context, args: Args) -> None:
         log.info('Copying package built for %s to destdir',
                  args['interpreter'])
         try:
@@ -230,7 +243,8 @@ class BuildSystem(Base):
         )
 
     @shell_command
-    def test(self, context, args):
+    @override
+    def test(self, context: Context, args: Args) -> str:
         scripts = Path(args["home_dir"]) / 'scripts'
         if scripts.exists():
             context['ENV']['PATH'] = f"{scripts}:{context['ENV']['PATH']}"

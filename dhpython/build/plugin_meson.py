@@ -19,8 +19,10 @@
 # THE SOFTWARE.
 
 from os.path import join
+from typing import override
 
 from dhpython.build.base import Base, shell_command, copy_test_files
+from dhpython.build.types import Args, Context
 
 
 class BuildSystem(Base):
@@ -29,12 +31,14 @@ class BuildSystem(Base):
     REQUIRED_FILES = ['meson.build']
 
     @shell_command
-    def clean(self, context, args):
+    @override
+    def clean(self, context: Context, args: Args) -> str:
         super().clean(context, args)
         return 'dh_auto_clean --buildsystem=cmake'
 
     @shell_command
-    def configure(self, context, args):
+    @override
+    def configure(self, context: Context, args: Args) -> str:
         # Can't be specified on the command line, directly
         # https://github.com/mesonbuild/meson/issues/9671
         with open(join(args['build_dir'], 'pybuild-meson-native.ini'), 'w', encoding="UTF-8") as f:
@@ -47,13 +51,15 @@ class BuildSystem(Base):
                 ' {args}')
 
     @shell_command
-    def build(self, context, args):
+    @override
+    def build(self, context: Context, args: Args) -> str:
         return ('dh_auto_build --buildsystem=meson'
                 ' --builddirectory={build_dir}'
                 ' -- {args}')
 
     @shell_command
-    def install(self, context, args):
+    @override
+    def install(self, context: Context, args: Args) -> str:
         return ('dh_auto_install --buildsystem=meson'
                 ' --builddirectory={build_dir}'
                 ' --destdir={destdir}'
@@ -61,7 +67,8 @@ class BuildSystem(Base):
 
     @copy_test_files()
     @shell_command
-    def test(self, context, args):
+    @override
+    def test(self, context: Context, args: Args) -> str:
         return ('dh_auto_test --buildsystem=meson'
                 ' --builddirectory={build_dir}'
                 ' -- {args}')

@@ -19,19 +19,48 @@
 # THE SOFTWARE.
 
 import logging
+from argparse import Namespace
 from functools import partial
 from os.path import exists, join
+
 from dhpython import PKG_PREFIX_MAP, MINPYCDEP
-from dhpython.pydist import parse_pydep, parse_requires_dist, guess_dependency
-from dhpython.version import default, supported, VersionRange
+from dhpython.fs import ScanResult
+from dhpython.debhelper import BD, DebHelper
+from dhpython.pydist import (
+    NewDependencies,
+    guess_dependency,
+    parse_pydep,
+    parse_requires_dist,
+)
+from dhpython.version import default, supported, Version, VersionRange
 
 log = logging.getLogger('dhpython')
 
 
 class Dependencies:
     """Store relations (dependencies, etc.) between packages."""
+    impl: str
+    package: str
+    bdep: BD | None
+    is_debug_package: bool
+    ipkg_vtpl: str
+    ipkg_tpl: str
+    ipkg_tpl_ma: str
+    ipkg_vtpl_ma: str
+    python_dv_in_bd: bool
+    depends: set[str]
+    recommends: list[str]
+    suggests: list[str]
+    enhances: list[str]
+    breaks: list[str]
+    rtscripts: list[tuple[str, str]]
 
-    def __init__(self, package, impl='cpython3', bdep=None):
+    def __init__(
+        self,
+        package: str,
+        impl: str = 'cpython3',
+        bdep: BD | None = None,
+    ) -> None:
         self.impl = impl
         self.package = package
         bdep = self.bdep = bdep or {}
@@ -54,7 +83,7 @@ class Dependencies:
         self.breaks = []
         self.rtscripts = []
 
-    def export_to(self, dh):
+    def export_to(self, dh: DebHelper) -> None:
         """Fill in debhelper's substvars."""
         prefix = PKG_PREFIX_MAP.get(self.impl, 'misc')
         for i in sorted(self.depends):
@@ -67,39 +96,47 @@ class Dependencies:
             dh.addsubstvar(self.package, '{}:Enhances'.format(prefix), i)
         for i in sorted(self.breaks):
             dh.addsubstvar(self.package, '{}:Breaks'.format(prefix), i)
-        for i in sorted(self.rtscripts):
-            dh.add_rtupdate(self.package, i)
+        for script in sorted(self.rtscripts):
+            dh.add_rtupdate(self.package, script)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "D=%s; R=%s; S=%s; E=%s, B=%s; RT=%s" %\
             (self.depends, self.recommends, self.suggests,
              self.enhances, self.breaks, self.rtscripts)
 
-    def depend(self, value):
+    def depend(self, value: str | None) -> None:
         if value and value not in self.depends:
             self.depends.add(value)
 
-    def recommend(self, value):
+    def recommend(self, value: str | None) -> None:
         if value and value not in self.recommends:
             self.recommends.append(value)
 
-    def suggest(self, value):
+    def suggest(self, value: str | None) -> None:
         if value and value not in self.suggests:
             self.suggests.append(value)
 
-    def enhance(self, value):
+    def enhance(self, value: str | None) -> None:
         if value and value not in self.enhances:
             self.enhances.append(value)
 
-    def break_(self, value):
+    def break_(self, value: str | None) -> None:
         if value and value not in self.breaks:
             self.breaks.append(value)
 
-    def rtscript(self, value):
+    def rtscript(self, value: tuple[str, str]) -> None:
         if value not in self.rtscripts:
             self.rtscripts.append(value)
 
-    def parse(self, stats, options):
+    def add_new_dependencies(self, new_dependencies: NewDependencies) -> None:
+        for dep in new_dependencies["depends"]:
+            self.depend(dep)
+        for dep in new_dependencies["recommends"]:
+            self.recommend(dep)
+        for dep in new_dependencies["suggests"]:
+            self.suggest(dep)
+
+    def parse(self, stats: ScanResult, options: Namespace) -> None:
         log.debug('generating dependencies for package %s', self.package)
         tpl = self.ipkg_tpl
         vtpl = self.ipkg_vtpl
@@ -157,7 +194,7 @@ class Dependencies:
             if any(True for i in details.get('shebangs', []) if i.version is None or i.version.minor is None):
                 self.depend(tpl_ma)
 
-            extensions = False
+            extensions: list[Version] = []
             if self.python_dev_in_bd:
                 extensions = sorted(details.get('ext_vers', set()))
                 #self.depend('|'.join(vtpl % i for i in extensions))
@@ -207,11 +244,9 @@ class Dependencies:
             for fn in stats['requires.txt']:
                 # TODO: should options.recommends and options.suggests be
                 # removed from requires.txt?
-                deps = parse_pydep(self.impl, fn, bdep=self.bdep, **section_options)
-                # pylint: disable=expression-not-assigned
-                [self.depend(i) for i in deps['depends']]
-                [self.recommend(i) for i in deps['recommends']]
-                [self.suggest(i) for i in deps['suggests']]
+                self.add_new_dependencies(
+                    parse_pydep(self.impl, fn, bdep=self.bdep, **section_options)
+                )
             for fpath in stats['egg-info']:
                 with open(fpath, 'r', encoding='utf-8') as fp:
                     for line in fp:
@@ -219,12 +254,10 @@ class Dependencies:
                             req = line[10:].strip()
                             self.depend(guess_deps(req=req))
             for fpath in stats['dist-info']:
-                deps = parse_requires_dist(self.impl, fpath, bdep=self.bdep,
-                                           **section_options)
-                # pylint: disable=expression-not-assigned
-                [self.depend(i) for i in deps['depends']]
-                [self.recommend(i) for i in deps['recommends']]
-                [self.suggest(i) for i in deps['suggests']]
+                self.add_new_dependencies(
+                    parse_requires_dist(self.impl, fpath, bdep=self.bdep,
+                                        **section_options)
+                )
 
         # add dependencies from --depends
         for item in options.depends or []:
@@ -243,10 +276,8 @@ class Dependencies:
                 if not exists(fpath):
                     log.warning('cannot find requirements file: %s', fn)
                     continue
-            deps = parse_pydep(self.impl, fpath, bdep=self.bdep, **section_options)
-            # pylint: disable=expression-not-assigned
-            [self.depend(i) for i in deps['depends']]
-            [self.recommend(i) for i in deps['recommends']]
-            [self.suggest(i) for i in deps['suggests']]
+            self.add_new_dependencies(
+                parse_pydep(self.impl, fpath, bdep=self.bdep, **section_options)
+            )
 
         log.debug(self)

@@ -24,20 +24,34 @@ from configparser import ConfigParser
 from os import environ
 from os.path import exists
 from subprocess import Popen, PIPE
+from typing import NamedTuple
 
-SUPPORTED = {
-    'cpython3': [(3, 8)],
+
+SUPPORTED: dict[str, tuple[tuple[int, int], ...]] = {
+    'cpython3': ((3, 8),),
 }
-DEFAULT = {
+DEFAULT: dict[str, tuple[int, int]] = {
     'cpython3': (3, 8),
 }
 
 log = logging.getLogger('dhpython')
 
 
-def cpython_versions(major):
-    result = [None, None]
+class CPythonVersions(NamedTuple):
+    default: tuple[int, int] | None
+    supported: tuple[tuple[int, int], ...]
+
+
+def _parse_version(version: str) -> tuple[int, int]:
+    parts = version.split(".")
+    assert len(parts) == 2
+    return (int(parts[0]), int(parts[1]))
+
+
+def cpython_versions(major: int) -> CPythonVersions:
     assert major > 2
+    default_ver: tuple[int, int] | None = None
+    supported_vers: tuple[tuple[int, int], ...] = ()
     ver = str(major)
     supported = environ.get("DEBPYTHON{}_SUPPORTED".format(ver))
     default = environ.get("DEBPYTHON{}_DEFAULT".format(ver))
@@ -51,34 +65,37 @@ def cpython_versions(major):
                 .replace('python', '')
     if default:
         try:
-            result[0] = tuple(int(i) for i in default.split('.'))
+            default_ver = _parse_version(default)
         except Exception as err:
             log.warning('invalid debian_defaults file: %s', err)
     if supported:
         try:
-            result[1] = tuple(tuple(int(j) for j in i.strip().split('.'))
-                              for i in supported.split(','))
+            supported_vers = tuple(
+                _parse_version(i) for i in supported.split(',')
+            )
         except Exception as err:
             log.warning('invalid debian_defaults file: %s', err)
-    return result
+    return CPythonVersions(
+        default=default_ver,
+        supported=supported_vers,
+    )
 
 
-def from_file(fpath):
+def from_file(fpath: str) -> None:
     if not exists(fpath):
         raise ValueError("missing interpreter: %s" % fpath)
     command = "{} --version".format(fpath)
-    with Popen(command, shell=True, stdout=PIPE) as process:
+    with Popen(command, shell=True, stdout=PIPE, encoding="utf-8") as process:
         stdout, _ = process.communicate()
-        stdout = str(stdout, 'utf-8')
 
     print(stdout)
 
 
 cpython3 = cpython_versions(3)
-if cpython3[0]:
-    DEFAULT['cpython3'] = cpython3[0]
-if cpython3[1]:
-    SUPPORTED['cpython3'] = cpython3[1]
+if cpython3.default:
+    DEFAULT['cpython3'] = cpython3.default
+if cpython3.supported:
+    SUPPORTED['cpython3'] = cpython3.supported
 
 
 if __name__ == '__main__':

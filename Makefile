@@ -53,6 +53,10 @@ nose:
 	#nosetests3 --verbose --with-doctest --with-coverage
 	nose2-3 --verbose --plugin nose2.plugins.doctests --with-doctest
 
+mypy:
+	mypy --strict dh_python3 dhpython/ tests/*.py
+	mypy --strict pybuild
+
 tests: nose
 	make -C tests
 

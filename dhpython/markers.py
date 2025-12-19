@@ -27,6 +27,7 @@ private: https://github.com/pypa/packaging/issues/496
 """
 
 import re
+from typing import Literal, NamedTuple, cast
 
 
 SIMPLE_ENV_MARKER_RE = re.compile(r'''
@@ -49,7 +50,16 @@ class ComplexEnvironmentMarker(Exception):
     pass
 
 
-def parse_environment_marker(marker):
+OP = Literal["<", ">", "<=", ">=", "==", "!=", "~=", "==="]
+
+
+class ParsedMarker(NamedTuple):
+    marker: str
+    op: OP
+    value: str
+
+
+def parse_environment_marker(marker: str) -> ParsedMarker:
     """Parse a simple marker of <= 1 environment restriction"""
     marker = marker.strip()
     if marker.startswith('(') and marker.endswith(')'):
@@ -63,8 +73,8 @@ def parse_environment_marker(marker):
     if not m:
         raise ComplexEnvironmentMarker()
 
-    return (
-        m.group('marker'),
-        m.group('op'),
-        m.group('value'),
+    return ParsedMarker(
+        marker=m.group('marker'),
+        op=cast(OP, m.group('op')),
+        value=m.group('value'),
     )

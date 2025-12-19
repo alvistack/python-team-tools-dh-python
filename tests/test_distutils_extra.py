@@ -1,23 +1,30 @@
 import os
 import unittest
+from argparse import Namespace
 from copy import deepcopy
 from tempfile import TemporaryDirectory
+from typing import cast
 
 from dhpython.depends import Dependencies
+from dhpython.fs import ScanResult
+from dhpython.pydist import Standard
 
-from .test_depends import FakeOptions, prime_pydist
+from .common import FakeOptions
+from .test_depends import prime_pydist, pydist
 
 
 class TestDistutilsExtra(unittest.TestCase):
     options = FakeOptions(guess_deps=True)
     pydist = {
-        'bar': 'python3-bar',
-        'baz': {'dependency': 'python3-baz', 'standard': 'PEP386'},
-        'quux': {'dependency': 'python3-quux', 'standard': 'PEP386'},
+        'bar': [pydist(name='bar', dependency='python3-bar')],
+        'baz': [pydist(name='baz', dependency='python3-baz',
+                       standard=Standard.PEP386)],
+        'quux': [pydist(name='quux', dependency='python3-quux',
+                        standard=Standard.PEP386)],
     }
     pkg = 'foo'
     impl = 'cpython3'
-    stats = {
+    stats = ScanResult({
         'compile': False,
         'dist-info': set(),
         'egg-info': set(('PKG-INFO',)),
@@ -29,10 +36,9 @@ class TestDistutilsExtra(unittest.TestCase):
         'public_vers': set(),
         'requires.txt': set(),
         'shebangs': set(),
-    }
-    requires = {}
+    })
 
-    def test_depends_on_bar(self):
+    def test_depends_on_bar(self) -> None:
         self.d = Dependencies(self.pkg, self.impl)
         stats = deepcopy(self.stats)
         self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
@@ -55,5 +61,5 @@ gTranscribe is a software focused on easy transcription of spoken words.
 """)
         cleanup = prime_pydist(self.impl, self.pydist)
         self.addCleanup(cleanup)
-        self.d.parse(stats, self.options)
+        self.d.parse(stats, cast(Namespace, self.options))
         self.assertIn('python3-bar', self.d.depends)

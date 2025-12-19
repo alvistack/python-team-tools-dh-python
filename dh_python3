@@ -27,7 +27,9 @@ import sys
 from argparse import ArgumentParser, SUPPRESS
 from os.path import exists, join
 from shutil import copy as fcopy
-from dhpython.debhelper import DebHelper
+from typing import cast
+
+from dhpython.debhelper import DebHelper, Options
 from dhpython.depends import Dependencies
 from dhpython.interpreter import Interpreter, EXTFILE_RE
 from dhpython.version import supported, default, Version, VersionRange
@@ -50,21 +52,20 @@ SUPPORTED = supported('cpython3')
 
 
 class Scanner(Scan):
-    def handle_ext(self, fpath):
+    def handle_ext(self, fpath: str) -> Version | None:
         _, fname = fpath.rsplit('/', 1)
-        tagver = EXTFILE_RE.search(fname)
-        if tagver is None:
+        if not (m:= EXTFILE_RE.search(fname)):
             # yeah, python3.1 is not covered, but we don't want to
             # mess with non-Python libraries, don't we?
-            return
-        tagver = tagver.groupdict()['ver']
+            return None
+        tagver = m.groupdict()['ver']
         if tagver is None:
-            return
+            return None
         tagver = Version("%s.%s" % (tagver[0], tagver[1:]))
         return tagver
 
 
-def main():
+def main() -> None:
     parser = ArgumentParser()
     parser.add_argument(
         '--version', action='version', version='%(prog)s DEVELV')
@@ -194,7 +195,7 @@ def main():
         options.write_log = True
 
     try:
-        dh = DebHelper(options, impl='cpython3')
+        dh = DebHelper(cast(Options, options), impl='cpython3')
     except Exception as e:
         log.error('cannot initialize DebHelper: %s', e)
         sys.exit(2)
@@ -221,7 +222,7 @@ def main():
                 log.error("%s.pyremove: %s", package, err)
                 sys.exit(5)
             fix_locations(package, interpreter, SUPPORTED, options)
-        stats = Scanner(interpreter, package, private_dir, options).result
+        stats = Scanner(interpreter, package, private_dir, options=options).result
 
         dependencies = Dependencies(package, 'cpython3', dh.build_depends)
         dependencies.parse(stats, options)
@@ -235,7 +236,7 @@ def main():
             dh.autoscript(package, 'prerm', 'prerm-py3clean', '')
             pyclean_added = True
         for pdir, details in sorted(stats['private_dirs'].items()):
-            if not details.get('compile'):
+            if not details['compile']:
                 continue
             if not pyclean_added:
                 dh.autoscript(package, 'prerm', 'prerm-py3clean', '')
@@ -243,10 +244,10 @@ def main():
 
             args = pdir
 
-            ext_for = details.get('ext_vers')
-            ext_no_version = details.get('ext_no_version')
-            if ext_for is None and not ext_no_version:  # no extension
-                shebang_versions = list(i.version for i in details.get('shebangs', [])
+            ext_for = details['ext_vers']
+            ext_no_version = details['ext_no_version']
+            if not ext_for and not ext_no_version:  # no extension
+                shebang_versions = list(i.version for i in details['shebangs']
                                         if i.version and i.version.minor)
                 if not options.ignore_shebangs and len(shebang_versions) == 1:
                     # only one version from shebang
@@ -258,8 +259,12 @@ def main():
                 if options.vrange and '-' not in str(options.vrange):
                     ver = str(options.vrange)
                 else:  # try shebang or default Python version
-                    ver = (list(i.version for i in details.get('shebangs', [])
-                                if i.version and i.version.minor) or [None])[0] or DEFAULT
+                    v = DEFAULT
+                    for i in details['shebangs']:
+                        if i.version and i.version.minor:
+                            v = i.version
+                            break
+                    ver = str(v)
                 dependencies.depend("python%s" % ver)
                 args += " -V %s" % ver
             else:

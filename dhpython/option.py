@@ -22,7 +22,7 @@
 import re
 
 
-def compiled_regex(string):
+def compiled_regex(string: str) -> re.Pattern[str]:
     """argparse regex type"""
     try:
         return re.compile(string)

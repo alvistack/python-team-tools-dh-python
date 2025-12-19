@@ -1,20 +1,21 @@
-from tempfile import TemporaryDirectory
-import unittest
 import os
+import unittest
+from tempfile import TemporaryDirectory
+from typing import Any
 
-from dhpython.debhelper import DebHelper, build_options
+from dhpython.debhelper import DebHelper, build_options, Options
 
 
 class DebHelperTestCase(unittest.TestCase):
     impl = 'cpython3'
-    control = []
-    options = {}
+    control: list[str] = []
+    options: dict[str, Any] = {}
     parse_control = True
 
-    def build_options(self):
+    def build_options(self) -> Options:
         return build_options(**self.options)
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.tempdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tempdir.cleanup)
 
@@ -67,10 +68,10 @@ CONTROL = [
 class TestControlBlockParsing(DebHelperTestCase):
     control = CONTROL
 
-    def test_parses_source(self):
+    def test_parses_source(self) -> None:
         self.assertEqual(self.dh.source_name, 'foo-src')
 
-    def test_parses_build_depends(self):
+    def test_parses_build_depends(self) -> None:
         self.assertEqual(self.dh.build_depends, {
             'python3-all': {None: None},
             'python-all': {None: None},
@@ -78,17 +79,17 @@ class TestControlBlockParsing(DebHelperTestCase):
             'baz': {None: '>= 1.0'},
         })
 
-    def test_parses_XPV(self):
+    def test_parses_XPV(self) -> None:
         self.assertEqual(self.dh.python_version, '>= 3.1, << 3.10')
 
-    def test_parses_packages(self):
+    def test_parses_packages(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()),
                          ['python3-foo', 'python3-foo-ext', 'foo', 'recfoo'])
 
-    def test_parses_arch(self):
+    def test_parses_arch(self) -> None:
         self.assertEqual(self.dh.packages['python3-foo-ext']['arch'], 'any')
 
-    def test_parses_arch_all(self):
+    def test_parses_arch_all(self) -> None:
         self.assertEqual(self.dh.packages['python3-foo']['arch'], 'all')
 
 
@@ -98,7 +99,7 @@ class TestControlSkipIndep(DebHelperTestCase):
         'arch': True,
     }
 
-    def test_skip_indep(self):
+    def test_skip_indep(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()), ['python3-foo-ext'])
 
 
@@ -108,7 +109,7 @@ class TestControlSkipArch(DebHelperTestCase):
         'arch': False,
     }
 
-    def test_skip_arch(self):
+    def test_skip_arch(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()),
                          ['python3-foo', 'foo', 'recfoo'])
 
@@ -119,7 +120,7 @@ class TestControlSinglePkg(DebHelperTestCase):
         'package': ['python3-foo'],
     }
 
-    def test_parses_packages(self):
+    def test_parses_packages(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()), ['python3-foo'])
 
 
@@ -129,7 +130,7 @@ class TestControlSkipSinglePkg(DebHelperTestCase):
         'no_package': ['python3-foo'],
     }
 
-    def test_parses_packages(self):
+    def test_parses_packages(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()),
                          ['python3-foo-ext', 'foo', 'recfoo'])
 
@@ -141,7 +142,7 @@ class TestControlNoBinaryPackages(DebHelperTestCase):
     ]
     parse_control = False
 
-    def test_throws_error(self):
+    def test_throws_error(self) -> None:
         msg = 'Unable to parse debian/control, found less than 2 paragraphs'
         with self.assertRaisesRegex(Exception, msg):
             DebHelper(self.build_options())
@@ -156,7 +157,7 @@ class TestControlMissingPackage(DebHelperTestCase):
     ]
     parse_control = False
 
-    def test_parses_packages(self):
+    def test_parses_packages(self) -> None:
         msg = ('Unable to parse debian/control, paragraph 2 missing Package '
                'field')
         with self.assertRaisesRegex(Exception, msg):
@@ -170,7 +171,7 @@ class TestRemainingPackages(DebHelperTestCase):
     }
     parse_control = False
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         with open('debian/python3-foo.debhelper.log', 'w', encoding="UTF-8") as f:
             f.write('dh_python3\n')
@@ -178,6 +179,6 @@ class TestRemainingPackages(DebHelperTestCase):
             f.write('dh_foobar\n')
         self.dh = DebHelper(self.build_options(), impl=self.impl)
 
-    def test_skips_logged_packages(self):
+    def test_skips_logged_packages(self) -> None:
         self.assertEqual(list(self.dh.packages.keys()),
                          ['python3-foo-ext', 'foo', 'recfoo'])

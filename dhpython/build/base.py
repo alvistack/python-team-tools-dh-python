@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 import logging
+from argparse import Namespace
 from functools import wraps
 from glob import glob1
 from os import environ, remove, walk, makedirs
@@ -26,21 +27,54 @@ from os.path import exists, isdir, join
 from pathlib import Path
 from shlex import quote
 from shutil import rmtree, copyfile, copytree, which
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Concatenate,
+    Literal,
+    ParamSpec,
+    TypeVar,
+    cast,
+    overload,
+)
+
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
-from dhpython.tools import execute
+from dhpython.tools import execute, ExecutionResult, ExecutionResultWithOutput
+from dhpython.build.types import Args, Context
+
+if TYPE_CHECKING:
+    from functools import _Wrapped
 
 log = logging.getLogger('dhpython')
 
+P = ParamSpec('P')
+T = TypeVar('T')
+BC = TypeVar('BC', bound="Base")
 
-def copy_test_files(dest='{build_dir}',
-                    filelist='{home_dir}/testfiles_to_rm_before_install',
-                    add_to_args=('test', 'tests')):
+def copy_test_files(
+    dest: str = '{build_dir}',
+    filelist: str = '{home_dir}/testfiles_to_rm_before_install',
+    add_to_args: tuple[str, ...] = ('test', 'tests')
+) -> Callable[
+        [Callable[Concatenate[BC, Context, Args, P], T]],
+        Callable[Concatenate[BC, Context, Args, P], T],
+    ]:
 
-    def _copy_test_files(func):
+    def _copy_test_files(
+        func: Callable[Concatenate[BC, Context, Args, P], T], /
+    ) -> "_Wrapped[Concatenate[BC, Context, Args, P], T, Concatenate[BC, Context, Args, P], T]":
 
         @wraps(func)
-        def __copy_test_files(self, context, args, *oargs, **kwargs):
+        def __copy_test_files(
+            self: BC,
+            context: Context,
+            args: Args,
+            *oargs: P.args,
+            **kwargs: P.kwargs
+        ) -> T:
             files_to_copy = {'pyproject.toml', 'pytest.ini', 'test', 'tests'}
             # check debian/pybuild_pythonX.Y.testfiles
             for tpl in ('_{i}{v}', '_{i}{m}', ''):
@@ -51,8 +85,8 @@ def copy_test_files(dest='{build_dir}',
                 if exists(fpath):
                     with open(fpath, encoding='utf-8') as fp:
                         # overwrite files_to_copy if .testfiles file found
-                        files_to_copy = [line.strip() for line in fp.readlines()
-                                         if not line.startswith('#')]
+                        files_to_copy = {line.strip() for line in fp.readlines()
+                                         if not line.startswith('#')}
                         break
 
             files_to_remove = set()
@@ -100,29 +134,34 @@ class Base:
     :attr SUPPORTED_INTERPRETERS: set of interpreter templates (with or without
         {version}) supported by given plugin
     """
+    NAME: ClassVar[str]
     DESCRIPTION = ''
-    REQUIRED_COMMANDS = []
-    REQUIRED_FILES = []
-    OPTIONAL_FILES = {}
-    SUPPORTED_INTERPRETERS = {'python', 'python3', 'python-dbg', 'python3-dbg',
-                              'python{version}', 'python{version}-dbg'}
+    REQUIRED_COMMANDS: list[str] = []
+    REQUIRED_FILES: list[str] = []
+    DETECTED_REQUIRED_FILES: dict[str, list[str]]
+    OPTIONAL_FILES: dict[str, int] = {}
+    DETECTED_OPTIONAL_FILES: dict[str, list[str]]
+    SUPPORTED_INTERPRETERS: Literal[True] | set[str] = {
+        'python', 'python3', 'python-dbg', 'python3-dbg',
+        'python{version}', 'python{version}-dbg'
+    }
     # files and directories to remove during clean step (other than .pyc):
     CLEAN_FILES = {'.pytest_cache', '.coverage'}
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: Namespace) -> None:
         self.cfg = cfg
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "BuildSystem(%s)" % self.NAME
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> None:
         for command in cls.REQUIRED_COMMANDS:
             pth = which(command)
             if not pth:
                 raise RequiredCommandMissingException(command)
 
-    def detect(self, context):
+    def detect(self, context: Context) -> int:
         """Return certainty level that this plugin describes the right build system
 
         This method is using cls.{REQUIRED,OPTIONAL}_FILES only by default,
@@ -159,7 +198,7 @@ class Base:
             return 100
         return result
 
-    def clean(self, context, args):
+    def clean(self, context: Context, args: Args) -> None:
         tox_dir = join(args['dir'], '.tox')
         if isdir(tox_dir):
             try:
@@ -216,20 +255,20 @@ class Base:
                         except Exception:
                             log.debug('cannot remove %s', fpath)
 
-    def configure(self, context, args):
+    def configure(self, context: Context, args: Args) -> None:
         raise NotImplementedError("configure method not implemented in %s" % self.NAME)
 
-    def install(self, context, args):
+    def install(self, context: Context, args: Args) -> None:
         raise NotImplementedError("install method not implemented in %s" % self.NAME)
 
-    def build(self, context, args):
+    def build(self, context: Context, args: Args) -> None:
         raise NotImplementedError("build method not implemented in %s" % self.NAME)
 
-    def test(self, context, args):
+    def test(self, context: Context, args: Args) -> None:
         raise NotImplementedError("test method not implemented in %s" % self.NAME)
 
     @copy_test_files()
-    def test_cmd(self, context, args):
+    def test_cmd(self, context: Context, args: Args) -> str:
         if self.cfg.test_nose2:
             return 'cd {build_dir}; {interpreter} -m nose2 -v {args}'
         elif self.cfg.test_nose:
@@ -263,6 +302,7 @@ class Base:
                 if not wheel:
                     self.build_wheel(context, args)
                     wheel = self.built_wheel(context, args)
+                assert wheel
                 args['wheel'] = wheel
                 tox_cmd += ['--installpkg', '{wheel}']
 
@@ -282,10 +322,10 @@ class Base:
             args['ignore_no_tests'] = True
             return 'cd {build_dir}; {interpreter} -m unittest discover -v {args}'
 
-    def build_wheel(self, context, args):
+    def build_wheel(self, context: Context, args: Args) -> None:
         raise NotImplementedError("build_wheel method not implemented in %s" % self.NAME)
 
-    def built_wheel(self, context, args):
+    def built_wheel(self, context: Context, args: Args) -> str | None:
         """Return the path to any built wheels we can find"""
         # pylint: disable=unused-argument
         wheels = list(Path(args['home_dir']).glob('*.whl'))
@@ -296,7 +336,36 @@ class Base:
             return str(wheels[0])
         return None
 
-    def execute(self, context, args, command, log_file=None):
+    @overload
+    def execute(
+        self,
+        context: Context,
+        args: Args,
+        command: str,
+        *,
+        log_file: None = None,
+    ) -> ExecutionResultWithOutput:
+        ...
+
+    @overload
+    def execute(
+        self,
+        context: Context,
+        args: Args,
+        command: str,
+        *,
+        log_file: str | Literal[False],
+    ) -> ExecutionResult:
+        ...
+
+    def execute(
+        self,
+        context: Context,
+        args: Args,
+        command: str,
+        *,
+        log_file: str | Literal[False] | None = None
+    ) -> ExecutionResult | ExecutionResultWithOutput:
         if log_file is False and self.cfg.really_quiet:
             log_file = None
         command = command.format(**args)
@@ -304,9 +373,9 @@ class Base:
         if 'ENV' in args:
             env.update(args['ENV'])
         log.info(command)
-        return execute(command, context['dir'], env, log_file)
+        return execute(command, cwd=context['dir'], env=env, log_output=log_file)
 
-    def print_args(self, context, args):
+    def print_args(self, context: Context, args: Args) -> None:
         # pylint: disable=unused-argument
         cfg = self.cfg
         if len(cfg.print_args) == 1 and len(cfg.interpreter) == 1 and '{version}' not in cfg.interpreter[0]:
@@ -323,44 +392,58 @@ class Base:
                     print('{} {}: {}'.format(args['interpreter'], i, args.get(i, '')))
 
 
-def shell_command(func):
+def shell_command(
+    func: Callable[Concatenate[BC, Context, Args, P], str | Literal[0]], /
+) -> Callable[Concatenate[BC, Context, Args, P], None]:
 
     @wraps(func)
-    def wrapped_func(self, context, args, *oargs, **kwargs):
+    def wrapped_func(
+        self: BC,
+        context: Context,
+        args: Args,
+        *oargs: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
         command = kwargs.pop('command', None)
         if not command:
             command = func(self, context, args, *oargs, **kwargs)
             if isinstance(command, int):  # final result
-                return command
+                return
+        assert isinstance(command, str)
         if not command:
             log.warning('missing command '
                      '(plugin=%s, method=%s, interpreter=%s, version=%s)',
                      self.NAME, func.__name__,
                      args.get('interpreter'), args.get('version'))
-            return command
+            return
 
+        log_file: str | Literal[False]
         if self.cfg.quiet:
             log_file = join(args['home_dir'], '{}_cmd.log'.format(func.__name__))
         else:
             log_file = False
 
-        quoted_args = dict((k, quote(v)) if k in ('dir', 'destdir')
-                           or k.endswith('_dir') else (k, v)
-                           for k, v in args.items())
+        quoted_args: dict[str, Any] = {}
+        for k, v in args.items():
+            if k in ('dir', 'destdir') or k.endswith('_dir'):
+                assert isinstance(v, str)
+                quoted_args[k] = quote(v)
+            else:
+                quoted_args[k] = v
         command = command.format(**quoted_args)
 
-        output = self.execute(context, args, command, log_file)
-        if output['returncode'] == 5 and args.get('ignore_no_tests', False):
+        output = self.execute(context, args, command=command, log_file=log_file)
+        if output.returncode == 5 and args.get('ignore_no_tests', False):
             # Temporary hack (see Base.test)
             pass
-        elif output['returncode'] != 0:
-            msg = 'exit code={}: {}'.format(output['returncode'], command)
+        elif output.returncode != 0:
+            msg = f'exit code={output.returncode}: {command}'
             if log_file:
-                msg += '\nfull command log is available in {}'.format(log_file)
+                msg += f'\nfull command log is available in {log_file}'
             raise Exception(msg)
-        return True
 
-    return wrapped_func
+    # Workaround https://github.com/python/typeshed/issues/10653
+    return cast(Callable[Concatenate[BC, Context, Args, P], None], wrapped_func)
 
 
 def get_parallel() -> int:
@@ -374,7 +457,12 @@ def get_parallel() -> int:
     return parallel
 
 
-def create_setuptools_parallel_cfg(backend: str | None = None):
+def create_setuptools_parallel_cfg(
+    backend: str | None = None
+) -> Callable[
+        [Callable[Concatenate[BC, Context, Args, P], T]],
+        Callable[Concatenate[BC, Context, Args, P], T],
+]:
     """Enable parallel building of extensions, respecting DEB_BUILD_OPTIONS.
 
     An adaption of Michał Górny's technique described in
@@ -392,9 +480,17 @@ def create_setuptools_parallel_cfg(backend: str | None = None):
     See https://github.com/pypa/setuptools/blob/d198e86f57231e83de87975c5c82bc40c196da79/setuptools/build_meta.py
     and https://github.com/pypa/setuptools/discussions/4083
     """
-    def decorator(func):
+    def decorator(
+        func: Callable[Concatenate[BC, Context, Args, P], T], /
+    ) -> Callable[Concatenate[BC, Context, Args, P], T]:
         @wraps(func)
-        def wrapped_func(self, context, args, *oargs, **kwargs):
+        def wrapped_func(
+            self: BC,
+            context: Context,
+            args: Args,
+            *oargs: P.args,
+            **kwargs: P.kwargs,
+        ) -> T:
             fpath = join(args['home_dir'], 'setuptools-build_ext-parallel.cfg')
             if not exists(fpath):
                 with open(fpath, 'w', encoding='utf-8') as fp:
@@ -408,5 +504,5 @@ def create_setuptools_parallel_cfg(backend: str | None = None):
         if 'DIST_EXTRA_CONFIG' in environ or (
                 backend is not None and backend != "setuptools.build_meta"):
             return func
-        return wrapped_func
+        return cast(Callable[Concatenate[BC, Context, Args, P], T], wrapped_func)
     return decorator

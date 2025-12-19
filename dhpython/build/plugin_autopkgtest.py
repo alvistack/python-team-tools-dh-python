@@ -19,7 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from typing import override
+
 from dhpython.build.base import Base, copy_test_files, shell_command
+from dhpython.build.types import Args, Context
 
 
 class BuildSystem(Base):
@@ -35,5 +38,6 @@ class BuildSystem(Base):
 
     @copy_test_files()
     @shell_command
-    def test(self, context, args):
+    @override
+    def test(self, context: Context, args: Args) -> str:
         return super().test_cmd(context, args)

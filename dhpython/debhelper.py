@@ -24,7 +24,10 @@ import re
 from os import makedirs, chmod, environ
 from os.path import basename, exists, join, dirname
 from sys import argv
+from typing import NamedTuple, TypedDict
+
 from dhpython import DEPENDS_SUBSTVARS, PKG_NAME_TPLS, RT_LOCATIONS, RT_TPLS
+
 
 log = logging.getLogger('dhpython')
 parse_dep = re.compile(r'''[,\s]*
@@ -36,24 +39,51 @@ parse_dep = re.compile(r'''[,\s]*
     ''', re.VERBOSE).match
 
 
-def build_options(**options):
-    """Build an Options object from kw options"""
-    default_options = {
-        'arch': None,
-        'package': [],
-        'no_package': [],
-        'write_log': False,
-        'remaining_packages': False,
-    }
-    built_options = default_options
-    built_options.update(options)
-    return type('Options', (object,), built_options)
+class PackageData(TypedDict):
+    substvars: dict[str, list[str]]
+    autoscripts: dict[str, dict[str, list[str]]]
+    rtupdates: list[tuple[str, str]]
+    arch: str
+
+
+class Options(NamedTuple):
+    arch: bool | None
+    package: list[str]
+    no_package: list[str]
+    write_log: bool
+    compile_all: bool
+    remaining_packages: bool
+
+
+def build_options(
+    *,
+    arch: bool | None = None,
+    package: list[str] | None = None,
+    no_package: list[str] | None = None,
+    write_log: bool = False,
+    compile_all: bool = False,
+    remaining_packages: bool = False,
+) -> Options:
+    return Options(
+        arch=arch,
+        compile_all=compile_all,
+        package=package or [],
+        no_package=no_package or [],
+        write_log=write_log,
+        remaining_packages=remaining_packages,
+    )
+
+type BD = dict[str, dict[str | None, str]]
 
 
 class DebHelper:
     """Reinvents the wheel / some dh functionality (Perl is ugly ;-P)"""
 
-    def __init__(self, options, impl='cpython3'):
+    options: Options
+    packages: dict[str, PackageData]
+    build_depends: BD
+
+    def __init__(self, options: Options, impl: str='cpython3') -> None:
         self.options = options
         self.packages = {}
         self.build_depends = {}
@@ -62,11 +92,11 @@ class DebHelper:
         self.command = {
             'cpython3': 'dh_python3',
         }[impl]
-        skip_tpl = set()
+        skip_tpl_set: set[str] = set()
         for name, tpls in PKG_NAME_TPLS.items():
             if name != impl:
-                skip_tpl.update(tpls)
-        skip_tpl = tuple(skip_tpl)
+                skip_tpl_set.update(tpls)
+        skip_tpl = tuple(skip_tpl_set)
         substvar = DEPENDS_SUBSTVARS[impl]
 
         pkgs = options.package
@@ -74,7 +104,7 @@ class DebHelper:
 
         try:
             with open('debian/control', 'r', encoding='utf-8') as fp:
-                paragraphs = [{}]
+                paragraphs: list[dict[str, str]] = [{}]
                 field = None
                 for lineno, line in enumerate(fp, 1):
                     if line.startswith('#'):
@@ -85,6 +115,7 @@ class DebHelper:
                             field = None
                         continue
                     if line[0].isspace():  # Continuation
+                        assert field
                         paragraphs[-1][field] += line.rstrip()
                         continue
                     if not ':' in line:
@@ -112,17 +143,16 @@ class DebHelper:
                 raise ValueError('too many arguments provided for '
                                  'X-Python3-Version: min and max only.')
 
-        build_depends = []
+        build_depends_list = []
         for field in ('build-depends', 'build-depends-indep',
                       'build-depends-arch'):
             if field in paragraphs[0]:
-                build_depends.append(paragraphs[0][field])
-        build_depends = ', '.join(build_depends)
+                build_depends_list.append(paragraphs[0][field])
+        build_depends = ', '.join(build_depends_list)
         for dep1 in build_depends.split(','):
             for dep2 in dep1.split('|'):
-                details = parse_dep(dep2)
-                if details:
-                    details = details.groupdict()
+                if m := parse_dep(dep2):
+                    details = m.groupdict()
                     if details['arch']:
                         architectures = details['arch'].split()
                     else:
@@ -146,12 +176,12 @@ class DebHelper:
             if (options.remaining_packages and
                     self.has_acted_on_package(binary_package)):
                 continue
-            pkg = {
-                'substvars': {},
-                'autoscripts': {},
-                'rtupdates': [],
-                'arch': paragraph['architecture'],
-            }
+            pkg = PackageData(
+                substvars={},
+                autoscripts={},
+                rtupdates=[],
+                arch=paragraph['architecture'],
+            )
             if (options.arch is False and pkg['arch'] != 'all' or
                     options.arch is True and pkg['arch'] == 'all'):
                 # TODO: check also if arch matches current architecture:
@@ -174,7 +204,7 @@ class DebHelper:
         log.debug('source=%s, binary packages=%s', self.source_name,
                   list(self.packages.keys()))
 
-    def has_acted_on_package(self, package):
+    def has_acted_on_package(self, package: str) -> bool:
         try:
             with open('debian/{}.debhelper.log'.format(package),
                       encoding='utf-8') as f:
@@ -186,19 +216,21 @@ class DebHelper:
                 raise
         return False
 
-    def addsubstvar(self, package, name, value):
+    def addsubstvar(self, package: str, name: str, value: str) -> None:
         """debhelper's addsubstvar"""
         self.packages[package]['substvars'].setdefault(name, []).append(value)
 
-    def autoscript(self, package, when, template, args):
+    def autoscript(self,
+        package: str, when: str, template: str, args: str
+    ) -> None:
         """debhelper's autoscript"""
         self.packages[package]['autoscripts'].setdefault(when, {})\
             .setdefault(template, []).append(args)
 
-    def add_rtupdate(self, package, value):
+    def add_rtupdate(self, package: str, value: tuple[str, str]) -> None:
         self.packages[package]['rtupdates'].append(value)
 
-    def save_autoscripts(self):
+    def save_autoscripts(self) -> None:
         for package, settings in self.packages.items():
             autoscripts = settings.get('autoscripts')
             if not autoscripts:
@@ -239,7 +271,7 @@ class DebHelper:
                     with open(fn, 'w', encoding='utf-8') as fp:
                         fp.write(data)
 
-    def save_substvars(self):
+    def save_substvars(self) -> None:
         for package, settings in self.packages.items():
             substvars = settings.get('substvars')
             if not substvars:
@@ -275,7 +307,7 @@ class DebHelper:
                 with open(fn, 'w', encoding='utf-8') as fp:
                     fp.write(data)
 
-    def save_rtupdate(self):
+    def save_rtupdate(self) -> None:
         for package, settings in self.packages.items():
             pkg_arg = '' if self.options.compile_all else "-p %s" % package
             values = settings.get('rtupdates')
@@ -301,7 +333,7 @@ class DebHelper:
                     fp.write(data)
                 chmod(fn, 0o755)
 
-    def save_log(self):
+    def save_log(self) -> None:
         if not self.options.write_log:
             return
         for package, _ in self.packages.items():
@@ -309,7 +341,7 @@ class DebHelper:
                       'a', encoding='utf-8') as f:
                 f.write(self.command + '\n')
 
-    def save(self):
+    def save(self) -> None:
         self.save_substvars()
         self.save_autoscripts()
         self.save_rtupdate()

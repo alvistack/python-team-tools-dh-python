@@ -26,3 +26,11 @@ style:
 
   script:
   - pylint dhpython dh_python3 pybuild
+
+typecheck:
+  before_script:
+  - apt-get update
+  - apt-get -y install --no-install-recommends python3-installer mypy make
+
+  script:
+  - make mypy

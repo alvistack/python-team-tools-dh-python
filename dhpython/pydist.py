@@ -25,10 +25,11 @@ import platform
 import os
 import re
 import subprocess
-from enum import Enum, auto
+from argparse import Namespace
+from enum import Enum, StrEnum, auto
 from functools import cache, partial
 from os.path import exists, isdir, join
-from typing import NamedTuple
+from typing import Literal, NamedTuple, TypedDict, cast
 
 if __name__ == '__main__':
     import sys
@@ -36,6 +37,7 @@ if __name__ == '__main__':
 
 from dhpython import PKG_PREFIX_MAP, PUBLIC_DIR_RE,\
     PYDIST_DIRS, PYDIST_OVERRIDES_FNAMES, PYDIST_DPKG_SEARCH_TPLS
+from dhpython.debhelper import BD
 from dhpython.markers import ComplexEnvironmentMarker, parse_environment_marker
 from dhpython.version import get_requested_versions, Version
 
@@ -112,6 +114,11 @@ DEB_VERS_OPS = {
 MIN_PY_VERSION = [3, 11]
 
 
+class Standard(StrEnum):
+    PEP386 = "PEP386"
+    PEP440 = "PEP440"
+
+
 class ModificationAction(Enum):
     SKIP = auto()
     KEEP = auto()
@@ -123,7 +130,7 @@ class RequirementModification(NamedTuple):
     alternative: str | None = None
 
 
-def validate(fpath):
+def validate(fpath: str) -> bool:
     """Check if pydist file looks good."""
     with open(fpath, encoding='utf-8') as fp:
         for line in fp:
@@ -137,21 +144,29 @@ def validate(fpath):
     return True
 
 
+class PyDist(TypedDict):
+    name: str
+    versions: set[Version]
+    dependency: str
+    standard: Standard | None
+    rules: list[str]
+
+
 @cache
-def load(impl):
+def load(impl: str) -> dict[str, list[PyDist]]:
     """Load information about installed Python distributions.
 
     :param impl: interpreter implementation, f.e. cpython3
     :type impl: str
     """
     fname = PYDIST_OVERRIDES_FNAMES.get(impl)
-    if exists(fname):
+    if fname and exists(fname):
         to_check = [fname]  # first one!
     else:
         to_check = []
 
     dname = PYDIST_DIRS.get(impl)
-    if isdir(dname):
+    if dname and isdir(dname):
         to_check.extend(join(dname, i) for i in os.listdir(dname))
 
     fbdir = os.environ.get('DH_PYTHON_DIST', '/usr/share/dh-python/dist/')
@@ -159,30 +174,35 @@ def load(impl):
     if exists(fbname):  # fall back generated at dh-python build time
         to_check.append(fbname)  # last one!
 
-    result = {}
+    result: dict[str, list[PyDist]] = {}
     for fpath in to_check:
+        assert fpath
         with open(fpath, encoding='utf-8') as fp:
             for line in fp:
                 line = line.strip()
                 if line.startswith('#') or not line:
                     continue
-                dist = PYDIST_RE.search(line)
-                if not dist:
+                if not (m := PYDIST_RE.search(line)):
                     raise Exception('invalid pydist line: %s (in %s)' % (line, fpath))
-                dist = dist.groupdict()
-                name = normalize_name(dist['name'])
-                dist['versions'] = get_requested_versions(impl, dist['vrange'])
-                dist['dependency'] = dist['dependency'].strip()
-                if dist['rules']:
-                    dist['rules'] = dist['rules'].split(';')
-                else:
-                    dist['rules'] = []
-                result.setdefault(name, []).append(dist)
+                data = m.groupdict()
+                dist = PyDist(
+                    name=normalize_name(data['name']),
+                    versions=get_requested_versions(impl, data['vrange']),
+                    dependency=data['dependency'].strip(),
+                    rules=data['rules'].split(';') if data["rules"] else [],
+                    standard=cast(Standard | None, data['standard'])
+                )
+                result.setdefault(dist["name"], []).append(dist)
     return result
 
 
-def guess_dependency(impl, req, version=None, bdep=None,
-                     accept_upstream_versions=False):
+def guess_dependency(
+    impl: str,
+    req: str,
+    version: Version | str | None = None,
+    bdep: BD | None = None,
+    accept_upstream_versions: bool = False
+) -> str | None:
     bdep = bdep or {}
     log.debug('trying to find dependency for %s (python=%s)',
               req, version)
@@ -190,17 +210,18 @@ def guess_dependency(impl, req, version=None, bdep=None,
         version = Version(version)
 
     # some upstreams have weird ideas for distribution name...
-    name, rest = re.compile(r'([^!><=~ \(\)\[;]+)(.*)').match(req).groups()
+    if not (m := re.compile(r'([^!><=~ \(\)\[;]+)(.*)').match(req)):
+        raise Exception(f"Unable to parse requirement: {req}")
+    name, rest = m.groups()
     # TODO: check stdlib and dist-packaged for name.py and name.so files
     req = normalize_name(name) + rest
 
     data = load(impl)
-    req_d = REQUIRES_RE.match(req)
-    if not req_d:
+    if not (m := REQUIRES_RE.match(req)):
         log.info('please ask dh_python3 author to fix REQUIRES_RE '
                  'or your upstream author to fix requires.txt')
-        raise Exception('requirement is not valid: %s' % req)
-    req_d = req_d.groupdict()
+        raise Exception(f'requirement is not valid: {req}')
+    req_d: dict[str, str] = m.groupdict()
 
     env_marker_alts = ''
     if req_d['environment_marker']:
@@ -209,10 +230,11 @@ def guess_dependency(impl, req, version=None, bdep=None,
             req_d['environment_marker'],
             impl)
         if modification.action == ModificationAction.SKIP:
-            return
+            return None
         elif modification.action == ModificationAction.KEEP:
             pass
         elif modification.action == ModificationAction.APPEND:
+            assert modification.alternative
             env_marker_alts = ' | ' + modification.alternative
 
     name = req_d['name']
@@ -225,7 +247,7 @@ def guess_dependency(impl, req, version=None, bdep=None,
                 continue
             if not item['dependency']:
                 log.debug("dependency: requirement ignored")
-                return  # this requirement should be ignored
+                return None  # this requirement should be ignored
             if item['dependency'].endswith(')'):
                 # no need to translate versions if version is hardcoded in
                 # Debian dependency
@@ -330,11 +352,11 @@ def guess_dependency(impl, req, version=None, bdep=None,
              'add "%s %s" line to %s or add proper '
              'dependency to Depends by hand and ignore this info.',
              name, normalize_name(name), pname, PYDIST_OVERRIDES_FNAMES[impl])
-    # return pname
+    return None
 
 
 def check_environment_marker_restrictions(
-    req: dict[str, str | None], marker_str: str, impl: str
+    req: str, marker_str: str, impl: str
 ) -> RequirementModification:
     """Should we keep or skip a dependency based on its environment markers."""
     if impl != 'cpython3':
@@ -398,8 +420,6 @@ def check_environment_marker_restrictions(
                 if marker == 'python_full_version':
                     marker = 'python_version'
                     version_parts = 2
-                else:
-                    op == '=~'
             elif op == '!=':
                 if marker == 'python_full_version':
                     marker = 'python_version'
@@ -428,12 +448,12 @@ def check_environment_marker_restrictions(
         if len(int_ver) < version_parts:
             int_ver.append(0)
             env_ver += '.0'
-        next_ver = int_ver.copy()
-        next_ver[version_parts - 1] += 1
-        next_ver = '.'.join(str(x) for x in next_ver)
-        prev_ver = int_ver.copy()
-        prev_ver[version_parts - 1] -= 1
-        prev_ver = '.'.join(str(x) for x in prev_ver)
+        int_next_ver = int_ver.copy()
+        int_next_ver[version_parts - 1] += 1
+        next_ver = '.'.join(str(x) for x in int_next_ver)
+        #int_prev_ver = int_ver.copy()
+        #int_prev_ver[version_parts - 1] -= 1
+        #prev_ver = '.'.join(str(x) for x in int_prev_ver)
 
         # We try to do something somewhat sensible with micro versions
         # even though we don't currently emit them in python3-supported-min/max
@@ -496,9 +516,9 @@ def check_environment_marker_restrictions(
                     'model in Debian deps: %s', op, req)
                 return RequirementModification(action=ModificationAction.SKIP)
         elif op == '~=':  # Compatible equality (PEP 440)
-            ceq_next_ver = int_ver[:2]
-            ceq_next_ver[1] += 1
-            ceq_next_ver = '.'.join(str(x) for x in ceq_next_ver)
+            int_ceq_next_ver = int_ver[:2]
+            int_ceq_next_ver[1] += 1
+            ceq_next_ver = '.'.join(str(x) for x in int_ceq_next_ver)
             return RequirementModification(
                 action=ModificationAction.APPEND,
                 alternative=(
@@ -521,9 +541,22 @@ def check_environment_marker_restrictions(
     return RequirementModification(action=ModificationAction.KEEP)
 
 
-def parse_pydep(impl, fname, bdep=None,
-                *, options=None, depends_sec=None, recommends_sec=None,
-                suggests_sec=None):
+class NewDependencies(TypedDict):
+    depends: list[str]
+    recommends: list[str]
+    suggests: list[str]
+
+
+def parse_pydep(
+    impl: str,
+    fname: str,
+    bdep: BD | None = None,
+    *,
+    options: Namespace | None = None,
+    depends_sec: list[str] | None = None,
+    recommends_sec: list[str] | None = None,
+    suggests_sec: list[str] | None = None,
+) -> NewDependencies:
     depends_sec = depends_sec or []
     recommends_sec = recommends_sec or []
     suggests_sec = suggests_sec or []
@@ -537,8 +570,9 @@ def parse_pydep(impl, fname, bdep=None,
                          accept_upstream_versions=getattr(
                              options, 'accept_upstream_versions', False))
 
-    result = {'depends': [], 'recommends': [], 'suggests': []}
-    modified = section = False
+    result = NewDependencies(depends=[], recommends=[], suggests=[])
+    modified: bool = False
+    section: str | None = None
     modification = RequirementModification(action=ModificationAction.KEEP)
     processed = []
     with open(fname, 'r', encoding='utf-8') as fp:
@@ -553,7 +587,8 @@ def parse_pydep(impl, fname, bdep=None,
                     log.info('Skipping section %s, unable to parse header',
                              line)
                     processed.append(line)
-                    section = object()
+                    # something that won't map to a result_key
+                    section = '[non-existent section]'
                     continue
                 section = m.group('section')
                 modification = RequirementModification(
@@ -566,6 +601,7 @@ def parse_pydep(impl, fname, bdep=None,
                         impl)
                 processed.append(line)
                 continue
+            result_key: Literal["depends", "recommends", "suggests"]
             if section:
                 if section in depends_sec:
                     result_key = 'depends'
@@ -583,6 +619,7 @@ def parse_pydep(impl, fname, bdep=None,
             if modification.action != ModificationAction.SKIP:
                 dependency = guess_deps(req=line)
             if dependency and modification.action == ModificationAction.APPEND:
+                assert modification.alternative
                 dependency = ', '.join(
                     part.strip() + ' | ' + modification.alternative
                     for part in dependency.split(','))
@@ -598,9 +635,16 @@ def parse_pydep(impl, fname, bdep=None,
     return result
 
 
-def parse_requires_dist(impl, fname, bdep=None,
-                        *, options=None, depends_sec=None, recommends_sec=None,
-                        suggests_sec=None):
+def parse_requires_dist(
+    impl: str,
+    fname: str,
+    bdep: BD | None = None,
+    *,
+    options: Namespace | None = None,
+    depends_sec: list[str] | None = None,
+    recommends_sec: list[str] | None = None,
+    suggests_sec: list[str] | None = None,
+) -> NewDependencies:
     """Extract dependencies from a dist-info/METADATA file"""
     depends_sec = depends_sec or []
     recommends_sec = recommends_sec or []
@@ -614,11 +658,12 @@ def parse_requires_dist(impl, fname, bdep=None,
     guess_deps = partial(guess_dependency, impl=impl, version=ver, bdep=bdep,
                          accept_upstream_versions=getattr(
                              options, 'accept_upstream_versions', False))
-    result = {'depends': [], 'recommends': [], 'suggests': []}
+    result = NewDependencies(depends=[], recommends=[], suggests=[])
     section = None
     with open(fname, 'r', encoding='utf-8') as fp:
         metadata = email.message_from_string(fp.read())
     requires = metadata.get_all('Requires-Dist', [])
+    result_key: Literal["depends", "recommends", "suggests"]
     for req in requires:
         m = EXTRA_RE.search(req)
         result_key = 'depends'
@@ -640,18 +685,18 @@ def parse_requires_dist(impl, fname, bdep=None,
 
 
 # https://packaging.python.org/en/latest/specifications/simple-repository-api/#normalized-names
-def normalize_name(name):
+def normalize_name(name: str) -> str:
     """Normalize a distribution name."""
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
-def sensible_pname(impl, dist_name):
+def sensible_pname(impl: str, dist_name: str) -> str:
     """Guess Debian package name from normalized distribution name."""
     dist_name = dist_name.removeprefix("python-")
     return f"{PKG_PREFIX_MAP[impl]}-{dist_name}"
 
 
-def ci_regexp(name):
+def ci_regexp(name: str) -> str:
     """Return case insensitive dpkg -S regexp."""
     return ''.join("[%s%s]" % (i.upper(), i) if i.isalpha() else i for i in name.lower())
 
@@ -661,7 +706,7 @@ PEP440_PRE_VER_RE = re.compile(r'[-.]?(a|b|rc)')
 GROUP_RE = re.compile(r'\$(\d+)')
 
 
-def _pl2py(pattern):
+def _pl2py(pattern: str) -> str:
     r"""Convert Perl RE patterns used in uscan to Python's
 
     >>> print(_pl2py('foo$3'))
@@ -670,7 +715,7 @@ def _pl2py(pattern):
     return GROUP_RE.sub(r'\\g<\1>', pattern)
 
 
-def _max_compatible(version):
+def _max_compatible(version: str) -> str:
     """Return the maximum version compatible with `version` in PEP440 terms,
     used by ~= requires version specifiers.
 
@@ -696,7 +741,9 @@ def _max_compatible(version):
     return str(v + 1)
 
 
-def _translate(version, rules, standard):
+def _translate(
+    version: str, rules: list[str], standard: Standard | None
+) -> str:
     """Translate Python version into Debian one.
 
     >>> _translate('1.C2betac', ['s/c//gi'], None)
@@ -728,14 +775,14 @@ def _translate(version, rules, standard):
             version = pattern.sub(_pl2py(tmp[1]), version, count)
         else:
             log.warning('unknown rule ignored: %s', rule)
-    if standard == 'PEP386':
+    if standard == Standard.PEP386:
         version = PEP386_PRE_VER_RE.sub(r'~\g<1>', version)
-    elif standard == 'PEP440':
+    elif standard == Standard.PEP440:
         version = PEP440_PRE_VER_RE.sub(r'~\g<1>', version)
     return version
 
 
-def _translate_op(operator):
+def _translate_op(operator: str) -> str:
     """Translate Python version operator into Debian one.
 
     >>> _translate_op('==')

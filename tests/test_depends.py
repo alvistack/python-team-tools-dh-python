@@ -2,42 +2,57 @@ import os
 import logging
 import platform
 import unittest
+from argparse import Namespace
 from unittest.mock import patch
 from tempfile import TemporaryDirectory
+from typing import Any, Callable, Sequence, cast
 
+from dhpython.fs import ScanResult
+from dhpython.pydist import PyDist, Standard
 from dhpython.depends import Dependencies
 from dhpython.version import Version
 
 from .common import FakeOptions
 
 
-def pep386(d):
+def pep386(d: dict[str, str]) -> dict[str, list[PyDist]]:
     """Mark all pydist entries as being PEP386"""
-    for k, v in d.items():
-        if isinstance(v, str):
-            d[k] = {'dependency': v}
-            d[k].setdefault('standard', 'PEP386')
-    return d
+    result: dict[str, list[PyDist]] = {}
+    for name, dependency in d.items():
+        result[name] = [
+            pydist(name=name, dependency=dependency, standard=Standard.PEP386)
+        ]
+    return result
 
 
-def prime_pydist(impl, pydist):
+def pydist(
+    name: str,
+    dependency: str,
+    versions: set[Version] = set(),
+    standard: Standard | None = None,
+    rules: list[str] | None = None,
+) -> PyDist:
+    return PyDist(
+        name=name,
+        versions=versions,
+        dependency=dependency,
+        standard=standard,
+        rules=rules or [],
+    )
+
+
+def prime_pydist(
+    impl: str,
+    contents: dict[str, list[PyDist]]
+) -> Callable[[], None]:
     """Fake the pydist data for impl. Returns a cleanup function"""
     from dhpython.pydist import normalize_name
 
     normalized_pydist = {}
-    for name, entries in pydist.items():
-        if not isinstance(entries, list):
-            entries = [entries]
+    for name, entries in contents.items():
         normalized_pydist[normalize_name(name)] = entries
-        for i, entry in enumerate(entries):
-            if isinstance(entry, str):
-                entries[i] = entry = {'dependency': entry}
-            entry.setdefault('name', name)
-            entry.setdefault('standard', '')
-            entry.setdefault('rules', [])
-            entry.setdefault('versions', set())
 
-    def fake(req_impl):
+    def fake(req_impl: str) -> dict[str, list[PyDist]]:
         if req_impl == impl:
             return normalized_pydist
         return {}
@@ -50,17 +65,18 @@ def prime_pydist(impl, pydist):
 class DependenciesTestCase(unittest.TestCase):
     pkg = 'foo'
     impl = 'cpython3'
-    pydist = {}
-    stats = {}
-    requires = {}
-    dist_info_metadata = {}
+    pydist: dict[str, list[PyDist]] = {}
+    stats: dict[str, Any] = {}
+    prepared_stats: ScanResult
+    requires: dict[str, Sequence[str]] = {}
+    dist_info_metadata: dict[str, Sequence[str]] = {}
     options = FakeOptions()
     parse = True
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.d = Dependencies(self.pkg, self.impl)
 
-        stats = {
+        stats = ScanResult({
             'compile': False,
             'dist-info': set(),
             'egg-info': set(),
@@ -72,8 +88,10 @@ class DependenciesTestCase(unittest.TestCase):
             'public_vers': set(),
             'requires.txt': set(),
             'shebangs': set(),
-        }
-        stats.update(self.stats)
+        })
+        for k, v in self.stats.items():
+            assert k in stats
+            stats[k] = v  # type: ignore
 
         write_files = {}
         if self.requires:
@@ -102,11 +120,11 @@ class DependenciesTestCase(unittest.TestCase):
         self.addCleanup(cleanup)
 
         if self.parse:
-            self.d.parse(stats, self.options)
+            self.d.parse(stats, cast(Namespace, self.options))
         else:
             self.prepared_stats = stats
 
-    def assertNotInDepends(self, pkg):
+    def assertNotInDepends(self, pkg: str) -> None:
         """Assert that pkg doesn't appear *anywhere* in self.d.depends"""
         for dep in self.d.depends:
             for alt in dep.split('|'):
@@ -118,9 +136,11 @@ class DependenciesTestCase(unittest.TestCase):
 class TestRequiresCPython3(DependenciesTestCase):
     options = FakeOptions(guess_deps=True)
     pydist = {
-        'bar': 'python3-bar',
-        'baz': {'dependency': 'python3-baz', 'standard': 'PEP386'},
-        'quux': {'dependency': 'python3-quux', 'standard': 'PEP440'},
+        'bar': [pydist(name='bar', dependency='python3-bar')],
+        'baz': [pydist(name='baz', dependency='python3-baz',
+                       standard=Standard.PEP386)],
+        'quux': [pydist(name='quux', dependency='python3-quux',
+                        standard=Standard.PEP440)],
     }
     requires = {
         'debian/foo/usr/lib/python3/dist-packages/foo.egg-info/requires.txt': (
@@ -130,24 +150,28 @@ class TestRequiresCPython3(DependenciesTestCase):
         ),
     }
 
-    def test_depends_on_bar(self):
+    def test_depends_on_bar(self) -> None:
         self.assertIn('python3-bar', self.d.depends)
 
-    def test_depends_on_baz(self):
+    def test_depends_on_baz(self) -> None:
         self.assertIn('python3-baz (>= 1.0)', self.d.depends)
 
-    def test_depends_on_quux(self):
+    def test_depends_on_quux(self) -> None:
         self.assertIn('python3-quux (>= 1.0~a1)', self.d.depends)
 
 
 class TestRequiresCompatible(DependenciesTestCase):
     options = FakeOptions(guess_deps=True)
     pydist = {
-        'bar': 'python3-bar',
-        'baz': {'dependency': 'python3-baz', 'standard': 'PEP386'},
-        'qux': {'dependency': 'python3-qux', 'standard': 'PEP386'},
-        'quux': {'dependency': 'python3-quux', 'standard': 'PEP386'},
-        'corge': {'dependency': 'python3-corge', 'standard': 'PEP440'},
+        'bar': [pydist(name='bar', dependency='python3-bar')],
+        'baz': [pydist(name='baz', dependency='python3-baz',
+                      standard=Standard.PEP386)],
+        'qux': [pydist(name='qux', dependency='python3-qux',
+                      standard=Standard.PEP386)],
+        'quux': [pydist(name='quux', dependency='python3-quux',
+                      standard=Standard.PEP386)],
+        'corge': [pydist(name='corge', dependency='python3-corge',
+                        standard=Standard.PEP440)],
     }
     requires = {
         'debian/foo/usr/lib/python3/dist-packages/foo.egg-info/requires.txt': (
@@ -159,16 +183,16 @@ class TestRequiresCompatible(DependenciesTestCase):
         ),
     }
 
-    def test_depends_on_bar(self):
+    def test_depends_on_bar(self) -> None:
         self.assertIn('python3-bar', self.d.depends)
 
-    def test_depends_on_baz(self):
+    def test_depends_on_baz(self) -> None:
         self.assertIn('python3-baz (>= 1.1), python3-baz (<< 2)', self.d.depends)
 
-    def test_depends_on_qux(self):
+    def test_depends_on_qux(self) -> None:
         self.assertIn('python3-qux (>= 1.0), python3-qux (<< 2)', self.d.depends)
 
-    def test_depends_on_corge(self):
+    def test_depends_on_corge(self) -> None:
         self.assertIn('python3-corge (>= 1.0), python3-corge (<< 1.1~)',
                       self.d.depends)
 
@@ -176,11 +200,15 @@ class TestRequiresCompatible(DependenciesTestCase):
 class TestRequiresDistPython3(DependenciesTestCase):
     options = FakeOptions(guess_deps=True)
     pydist = {
-        'bar': 'python3-bar',
-        'baz': {'dependency': 'python3-baz', 'standard': 'PEP386'},
-        'qux': {'dependency': 'python3-qux', 'standard': 'PEP386'},
-        'quux': {'dependency': 'python3-quux', 'standard': 'PEP386'},
-        'corge': {'dependency': 'python3-corge', 'standard': 'PEP440'},
+        'bar': [pydist(name='bar', dependency='python3-bar')],
+        'baz': [pydist(name='baz', dependency='python3-baz',
+                      standard=Standard.PEP386)],
+        'qux': [pydist(name='qux', dependency='python3-qux',
+                      standard=Standard.PEP386)],
+        'quux': [pydist(name='quux', dependency='python3-quux',
+                      standard=Standard.PEP386)],
+        'corge': [pydist(name='corge', dependency='python3-corge',
+                        standard=Standard.PEP440)],
     }
     dist_info_metadata = {
         'debian/foo/usr/lib/python3/dist-packages/foo.dist-info/METADATA': (
@@ -192,21 +220,21 @@ class TestRequiresDistPython3(DependenciesTestCase):
         ),
     }
 
-    def test_depends_on_bar(self):
+    def test_depends_on_bar(self) -> None:
         self.assertIn('python3-bar', self.d.depends)
 
-    def test_depends_on_baz(self):
+    def test_depends_on_baz(self) -> None:
         self.assertIn('python3-baz (>= 1.0)', self.d.depends)
 
-    def test_depends_on_qux(self):
+    def test_depends_on_qux(self) -> None:
         self.assertIn('python3-qux (>= 1.0), python3-qux (<< 2)',
                       self.d.depends)
 
-    def test_depends_on_quux(self):
+    def test_depends_on_quux(self) -> None:
         self.assertIn('python3-quux (>= 1.1), python3-quux (<< 2)',
                       self.d.depends)
 
-    def test_depends_on_corge(self):
+    def test_depends_on_corge(self) -> None:
         self.assertIn('python3-corge (>= 1.0), python3-corge (<< 1.1~)',
                       self.d.depends)
 
@@ -350,204 +378,204 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         ),
     }
 
-    def test_depends_on_unmarked_packages(self):
+    def test_depends_on_unmarked_packages(self) -> None:
         self.assertIn('python3-no-markers', self.d.depends)
 
-    def test_depends_on_posix_packages(self):
+    def test_depends_on_posix_packages(self) -> None:
         self.assertIn('python3-os-posix', self.d.depends)
 
-    def test_skips_non_posix_packages(self):
+    def test_skips_non_posix_packages(self) -> None:
         self.assertNotInDepends('python3-os-java')
 
-    def test_depends_on_linux_packages(self):
+    def test_depends_on_linux_packages(self) -> None:
         self.assertIn('python3-sys-platform-linux', self.d.depends)
 
-    def test_skips_darwin_packages(self):
+    def test_skips_darwin_packages(self) -> None:
         self.assertNotInDepends('python3-sys-platform-darwin')
 
-    def test_depends_on_x86_64_packages_on_x86_64(self):
+    def test_depends_on_x86_64_packages_on_x86_64(self) -> None:
         if platform.machine() == 'x86_64':
             self.assertIn('python3-platform-machine-x86-64', self.d.depends)
         else:
             self.assertNotInDepends('python3-platform-machine-x86-64')
 
-    def test_depends_on_mips64_packages_on_mips64(self):
+    def test_depends_on_mips64_packages_on_mips64(self) -> None:
         if platform.machine() == 'mips64':
             self.assertIn('python3-platform-machine-mips64', self.d.depends)
         else:
             self.assertNotInDepends('python3-platform-machine-mips64')
 
-    def test_depends_on_plat_cpython_packages(self):
+    def test_depends_on_plat_cpython_packages(self) -> None:
         self.assertIn('python3-platform-python-implementation-cpython',
                       self.d.depends)
 
-    def test_skips_plat_jython_packages(self):
+    def test_skips_plat_jython_packages(self) -> None:
         self.assertNotInDepends('python3-platform-python-implementation-jython')
 
-    def test_skips_release_lt_2_packages(self):
+    def test_skips_release_lt_2_packages(self) -> None:
         self.assertNotInDepends('python3-platform-release-lt2')
 
-    def test_skips_release_gt_2_packages(self):
+    def test_skips_release_gt_2_packages(self) -> None:
         self.assertNotInDepends('python3-platform-release-ge2')
 
-    def test_depends_on_platform_linux_packages(self):
+    def test_depends_on_platform_linux_packages(self) -> None:
         self.assertIn('python3-platform-system-linux', self.d.depends)
 
-    def test_skips_platform_windows_packages(self):
+    def test_skips_platform_windows_packages(self) -> None:
         self.assertNotInDepends('python3-platform-system-windows')
 
-    def test_skips_platfrom_version_lt_1_packages(self):
+    def test_skips_platfrom_version_lt_1_packages(self) -> None:
         self.assertNotInDepends('python3-platform-version-lt1')
 
-    def test_skips_platform_version_ge_1_packages(self):
+    def test_skips_platform_version_ge_1_packages(self) -> None:
         self.assertNotInDepends('python3-platform-version-ge1')
 
-    def test_skips_py_version_lt_3_packages(self):
+    def test_skips_py_version_lt_3_packages(self) -> None:
         self.assertNotInDepends('python3-python-version-lt3')
 
-    def test_elides_py_version_ge_3(self):
+    def test_elides_py_version_ge_3(self) -> None:
         self.assertIn('python3-python-version-ge3', self.d.depends)
 
-    def test_elides_py_version_gt_3(self):
+    def test_elides_py_version_gt_3(self) -> None:
         self.assertIn('python3-python-version-gt3', self.d.depends)
 
-    def test_skips_py_version_lt_30_packages(self):
+    def test_skips_py_version_lt_30_packages(self) -> None:
         self.assertNotInDepends('python3-python-version-lt30')
 
-    def test_skips_py_version_lt_38_packages(self):
+    def test_skips_py_version_lt_38_packages(self) -> None:
         self.assertNotInDepends('python3-python-version-lt38')
 
-    def test_depends_on_py_version_lt_313_packages(self):
+    def test_depends_on_py_version_lt_313_packages(self) -> None:
         self.assertIn('python3-python-version-lt313 '
                       '| python3-supported-min (>= 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_le_313_packages(self):
+    def test_depends_on_py_version_le_313_packages(self) -> None:
         self.assertIn('python3-python-version-le313 '
                       '| python3-supported-min (>> 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_ge_27_packages(self):
+    def test_depends_on_py_version_ge_27_packages(self) -> None:
         self.assertIn('python3-python-version-ge27',
                       self.d.depends)
 
-    def test_depends_on_py_version_ge_313_packages(self):
+    def test_depends_on_py_version_ge_313_packages(self) -> None:
         self.assertIn('python3-python-version-ge313 '
                       '| python3-supported-max (<< 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_gt_313_packages(self):
+    def test_depends_on_py_version_gt_313_packages(self) -> None:
         self.assertIn('python3-python-version-gt313 '
                       '| python3-supported-max (<= 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_eq_313_packages(self):
+    def test_depends_on_py_version_eq_313_packages(self) -> None:
         self.assertIn(
             'python3-python-version-eq313 | python3-supported-max (<< 3.13) '
             '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_ne_313_packages(self):
+    def test_depends_on_py_version_ne_313_packages(self) -> None:
         # Can't be represented in Debian depends
         self.assertIn('python3-python-version-ne313', self.d.depends)
 
-    def test_depends_on_py_version_aeq_313_packages(self):
+    def test_depends_on_py_version_aeq_313_packages(self) -> None:
         self.assertIn(
             'python3-python-version-aeq313 | python3-supported-max (<< 3.13) '
             '| python3-supported-min (>> 3.13)', self.d.depends)
 
-    def test_depends_on_py_version_ceq_313_packages(self):
+    def test_depends_on_py_version_ceq_313_packages(self) -> None:
         self.assertIn(
             'python3-python-version-ceq313 | python3-supported-max (<< 3.13) '
             '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_weq_313_packages(self):
+    def test_depends_on_py_version_weq_313_packages(self) -> None:
         self.assertIn(
             'python3-python-version-weq313 | python3-supported-max (<< 3.13) '
             '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_skips_py_version_full_lt_300_packages(self):
+    def test_skips_py_version_full_lt_300_packages(self) -> None:
         self.assertNotInDepends('python3-python-version-full-lt300')
 
-    def test_depends_on_py_version_full_lt_3131_packages(self):
+    def test_depends_on_py_version_full_lt_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-lt3131 '
                       '| python3-supported-min (>= 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_le_3131_packages(self):
+    def test_depends_on_py_version_full_le_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-le3131 '
                       '| python3-supported-min (>> 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_3131_packages(self):
+    def test_depends_on_py_version_full_ge_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-ge3131 '
                       '| python3-supported-max (<< 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_3131a1_packages(self):
+    def test_depends_on_py_version_full_ge_3131a1_packages(self) -> None:
         # With full PEP-440 parsing this should be (<< 3.13.1~a1)
         self.assertIn('python3-python-version-full-ge3131a1 '
                       '| python3-supported-max (<< 3.13.0)', self.d.depends)
 
-    def test_depends_on_py_version_full_ge_3131b1post1_packages(self):
+    def test_depends_on_py_version_full_ge_3131b1post1_packages(self) -> None:
         # With full PEP-440 parsing this should be (<< 3.13.1~b1.post1)
         self.assertIn('python3-python-version-full-ge3131a1 '
                       '| python3-supported-max (<< 3.13.0)', self.d.depends)
 
-    def test_depends_on_py_version_full_gt_3131_packages(self):
+    def test_depends_on_py_version_full_gt_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-gt3131 '
                       '| python3-supported-max (<= 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_eq_3131_packages(self):
+    def test_depends_on_py_version_full_eq_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-eq3131 '
                       '| python3-supported-max (<< 3.13.1) '
                       '| python3-supported-min (>> 3.13.1)', self.d.depends)
 
-    def test_depends_on_py_version_full_ne_3131_packages(self):
+    def test_depends_on_py_version_full_ne_3131_packages(self) -> None:
         # Can't be represented in Debian depends
         self.assertIn('python3-python-version-full-ne3131', self.d.depends)
 
-    def test_skips_py_version_full_aeq_3131_packages(self):
+    def test_skips_py_version_full_aeq_3131_packages(self) -> None:
         # Can't be represented in Debian depends
         self.assertNotInDepends('python3-python-version-full-aeq3131')
 
-    def test_depends_on_py_version_full_ceq_3131_packages(self):
+    def test_depends_on_py_version_full_ceq_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-ceq3131 '
                       '| python3-supported-max (<< 3.13.1) '
                       '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_py_version_full_weq_313_packages(self):
+    def test_depends_on_py_version_full_weq_313_packages(self) -> None:
         self.assertIn('python3-python-version-full-weq313 '
                       '| python3-supported-max (<< 3.13) '
                       '| python3-supported-min (>= 3.14)', self.d.depends)
 
-    def test_depends_on_sys_cpython_packages(self):
+    def test_depends_on_sys_cpython_packages(self) -> None:
         self.assertIn('python3-implementation-name-cpython', self.d.depends)
 
-    def test_depends_on_sys_pypy_packages(self):
+    def test_depends_on_sys_pypy_packages(self) -> None:
         self.assertIn('python3-implementation-name-pypy', self.d.depends)
 
-    def test_depends_on_sys_implementation_lt313_packages(self):
+    def test_depends_on_sys_implementation_lt313_packages(self) -> None:
         self.assertIn('python3-implementation-version-lt313 '
                       '| python3-supported-min (>= 3.13)',
                       self.d.depends)
 
-    def test_depends_on_sys_implementation_ge313_packages(self):
+    def test_depends_on_sys_implementation_ge313_packages(self) -> None:
         self.assertIn('python3-implementation-version-ge313 '
                       '| python3-supported-max (<< 3.13)',
                       self.d.depends)
 
-    def test_ignores_invalid_marker(self):
+    def test_ignores_invalid_marker(self) -> None:
         self.assertNotInDepends('python3-invalid-marker')
 
-    def test_depends_on_extra_feature_packages(self):
+    def test_depends_on_extra_feature_packages(self) -> None:
         self.assertIn('python3-extra-feature', self.d.depends)
 
-    def test_skips_extra_test_packages(self):
+    def test_skips_extra_test_packages(self) -> None:
         self.assertNotInDepends('python3-extra-test')
 
-    def test_ignores_complex_environment_markers(self):
+    def test_ignores_complex_environment_markers(self) -> None:
         self.assertNotInDepends('python3-complex-marker')
         self.assertNotInDepends('python3-complex-marker-2')
 
-    def test_depends_on_un_marked_dependency_after_extra(self):
+    def test_depends_on_un_marked_dependency_after_extra(self) -> None:
         self.assertIn('python3-no-markers-2', self.d.depends)
 
 
 class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
-    dist_info_metadata = None
+    dist_info_metadata = {}
     requires = {
         'debian/foo/usr/lib/python3/dist-packages/foo.egg-info/requires.txt': (
             "no_markers",
@@ -654,7 +682,7 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
         ),
     }
 
-    def test_depends_on_un_marked_dependency_after_extra(self):
+    def test_depends_on_un_marked_dependency_after_extra(self) -> None:
         raise unittest.SkipTest('Not possible in requires.txt')
 
 
@@ -670,11 +698,11 @@ class TestIgnoresUnusedModulesDistInfo(DependenciesTestCase):
     }
     parse = False
 
-    def test_ignores_unused_dependencies(self):
+    def test_ignores_unused_dependencies(self) -> None:
         if not hasattr(self, 'assertLogs'):
             raise unittest.SkipTest("Requires Python >= 3.4")
         with self.assertLogs(logger='dhpython', level=logging.INFO) as logs:
-            self.d.parse(self.prepared_stats, self.options)
+            self.d.parse(self.prepared_stats, cast(Namespace, self.options))
         for line in logs.output:
             self.assertTrue(
                 line.startswith(
@@ -697,11 +725,11 @@ class TestIgnoresUnusedModulesEggInfo(DependenciesTestCase):
     }
     parse = False
 
-    def test_ignores_unused_dependencies(self):
+    def test_ignores_unused_dependencies(self) -> None:
         if not hasattr(self, 'assertNoLogs'):
             raise unittest.SkipTest("Requires Python >= 3.10")
         with self.assertNoLogs(logger='dhpython', level=logging.INFO):
-            self.d.parse(self.prepared_stats, self.options)
+            self.d.parse(self.prepared_stats, cast(Namespace, self.options))
 
 
 class TestCExtensionPython3(DependenciesTestCase):
@@ -710,7 +738,7 @@ class TestCExtensionPython3(DependenciesTestCase):
         'ext_vers': {Version('3.14')},
     }
 
-    def test_python_depends(self):
+    def test_python_depends(self) -> None:
         self.assertIn('python3 (>= 3.14~)', self.d.depends)
         self.assertIn('python3 (<< 3.15)', self.d.depends)
 
@@ -721,7 +749,7 @@ class TestCExtensionsPython3(DependenciesTestCase):
         'ext_vers': {Version('3.14'), Version('3.13')},
     }
 
-    def test_python_depends(self):
+    def test_python_depends(self) -> None:
         self.assertIn('python3 (>= 3.13~)', self.d.depends)
         self.assertIn('python3 (<< 3.15)', self.d.depends)
 
@@ -732,7 +760,7 @@ class TestStableABIExtensionPython3(DependenciesTestCase):
         'ext_stableabi': {'foo.abi3.so'},
     }
 
-    def test_python_depends(self):
+    def test_python_depends(self) -> None:
         self.assertIn('python3', self.d.depends)
 
 
@@ -743,7 +771,7 @@ class TestMixedExtensionsPython3(DependenciesTestCase):
         'ext_stableabi': {'foo.abi3.so'},
     }
 
-    def test_python_depends(self):
+    def test_python_depends(self) -> None:
         self.assertIn('python3 (>= 3.13~)', self.d.depends)
         self.assertIn('python3 (<< 3.15)', self.d.depends)
 
@@ -754,7 +782,7 @@ class TestUnversionedExtensionPython3(DependenciesTestCase):
         'ext_no_version': {'foo.so'},
     }
 
-    def test_python_depends(self):
+    def test_python_depends(self) -> None:
         # This test is to maintain the status-quo where this case is only
         # handled in private modules. That's *probably* OK?
         self.assertNotInDepends('python3')

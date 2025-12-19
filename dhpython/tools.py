@@ -22,19 +22,23 @@
 import logging
 import os
 import re
+from contextlib import ExitStack
 from datetime import datetime
 from functools import cache
 from glob import glob
 from shutil import rmtree
 from os.path import exists, getsize, isdir, islink, join, split
+from pathlib import Path
 from subprocess import Popen, PIPE
+from typing import Callable, Iterable, Literal, TextIO, NamedTuple, overload
+
 
 log = logging.getLogger('dhpython')
 EGGnPTH_RE = re.compile(r'(.*?)(-py\d\.\d(?:-[^.]*)?)?(\.egg-info|\.pth)$')
 SHAREDLIB_RE = re.compile(r'NEEDED.*libpython(\d\.\d)')
 
 
-def relpath(target, link):
+def relpath(target: str, link: str) -> str:
     """Return relative path.
 
     >>> relpath('/usr/share/python-foo/foo.py', '/usr/bin/foo', )
@@ -47,12 +51,12 @@ def relpath(target, link):
     return '/'.join(['..'] * (len(l) - 1) + t)
 
 
-def relative_symlink(target, link):
+def relative_symlink(target: str, link: str) -> None:
     """Create relative symlink."""
     return os.symlink(relpath(target, link), link)
 
 
-def move_file(fpath, dstdir):
+def move_file(fpath: str, dstdir: str) -> None:
     """Move file to dstdir. Works with symlinks (including relative ones)."""
     if isdir(fpath):
         dname = split(fpath)[-1]
@@ -67,7 +71,13 @@ def move_file(fpath, dstdir):
         os.rename(fpath, dstdir)
 
 
-def move_matching_files(src, dst, pattern, sub=None, repl=''):
+def move_matching_files(
+    src: str,
+    dst: str,
+    pattern: str,
+    sub: str | None=None,
+    repl: str | None=None,
+) -> None:
     r"""Move files (preserving path) that match given pattern.
 
     move_matching_files('foo/bar/', 'foo/baz/', r'spam/.*\.so$')
@@ -77,20 +87,25 @@ def move_matching_files(src, dst, pattern, sub=None, repl=''):
     :param repl: replacement for `sub`
     """
     match = re.compile(pattern).search
+    sub_f: Callable[[str, str], str] | None = None
     if sub:
-        sub = re.compile(sub).sub
+        sub_f = re.compile(sub).sub
         repl = repl or ''
     for root, _, filenames in os.walk(src):
         for fn in filenames:
             spath = join(root, fn)
             if match(spath):
-                if sub is not None:
-                    spath = sub(repl, spath)
+                if sub_f is not None:
+                    assert repl
+                    spath = sub_f(repl, spath)
                 dpath = join(dst, relpath(spath, src))
                 os.renames(spath, dpath)
 
 
-def fix_shebang(fpath, replacement=None):
+def fix_shebang(
+    fpath: str | Path,
+    replacement: str | None = None
+) -> bool | None:
     """Normalize file's shebang.
 
     :param replacement: new shebang command (path to interpreter and options)
@@ -126,7 +141,7 @@ def fix_shebang(fpath, replacement=None):
     return True
 
 
-def so2pyver(fpath):
+def so2pyver(fpath: str) -> "Version | None":
     """Return libpython version file is linked to or None.
 
     :rtype: tuple
@@ -135,12 +150,14 @@ def so2pyver(fpath):
 
     cmd = "readelf -Wd '%s'" % fpath
     with Popen(cmd, stdout=PIPE, shell=True) as process:
+        assert process.stdout
         match = SHAREDLIB_RE.search(str(process.stdout.read(), encoding="UTF-8"))
         if match:
             return Version(match.groups()[0])
+    return None
 
 
-def clean_egg_name(name):
+def clean_egg_name(name: str) -> str:
     """Remove Python version and platform name from Egg files/dirs.
 
     >>> clean_egg_name('python_pipeline-0.1.3_py3k-py3.1.egg-info')
@@ -154,7 +171,10 @@ def clean_egg_name(name):
     return name
 
 
-def parse_ns(fpaths, other=None):
+def parse_ns(
+    fpaths: Iterable[str],
+    other: Iterable[str] | None = None,
+) -> set[str]:
     """Parse namespace_packages.txt files."""
     result = set(other or [])
     for fpath in fpaths:
@@ -165,7 +185,12 @@ def parse_ns(fpaths, other=None):
     return result
 
 
-def remove_ns(interpreter, package, namespaces, versions):
+def remove_ns(
+    interpreter: "Interpreter",
+    package: str,
+    namespaces: Iterable[str],
+    versions: "Iterable[Version]",
+) -> set[str]:
     """Remove empty __init__.py files for requested namespaces."""
     if not isinstance(namespaces, set):
         namespaces = set(namespaces)
@@ -203,7 +228,47 @@ def remove_ns(interpreter, package, namespaces, versions):
     return result
 
 
-def execute(command, cwd=None, env=None, log_output=None, shell=True):
+class ExecutionResult(NamedTuple):
+    returncode: int
+
+
+class ExecutionResultWithOutput(NamedTuple):
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+@overload
+def execute(
+    command: str | list[str],
+    *,
+    cwd: str | None = None,
+    env: dict[str, str] | None = None,
+    log_output: None = None,
+    shell: bool = True
+) -> ExecutionResultWithOutput:
+    ...
+
+@overload
+def execute(
+    command: str | list[str],
+    *,
+    cwd: str | None = None,
+    env: dict[str, str] | None = None,
+    log_output: TextIO | str | Literal[False],
+    shell: bool = True
+) -> ExecutionResult:
+    ...
+
+
+def execute(
+    command: str | list[str],
+    *,
+    cwd: str | None = None,
+    env: dict[str, str] | None = None,
+    log_output: TextIO | str | Literal[False] | None = None,
+    shell: bool = True
+) -> ExecutionResult | ExecutionResultWithOutput:
     """Execute external shell command.
 
     :param cdw: current working directory
@@ -213,47 +278,58 @@ def execute(command, cwd=None, env=None, log_output=None, shell=True):
         * None if output should be included in the returned dict, or
         * False if output should be redirected to stdout/stderr
     """
-    args = {'shell': shell, 'cwd': cwd, 'env': env}
-    close = False
-    if log_output is False:
-        pass
-    elif log_output is None:
-        args.update(stdout=PIPE, stderr=PIPE)
-    elif log_output:
-        if isinstance(log_output, str):
-            close = True
-            # pylint: disable=consider-using-with
-            log_output = open(log_output, 'a', encoding='utf-8')
-        log_output.write('\n# command executed on {}'.format(datetime.now().isoformat()))
-        log_output.write('\n$ {}\n'.format(command))
-        log_output.flush()
-        args.update(stdout=log_output, stderr=log_output)
+    with ExitStack() as stack:
+        output: TextIO | int | None
+        if log_output is False:
+            output = None
+        elif log_output is None:
+            output = PIPE
+        elif log_output:
+            if isinstance(log_output, str):
+                log_output = stack.enter_context(
+                    open(log_output, 'a', encoding='utf-8')
+                )
+            assert isinstance(log_output, TextIO)
+            log_output.write(
+                '\n# command executed on {}'.format(datetime.now().isoformat())
+            )
+            log_output.write('\n$ {}\n'.format(command))
+            log_output.flush()
+            output = log_output
 
-    log.debug('invoking: %s', command)
-    with Popen(command, **args) as process:
-        stdout, stderr = process.communicate()
-        if close:
-            log_output.close()
-        return {
-            "returncode": process.returncode,
-            "stdout": stdout is not None and str(stdout, 'utf-8'),
-            "stderr": stderr is not None and str(stderr, 'utf-8'),
-        }
+        log.debug('invoking: %s', command)
+        with Popen(
+            command,
+            shell=shell,
+            cwd=cwd,
+            env=env,
+            encoding='utf-8',
+            stdout=output,
+            stderr=output,
+        ) as process:
+            stdout_text, stderr_text = process.communicate()
+            if output == PIPE:
+                return ExecutionResultWithOutput(
+                    returncode=process.returncode,
+                    stdout=stdout_text,
+                    stderr=stderr_text,
+                )
+            return ExecutionResult(returncode=process.returncode)
 
 
 @cache
-def dpkg_architecture():
+def dpkg_architecture() -> dict[str, str]:
     """Parse dpkg-architecture output"""
-    arch_data = {}
+    arch_data: dict[str, str] = {}
     if exists('/usr/bin/dpkg-architecture'):
         res = execute('/usr/bin/dpkg-architecture')
-        for line in res['stdout'].splitlines():
+        for line in res.stdout.splitlines():
             key, value = line.strip().split('=', 1)
             arch_data[key] = value
     return arch_data
 
 
-def pyinstall(interpreter, package, vrange):
+def pyinstall(interpreter: "Interpreter", package: str, vrange: str) -> None:
     """Install local files listed in pkg.pyinstall files as public modules."""
     srcfpath = "./debian/%s.pyinstall" % package
     if not exists(srcfpath):
@@ -265,10 +341,9 @@ def pyinstall(interpreter, package, vrange):
         for line in fp:
             if not line.strip() or line.startswith('#'):
                 continue
-            details = INSTALL_RE.match(line)
-            if not details:
+            if not (m := INSTALL_RE.match(line)):
                 raise ValueError("unrecognized line: %s" % line)
-            details = details.groupdict()
+            details = m.groupdict()
             if details['module']:
                 details['module'] = details['module'].replace('.', '/')
             myvers = versions & get_requested_versions(impl, details['vrange'])
@@ -297,7 +372,7 @@ def pyinstall(interpreter, package, vrange):
                     os.link(fpath, dstfpath)
 
 
-def pyremove(interpreter, package, vrange):
+def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
     """Remove public modules listed in pkg.pyremove file."""
     srcfpath = "./debian/%s.pyremove" % package
     if not exists(srcfpath):
@@ -309,10 +384,9 @@ def pyremove(interpreter, package, vrange):
         for line in fp:
             if not line.strip() or line.startswith('#'):
                 continue
-            details = REMOVE_RE.match(line)
-            if not details:
+            if not (m := REMOVE_RE.match(line)):
                 raise ValueError("unrecognized line: %s: %s" % (package, line))
-            details = details.groupdict()
+            details = m.groupdict()
             myvers = versions & get_requested_versions(impl, details['vrange'])
             if not myvers:
                 log.debug('%s.pyremove: no matching versions for line %s',
@@ -327,6 +401,7 @@ def pyremove(interpreter, package, vrange):
                             rmtree(fpath)
                         else:
                             os.remove(fpath)
+
 
 from dhpython.interpreter import Interpreter
 from dhpython.version import Version, get_requested_versions, RANGE_PATTERN

@@ -24,10 +24,12 @@ import logging
 import argparse
 import re
 import sys
+from enum import StrEnum, auto
 from os import environ, getcwd, makedirs, remove
 from os.path import abspath, exists, isdir, join
 from shutil import rmtree
 from tempfile import mkdtemp
+from typing import Callable, Literal, overload, cast
 
 INTERP_VERSION_RE = re.compile(r'^python(?P<version>3\.\d+)(?P<dbg>-dbg)?$')
 logging.basicConfig(format='%(levelname).1s: pybuild '
@@ -35,9 +37,10 @@ logging.basicConfig(format='%(levelname).1s: pybuild '
 log = logging.getLogger('dhpython')
 
 
-def main(cfg):
+def main(cfg: argparse.Namespace) -> None:
     log.debug('cfg: %s', cfg)
     from dhpython import build, PKG_PREFIX_MAP
+    from dhpython.build.types import Args, Context
     from dhpython.debhelper import DebHelper, build_options
     from dhpython.version import Version, build_sorted, get_requested_versions
     from dhpython.interpreter import Interpreter
@@ -101,6 +104,7 @@ def main(cfg):
                 selected_plugin = build_dep.split('-', 2)[2]
                 break
 
+    context: dict[str, str | dict[str, str]]  # proto-context
     if selected_plugin:
         certainty = 99
         Plugin = build.plugins.get(selected_plugin)
@@ -111,7 +115,7 @@ def main(cfg):
         context = {'ENV': env, 'args': {}, 'dir': cfg.dir}
         plugin.detect(context)
     else:
-        plugin, certainty, context = None, 0, None
+        plugin, certainty = None, 0
         for Plugin in build.plugins.values():
             try:
                 tmp_plugin = Plugin(cfg)
@@ -176,7 +180,30 @@ def main(cfg):
                 'cpython3', available=True), impl='cpython3')
     versions = [Version(v) for v in versions]
 
-    def get_option(name, interpreter=None, version=None, default=None):
+    @overload
+    def get_option(
+        name: str,
+        interpreter: str | None,
+        version: Version | None,
+        default: str,
+    ) -> str:
+        ...
+
+    @overload
+    def get_option(
+        name: str,
+        interpreter: str | None = None,
+        version: Version | None = None,
+        default: None = None,
+    ) -> str | None:
+        ...
+
+    def get_option(
+        name: str,
+        interpreter: str | None = None,
+        version: Version | None = None,
+        default: str | None = None,
+    ) -> str | None:
         if interpreter:
             # try PYBUILD_NAME_python3.3-dbg (or hardcoded interpreter)
             i = interpreter.format(version=version or '')
@@ -196,22 +223,37 @@ def main(cfg):
         # try command line args
         return getattr(cfg, name, default) or default
 
-    def get_args(context, step, version, interpreter):
+
+    class Step(StrEnum):
+        CLEAN = auto()
+        CONFIGURE = auto()
+        BUILD = auto()
+        INSTALL = auto()
+        TEST = auto()
+        AUTOPKGTEST = auto()
+
+
+    def get_args(
+        context: Context,
+        step: Step,
+        version: Version,
+        interpreter: str,
+    ) -> Args:
         i = interpreter.format(version=version)
         ipreter = Interpreter(i)
 
-        home_dir = [ipreter.impl, str(version)]
+        home_dirs = [ipreter.impl, str(version)]
         if ipreter.debug:
-            home_dir.append('dbg')
+            home_dirs.append('dbg')
         if cfg.name:
-            home_dir.append(cfg.name)
+            home_dirs.append(cfg.name)
         if cfg.autopkgtest_only:
             base_dir = environ.get('AUTOPKGTEST_TMP')
             if not base_dir:
                 base_dir = mkdtemp(prefix='pybuild-autopkgtest-')
         else:
             base_dir = '.pybuild/{}'
-        home_dir = base_dir.format('_'.join(home_dir))
+        home_dir = base_dir.format('_'.join(home_dirs))
 
         build_dir = get_option('build_dir', interpreter, version,
                                default=join(home_dir, 'build'))
@@ -225,7 +267,7 @@ def main(cfg):
             destdir = "debian/{}".format(package)
         destdir = abspath(destdir)
 
-        args = dict(context['args'])
+        args = cast(Args, dict(context['args']))
         args.update({
             'autopkgtest': cfg.autopkgtest_only,
             'package': package,
@@ -242,8 +284,8 @@ def main(cfg):
                                       ).format(version=version, interpreter=i),
             'home_dir': abspath(home_dir)})
         env = dict(args.get('ENV', {}))
-        pp = env.get('PYTHONPATH', context['ENV'].get('PYTHONPATH'))
-        pp = pp.split(':') if pp else []
+        pp_str = env.get('PYTHONPATH', context['ENV'].get('PYTHONPATH'))
+        pp = pp_str.split(':') if pp_str else []
         if step in {'build', 'test', 'autopkgtest'}:
             if step in {'test', 'autopkgtest'}:
                 args['test_dir'] = join(args['destdir'], args['install_dir'].lstrip('/'))
@@ -274,7 +316,7 @@ def main(cfg):
 
         return args
 
-    def is_disabled(step, interpreter, version):
+    def is_disabled(step: Step, interpreter: str, version: Version) -> bool:
         i = interpreter
         prefix = "{}/".format(step)
         disabled = (get_option('disable', i, version) or '').split()
@@ -291,8 +333,13 @@ def main(cfg):
             return True
         return False
 
-    def run(func, interpreter, version, context):
-        step = func.__func__.__name__
+    def run(
+        func: Callable[[Context, Args], None],
+        interpreter: str,
+        version: Version,
+        context: Context,
+    ) -> None:
+        step = Step(func.__func__.__name__)  # type: ignore
         args = get_args(context, step, version, interpreter)
         env = dict(context['ENV'])
         if 'ENV' in args:
@@ -300,19 +347,20 @@ def main(cfg):
 
         before_cmd = get_option('before_{}'.format(step), interpreter, version)
         if before_cmd:
+            log_file: str | Literal[False]
             if cfg.quiet:
                 log_file = join(args['home_dir'], 'before_{}_cmd.log'.format(step))
             else:
                 log_file = False
             command = before_cmd.format(**args)
             log.info(command)
-            output = execute(command, context['dir'], env, log_file)
-            if output['returncode'] != 0:
-                msg = 'exit code={}: {}'.format(output['returncode'], command)
+            output = execute(command, cwd=context['dir'], env=env, log_output=log_file)
+            if output.returncode != 0:
+                msg = f'exit code={output.returncode}: {command}'
                 raise Exception(msg)
 
         fpath = join(args['home_dir'], 'testfiles_to_rm_before_install')
-        if step == 'install' and exists(fpath):
+        if step == Step.INSTALL and exists(fpath):
             with open(fpath, encoding="UTF-8") as fp:
                 for line in fp:
                     path = line.strip('\n')
@@ -322,7 +370,7 @@ def main(cfg):
                         else:
                             remove(path)
             remove(fpath)
-        result = func(context, args)
+        func(context, args)
 
         after_cmd = get_option('after_{}'.format(step), interpreter, version)
         if after_cmd:
@@ -332,21 +380,29 @@ def main(cfg):
                 log_file = False
             command = after_cmd.format(**args)
             log.info(command)
-            output = execute(command, context['dir'], env, log_file)
-            if output['returncode'] != 0:
-                msg = 'exit code={}: {}'.format(output['returncode'], command)
+            output = execute(command, cwd=context['dir'], env=env, log_output=log_file)
+            if output.returncode != 0:
+                msg = f'exit code={output.returncode}: {command}'
                 raise Exception(msg)
-        return result
 
-    def move_to_ext_destdir(i, version, context):
+    def move_to_ext_destdir(
+        i: Step,
+        version: Version,
+        context: Context,
+    ) -> None:
         """Move built C extensions from the general destdir to ext_destdir"""
-        args = get_args(context, 'install', version, interpreter)
+        args = get_args(context, Step.INSTALL, version, interpreter)
         ext_destdir = get_option('ext_destdir', i, version)
+        ext_pattern = get_option('ext_pattern', i, version)
         if ext_destdir:
-            move_matching_files(args['destdir'], ext_destdir,
-                                get_option('ext_pattern', i, version),
-                                get_option('ext_sub_pattern', i, version),
-                                get_option('ext_sub_repl', i, version))
+            assert ext_pattern
+            move_matching_files(
+                args['destdir'],
+                ext_destdir,
+                ext_pattern,
+                get_option('ext_sub_pattern', i, version),
+                get_option('ext_sub_repl', i, version),
+            )
 
     func = None
     if cfg.clean_only:
@@ -380,7 +436,7 @@ def main(cfg):
             for version in iversions:
                 if is_disabled(step, i, version):
                     continue
-                c = dict(context)
+                c = cast(Context, dict(context))
                 c['dir'] = get_option('dir', i, version, cfg.dir)
                 c['destdir'] = get_option('destdir', i, version, cfg.destdir)
                 try:
@@ -391,9 +447,9 @@ def main(cfg):
                     # try to build/test other interpreters/versions even if
                     # one of them fails to make build logs more verbose:
                     failure = True
-                    if step not in ('build', 'test', 'autopkgtest'):
+                    if step not in (Step.BUILD, Step.TEST, Step.AUTOPKGTEST):
                         sys.exit(13)
-                if step == 'install':
+                if step == Step.INSTALL:
                     move_to_ext_destdir(i, version, c)
         if failure:
             # exit with a non-zero return code if at least one build/test failed
@@ -402,7 +458,7 @@ def main(cfg):
 
     ### all functions for interpreters in batches mode ###
     try:
-        context_map = {}
+        context_map: dict[tuple[str, Version], Context] = {}
         for i in cfg.interpreter:
             ipreter = Interpreter(i.format(version=versions[0]))
             iversions = build_sorted(versions, impl=ipreter.impl)
@@ -415,21 +471,21 @@ def main(cfg):
                 if key in context_map:
                     c = context_map[key]
                 else:
-                    c = dict(context)
+                    c = cast(Context, dict(context))
                     c['dir'] = get_option('dir', i, version, cfg.dir)
                     c['destdir'] = get_option('destdir', i, version, cfg.destdir)
                     context_map[key] = c
 
-                if not is_disabled('clean', i, version):
+                if not is_disabled(Step.CLEAN, i, version):
                     run(plugin.clean, i, version, c)
-                if not is_disabled('configure', i, version):
+                if not is_disabled(Step.CONFIGURE, i, version):
                     run(plugin.configure, i, version, c)
-                if not is_disabled('build', i, version):
+                if not is_disabled(Step.BUILD, i, version):
                     run(plugin.build, i, version, c)
-                if not is_disabled('install', i, version):
+                if not is_disabled(Step.INSTALL, i, version):
                     run(plugin.install, i, version, c)
                     move_to_ext_destdir(i, version, c)
-                if not nocheck and not is_disabled('test', i, version):
+                if not nocheck and not is_disabled(Step.TEST, i, version):
                     run(plugin.test, i, version, c)
     except Exception as err:
         log.error('plugin %s failed: %s', plugin.NAME, err,
@@ -437,7 +493,7 @@ def main(cfg):
         sys.exit(14)
 
 
-def parse_args(argv):
+def parse_args(argv: list[str]) -> argparse.Namespace:
     usage = '%(prog)s [ACTION] [BUILD SYSTEM ARGS] [DIRECTORIES] [OPTIONS]'
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument('-v', '--verbose', action='store_true',

@@ -18,7 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from typing import override
+
 from dhpython.build.base import Base, shell_command, copy_test_files
+from dhpython.build.types import Args, Context
 
 
 class BuildSystem(Base):
@@ -28,12 +31,14 @@ class BuildSystem(Base):
     OPTIONAL_FILES = {'cmake_uninstall.cmake': 10, 'CMakeCache.txt': 10}
 
     @shell_command
-    def clean(self, context, args):
+    @override
+    def clean(self, context: Context, args: Args) -> str:
         super().clean(context, args)
         return 'dh_auto_clean --buildsystem=cmake'
 
     @shell_command
-    def configure(self, context, args):
+    @override
+    def configure(self, context: Context, args: Args) -> str:
         return ('dh_auto_configure --buildsystem=cmake'
                 ' --builddirectory={build_dir} --'
                 # FindPythonInterp:
@@ -51,13 +56,15 @@ class BuildSystem(Base):
                 ' {args}')
 
     @shell_command
-    def build(self, context, args):
+    @override
+    def build(self, context: Context, args: Args) -> str:
         return ('dh_auto_build --buildsystem=cmake'
                 ' --builddirectory={build_dir}'
                 ' -- {args}')
 
     @shell_command
-    def install(self, context, args):
+    @override
+    def install(self, context: Context, args: Args) -> str:
         return ('dh_auto_install --buildsystem=cmake'
                 ' --builddirectory={build_dir}'
                 ' --destdir={destdir}'
@@ -65,7 +72,8 @@ class BuildSystem(Base):
 
     @copy_test_files()
     @shell_command
-    def test(self, context, args):
+    @override
+    def test(self, context: Context, args: Args) -> str:
         return ('dh_auto_test --buildsystem=cmake'
                 ' --builddirectory={build_dir}'
                 ' -- {args}')
