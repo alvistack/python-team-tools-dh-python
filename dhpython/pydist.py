@@ -25,8 +25,10 @@ import platform
 import os
 import re
 import subprocess
+from enum import Enum, auto
 from functools import partial
 from os.path import exists, isdir, join
+from typing import NamedTuple
 
 if __name__ == '__main__':
     import sys
@@ -111,6 +113,17 @@ DEB_VERS_OPS = {
 MIN_PY_VERSION = [3, 11]
 
 
+class ModificationAction(Enum):
+    SKIP = auto()
+    KEEP = auto()
+    APPEND = auto()
+
+
+class RequirementModification(NamedTuple):
+    action: ModificationAction
+    alternative: str | None = None
+
+
 def validate(fpath):
     """Check if pydist file looks good."""
     with open(fpath, encoding='utf-8') as fp:
@@ -192,16 +205,16 @@ def guess_dependency(impl, req, version=None, bdep=None,
 
     env_marker_alts = ''
     if req_d['environment_marker']:
-        action = check_environment_marker_restrictions(
+        modification = check_environment_marker_restrictions(
             req,
             req_d['environment_marker'],
             impl)
-        if action is False:
+        if modification.action == ModificationAction.SKIP:
             return
-        elif action is True:
+        elif modification.action == ModificationAction.KEEP:
             pass
-        else:
-            env_marker_alts = ' ' + action
+        elif modification.action == ModificationAction.APPEND:
+            env_marker_alts = ' | ' + modification.alternative
 
     name = req_d['name']
     details = data.get(normalize_name(name))
@@ -321,23 +334,19 @@ def guess_dependency(impl, req, version=None, bdep=None,
     # return pname
 
 
-def check_environment_marker_restrictions(req, marker_str, impl):
-    """Check wither we should include or skip a dependency based on its
-    environment markers.
-
-    Returns: True  - to keep a dependency
-             False - to skip it
-             str   - to append "| foo" to generated dependencies
-    """
+def check_environment_marker_restrictions(
+    req: dict[str, str | None], marker_str: str, impl: str
+) -> RequirementModification:
+    """Should we keep or skip a dependency based on its environment markers."""
     if impl != 'cpython3':
         log.info('Ignoring environment markers for non-Python 3.x: %s', req)
-        return False
+        return RequirementModification(action=ModificationAction.SKIP)
 
     try:
         marker, op, value = parse_environment_marker(marker_str)
     except ComplexEnvironmentMarker:
         log.info('Ignoring complex environment marker: %s', req)
-        return False
+        return RequirementModification(action=ModificationAction.SKIP)
 
     # TODO: Use dynamic values when building arch-dependent
     # binaries, otherwise static values
@@ -360,12 +369,12 @@ def check_environment_marker_restrictions(req, marker_str, impl):
                     or (op == '!=' and value in sv)):
                 log.debug('Skipping requirement (%s != %s): %s',
                           value, sv, req)
-                return False
+                return RequirementModification(action=ModificationAction.SKIP)
         else:
             log.info(
                 'Skipping requirement with unhandled environment marker '
                 'comparison: %s', req)
-            return False
+            return RequirementModification(action=ModificationAction.SKIP)
 
     elif marker in ('python_version', 'python_full_version',
                         'implementation_version'):
@@ -383,7 +392,7 @@ def check_environment_marker_restrictions(req, marker_str, impl):
             if split_ver.index('*') != len(split_ver) -1:
                 log.info('Skipping requirement with intermediate wildcard: %s',
                          req)
-                return False
+                return RequirementModification(action=ModificationAction.SKIP)
             split_ver.pop()
             env_ver = '.'.join(split_ver)
             if op == '==':
@@ -399,11 +408,13 @@ def check_environment_marker_restrictions(req, marker_str, impl):
                 else:
                     log.info('Ignoring wildcard != requirement, not '
                              'representable in Debian: %s', req)
-                    return True
+                    return RequirementModification(
+                        action=ModificationAction.KEEP
+                    )
             else:
                 log.info('Skipping requirement with %s on a wildcard: %s',
                          op, req)
-                return False
+                return RequirementModification(action=ModificationAction.SKIP)
 
         int_ver = []
         for ver_part in split_ver:
@@ -430,49 +441,85 @@ def check_environment_marker_restrictions(req, marker_str, impl):
 
         if op == '<':
             if int_ver <= MIN_PY_VERSION:
-                return False
-            return f'| python3-supported-min (>= {env_ver})'
+                return RequirementModification(action=ModificationAction.SKIP)
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=f'python3-supported-min (>= {env_ver})',
+            )
         elif op == '<=':
-            return f'| python3-supported-min (>> {env_ver})'
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=f'python3-supported-min (>> {env_ver})',
+            )
         elif op == '>=':
             if int_ver < MIN_PY_VERSION:
-                return True
-            return f'| python3-supported-max (<< {env_ver})'
+                return RequirementModification(action=ModificationAction.KEEP)
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=f'python3-supported-max (<< {env_ver})',
+            )
         elif op == '>':
             if int_ver < MIN_PY_VERSION:
-                return True
-            return f'| python3-supported-max (<= {env_ver})'
+                return RequirementModification(action=ModificationAction.KEEP)
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=f'python3-supported-max (<= {env_ver})',
+            )
         elif op == '==':
             if marker == 'python_version':
-                return f'| python3-supported-max (<< {env_ver}) | python3-supported-min (>= {next_ver})'
-            return f'| python3-supported-max (<< {env_ver}) | python3-supported-min (>> {env_ver})'
+                return RequirementModification(
+                    action=ModificationAction.APPEND,
+                    alternative=(
+                        f'python3-supported-max (<< {env_ver}) '
+                        f'| python3-supported-min (>= {next_ver})'
+                    )
+                )
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=(
+                    f'python3-supported-max (<< {env_ver}) '
+                    f'| python3-supported-min (>> {env_ver})'
+                )
+            )
         elif op == '===':
             # === is arbitrary equality (PEP 440)
             if marker == 'python_version':
-                return f'| python3-supported-max (<< {env_ver}) | python3-supported-min (>> {env_ver})'
+                return RequirementModification(
+                    action=ModificationAction.APPEND,
+                    alternative=(
+                        f'python3-supported-max (<< {env_ver}) '
+                        f'| python3-supported-min (>> {env_ver})'
+                    )
+                )
             else:
                 log.info(
                     'Skipping requirement with %s environment marker, cannot '
                     'model in Debian deps: %s', op, req)
-                return False
+                return RequirementModification(action=ModificationAction.SKIP)
         elif op == '~=':  # Compatible equality (PEP 440)
             ceq_next_ver = int_ver[:2]
             ceq_next_ver[1] += 1
             ceq_next_ver = '.'.join(str(x) for x in ceq_next_ver)
-            return f'| python3-supported-max (<< {env_ver}) | python3-supported-min (>= {ceq_next_ver})'
+            return RequirementModification(
+                action=ModificationAction.APPEND,
+                alternative=(
+                    f'python3-supported-max (<< {env_ver}) '
+                    f'| python3-supported-min (>= {ceq_next_ver})'
+                )
+            )
         elif op == '!=':
             log.info('Ignoring != comparison in environment marker, cannot '
                      'model in Debian deps: %s', req)
-            return True
+            return RequirementModification(action=ModificationAction.KEEP)
 
     elif marker == 'extra':
         # Handled in section logic of parse_requires_dist()
-        return True
+        return RequirementModification(action=ModificationAction.KEEP)
     else:
         log.info('Skipping requirement with unknown environment marker: %s',
                  marker)
-        return False
-    return True
+        return RequirementModification(action=ModificationAction.SKIP)
+    return RequirementModification(action=ModificationAction.KEEP)
 
 
 def parse_pydep(impl, fname, bdep=None,
@@ -493,7 +540,7 @@ def parse_pydep(impl, fname, bdep=None,
 
     result = {'depends': [], 'recommends': [], 'suggests': []}
     modified = section = False
-    env_action = True
+    modification = RequirementModification(action=ModificationAction.KEEP)
     processed = []
     with open(fname, 'r', encoding='utf-8') as fp:
         for line in fp:
@@ -510,9 +557,11 @@ def parse_pydep(impl, fname, bdep=None,
                     section = object()
                     continue
                 section = m.group('section')
-                env_action = True
+                modification = RequirementModification(
+                    action=ModificationAction.KEEP
+                )
                 if m.group('environment_marker'):
-                    env_action = check_environment_marker_restrictions(
+                    modification = check_environment_marker_restrictions(
                         line,
                         m.group('environment_marker'),
                         impl)
@@ -532,11 +581,11 @@ def parse_pydep(impl, fname, bdep=None,
                 result_key = 'depends'
 
             dependency = None
-            if env_action:
+            if modification.action != ModificationAction.SKIP:
                 dependency = guess_deps(req=line)
-            if dependency and isinstance(env_action, str):
+            if dependency and modification.action == ModificationAction.APPEND:
                 dependency = ', '.join(
-                    part.strip() + ' ' + env_action
+                    part.strip() + ' | ' + modification.alternative
                     for part in dependency.split(','))
 
             if dependency:
