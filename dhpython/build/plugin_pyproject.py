@@ -42,10 +42,24 @@ try:
 except ModuleNotFoundError:
     SchemeDictionaryDestination = WheelFile = install = parse_metadata_file = None
 
-from dhpython.build.base import Base, shell_command
+from dhpython.build.base import Base, shell_command, create_setuptools_parallel_cfg
 from dhpython.tools import dpkg_architecture
 
 log = logging.getLogger('dhpython')
+
+
+def _build_backend():
+    """Retrieve the build-system from pyproject.toml, where possible"""
+    try:
+        with open('pyproject.toml', 'rb') as f:
+            pyproject = tomllib.load(f)
+        return pyproject.get('build-system', {}).get('build-backend')
+    except NameError:
+        # No toml, no autdetection
+        return None
+    except FileNotFoundError:
+        # Not a PEP517 package
+        return None
 
 
 class BuildSystem(Base):
@@ -70,25 +84,12 @@ class BuildSystem(Base):
         # Temporarily reduce the threshold while we're in beta
         result -= 20
 
-        if self._build_backend():
+        if _build_backend():
             result += 10
 
         if result > 100:
             return 100
         return result
-
-    def _build_backend(self):
-        """Retrieve the build-system from pyproject.toml, where possible"""
-        try:
-            with open('pyproject.toml', 'rb') as f:
-                pyproject = tomllib.load(f)
-            return pyproject.get('build-system', {}).get('build-backend')
-        except NameError:
-            # No toml, no autdetection
-            return None
-        except FileNotFoundError:
-            # Not a PEP517 package
-            return None
 
     def clean(self, context, args):
         super().clean(context, args)
@@ -111,7 +112,7 @@ class BuildSystem(Base):
         self.unpack_wheel(context, args)
 
     def _backend_config_settings(self):
-        backend = self._build_backend()
+        backend = _build_backend()
         if backend == "mesonpy":
             arch_data = dpkg_architecture()
             return [
@@ -126,6 +127,7 @@ class BuildSystem(Base):
         return []
 
     @shell_command
+    @create_setuptools_parallel_cfg(backend=_build_backend())
     def build_wheel(self, context, args):
         """ build a wheel using the PEP517 builder defined by upstream """
         log.info('Building wheel for %s with "build" module',

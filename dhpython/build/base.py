@@ -21,7 +21,7 @@
 import logging
 from functools import wraps
 from glob import glob1
-from os import remove, walk, makedirs
+from os import environ, remove, walk, makedirs
 from os.path import exists, isdir, join
 from pathlib import Path
 from shlex import quote
@@ -372,3 +372,52 @@ def shell_command(func):
         return True
 
     return wrapped_func
+
+
+def get_parallel() -> int:
+    """Determine the allowable level of build parallelism with DEB_BUILD_OPTIONS."""
+    parallel = 1
+    if 'DEB_BUILD_OPTIONS' in environ:
+        for option in environ['DEB_BUILD_OPTIONS'].split():
+            key, assign, value = option.partition('=')
+            if key == "parallel" and assign == "=":
+                parallel = int(value)
+    return parallel
+
+
+def create_setuptools_parallel_cfg(backend: str | None = None):
+    """Enable parallel building of extensions, respecting DEB_BUILD_OPTIONS.
+
+    An adaption of Michał Górny's technique described in
+    https://blogs.gentoo.org/mgorny/2024/03/15/optimizing-parallel-extension-builds-in-pep517-builds
+
+    This function is not part of :pyfunc:`create_pydistutils_cfg` as that
+    function is not used for `build_wheel`, which is our target.
+
+    For PEP-517 (pyproject) builds we can not yet use PEP-517 Config Settings
+    as we need to pass the parallel building option to `build_ext` and
+    setuptools (as of version 80.9.0) does not have a way to redirect PEP-517
+    Config Settings to specific commands. Setuptools only passes PEP-517 Config
+    Settings to all commands via `--global-option` and to `build_wheel` with
+    `--build-option`.
+    See https://github.com/pypa/setuptools/blob/d198e86f57231e83de87975c5c82bc40c196da79/setuptools/build_meta.py
+    and https://github.com/pypa/setuptools/discussions/4083
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapped_func(self, context, args, *oargs, **kwargs):
+            fpath = join(args['home_dir'], 'setuptools-build_ext-parallel.cfg')
+            if not exists(fpath):
+                with open(fpath, 'w', encoding='utf-8') as fp:
+                    lines = ['[build_ext]\n',
+                             f'parallel={get_parallel()}\n']
+                    log.debug('parallel build extension config file:\n%s', ''.join(lines))
+                    fp.writelines(lines)
+            context['ENV']['DIST_EXTRA_CONFIG'] = fpath
+            return func(self, context, args, *oargs, **kwargs)
+
+        if 'DIST_EXTRA_CONFIG' in environ or (
+                backend is not None and backend != "setuptools.build_meta"):
+            return func
+        return wrapped_func
+    return decorator

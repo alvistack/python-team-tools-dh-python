@@ -23,7 +23,7 @@ from glob import glob1
 from os import remove
 from os.path import exists, isdir, join
 from shutil import rmtree, move
-from dhpython.build.base import Base, shell_command, copy_test_files
+from dhpython.build.base import Base, shell_command, copy_test_files, create_setuptools_parallel_cfg
 
 log = logging.getLogger('dhpython')
 _setup_tpl = 'setup.py|setup-3.py'
@@ -98,6 +98,7 @@ class BuildSystem(Base):
         return '{interpreter.binary_dv} {setup_py} build {args}'
 
     @shell_command
+    @create_setuptools_parallel_cfg()
     def _bdist_wheel(self, context, args):
         # pylint: disable=unused-argument
         try:
