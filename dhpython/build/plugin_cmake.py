@@ -63,8 +63,8 @@ class BuildSystem(Base):
                 ' --destdir={destdir}'
                 ' -- {args}')
 
-    @shell_command
     @copy_test_files()
+    @shell_command
     def test(self, context, args):
         return ('dh_auto_test --buildsystem=cmake'
                 ' --builddirectory={build_dir}'

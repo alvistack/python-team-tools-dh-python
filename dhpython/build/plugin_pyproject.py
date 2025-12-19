@@ -235,4 +235,4 @@ class BuildSystem(Base):
         if scripts.exists():
             context['ENV']['PATH'] = f"{scripts}:{context['ENV']['PATH']}"
         context['ENV']['HOME'] = args['home_dir']
-        return super().test(context, args)
+        return super().test_cmd(context, args)

@@ -225,8 +225,11 @@ class Base:
     def build(self, context, args):
         raise NotImplementedError("build method not implemented in %s" % self.NAME)
 
-    @copy_test_files()
     def test(self, context, args):
+        raise NotImplementedError("test method not implemented in %s" % self.NAME)
+
+    @copy_test_files()
+    def test_cmd(self, context, args):
         if self.cfg.test_nose2:
             return 'cd {build_dir}; {interpreter} -m nose2 -v {args}'
         elif self.cfg.test_nose:

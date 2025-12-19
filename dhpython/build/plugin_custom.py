@@ -42,7 +42,7 @@ class BuildSystem(Base):
     def install(self, context, args):
         return args['args']
 
-    @shell_command
     @copy_test_files()
+    @shell_command
     def test(self, context, args):
-        return args['args'] or super().test(context, args)
+        return args['args'] or super().test_cmd(context, args)

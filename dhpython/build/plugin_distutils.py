@@ -133,8 +133,8 @@ class BuildSystem(Base):
 
         return '{interpreter.binary_dv} {setup_py} install --root {destdir} {args}'
 
-    @shell_command
     @create_pydistutils_cfg
     @copy_test_files()
+    @shell_command
     def test(self, context, args):
-        return super().test(context, args)
+        return super().test_cmd(context, args)
