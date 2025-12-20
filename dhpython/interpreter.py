@@ -21,7 +21,7 @@
 import logging
 import os
 import re
-from os.path import exists, join, split
+from os.path import exists, join
 from dhpython import INTERPRETER_DIR_TPLS, PUBLIC_DIR_RE, OLD_SITE_DIRS
 
 SHEBANG_RE = re.compile(r'''
