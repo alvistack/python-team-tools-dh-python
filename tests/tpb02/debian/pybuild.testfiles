@@ -1,5 +1,6 @@
 testfile1.txt
 nested/testfile2.txt
 testdir
+
 testfile4.txt destination/
 testfile5.txt renamed

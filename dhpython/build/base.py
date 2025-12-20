@@ -85,8 +85,14 @@ def copy_test_files(
                 if exists(fpath):
                     with open(fpath, encoding='utf-8') as fp:
                         # overwrite files_to_copy if .testfiles file found
-                        files_to_copy = {line.strip() for line in fp.readlines()
-                                         if not line.startswith('#')}
+                        files_to_copy = set()
+                        for line in fp.readlines():
+                            line = line.strip()
+                            if line.startswith('#'):
+                                continue
+                            if not line:
+                                continue
+                            files_to_copy.add(line)
                         break
 
             files_to_remove = set()
