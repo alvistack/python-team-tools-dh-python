@@ -2,8 +2,7 @@ import os
 import logging
 import platform
 import unittest
-from copy import deepcopy
-from pickle import dumps
+from unittest.mock import patch
 from tempfile import TemporaryDirectory
 
 from dhpython.depends import Dependencies
@@ -23,7 +22,7 @@ def pep386(d):
 
 def prime_pydist(impl, pydist):
     """Fake the pydist data for impl. Returns a cleanup function"""
-    from dhpython.pydist import load, normalize_name
+    from dhpython.pydist import normalize_name
 
     normalized_pydist = {}
     for name, entries in pydist.items():
@@ -38,9 +37,14 @@ def prime_pydist(impl, pydist):
             entry.setdefault('rules', [])
             entry.setdefault('versions', set())
 
-    key = dumps(((impl,), {}))
-    load.cache[key] = normalized_pydist
-    return lambda: load.cache.pop(key)
+    def fake(req_impl):
+        if req_impl == impl:
+            return normalized_pydist
+        return {}
+
+    patcher = patch("dhpython.pydist.load", side_effect=fake)
+    patcher.start()
+    return patcher.stop
 
 
 class DependenciesTestCase(unittest.TestCase):

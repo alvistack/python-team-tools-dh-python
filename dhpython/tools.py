@@ -23,8 +23,8 @@ import logging
 import os
 import re
 from datetime import datetime
+from functools import cache
 from glob import glob
-from pickle import dumps
 from shutil import rmtree
 from os.path import exists, getsize, isdir, islink, join, split
 from subprocess import Popen, PIPE
@@ -241,19 +241,7 @@ def execute(command, cwd=None, env=None, log_output=None, shell=True):
         }
 
 
-class memoize:
-    def __init__(self, func):
-        self.func = func
-        self.cache = {}
-
-    def __call__(self, *args, **kwargs):
-        key = dumps((args, kwargs))
-        if key not in self.cache:
-            self.cache[key] = self.func(*args, **kwargs)
-        return self.cache[key]
-
-
-@memoize
+@cache
 def dpkg_architecture():
     """Parse dpkg-architecture output"""
     arch_data = {}

@@ -26,7 +26,7 @@ import os
 import re
 import subprocess
 from enum import Enum, auto
-from functools import partial
+from functools import cache, partial
 from os.path import exists, isdir, join
 from typing import NamedTuple
 
@@ -37,7 +37,6 @@ if __name__ == '__main__':
 from dhpython import PKG_PREFIX_MAP, PUBLIC_DIR_RE,\
     PYDIST_DIRS, PYDIST_OVERRIDES_FNAMES, PYDIST_DPKG_SEARCH_TPLS
 from dhpython.markers import ComplexEnvironmentMarker, parse_environment_marker
-from dhpython.tools import memoize
 from dhpython.version import get_requested_versions, Version
 
 log = logging.getLogger('dhpython')
@@ -138,7 +137,7 @@ def validate(fpath):
     return True
 
 
-@memoize
+@cache
 def load(impl):
     """Load information about installed Python distributions.
 
