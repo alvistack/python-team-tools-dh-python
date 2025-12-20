@@ -1,6 +1,7 @@
 debian/dh-python/
-.pc
-.coverage
+.pc/
+.coverage/
+.mypy_cache/
 __pycache__
 pydist/cache/
 *\.1
