@@ -19,7 +19,6 @@
 # THE SOFTWARE.
 
 import logging
-from argparse import Namespace
 from collections.abc import Callable
 from functools import wraps
 from glob import glob1
@@ -43,6 +42,7 @@ from typing import (
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
 from dhpython.tools import execute, ExecutionResult, ExecutionResultWithOutput
+from dhpython.build.options import PybuildOptions
 from dhpython.build.types import Args, Context
 
 if TYPE_CHECKING:
@@ -140,6 +140,7 @@ class Base:
     :attr SUPPORTED_INTERPRETERS: set of interpreter templates (with or without
         {version}) supported by given plugin
     """
+    cfg: PybuildOptions
     NAME: ClassVar[str]
     DESCRIPTION = ''
     REQUIRED_COMMANDS: list[str] = []
@@ -154,7 +155,7 @@ class Base:
     # files and directories to remove during clean step (other than .pyc):
     CLEAN_FILES = {'.pytest_cache', '.coverage'}
 
-    def __init__(self, cfg: Namespace) -> None:
+    def __init__(self, cfg: PybuildOptions) -> None:
         self.cfg = cfg
 
     def __repr__(self) -> str:

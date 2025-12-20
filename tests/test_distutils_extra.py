@@ -1,20 +1,18 @@
 import os
 import unittest
-from argparse import Namespace
 from copy import deepcopy
 from tempfile import TemporaryDirectory
-from typing import cast
 
 from dhpython.depends import Dependencies
 from dhpython.fs import ScanResult
+from dhpython.options import DHPythonOptions
 from dhpython.pydist import Standard
 
-from .common import FakeOptions
 from .test_depends import prime_pydist, pydist
 
 
 class TestDistutilsExtra(unittest.TestCase):
-    options = FakeOptions(guess_deps=True)
+    options = DHPythonOptions(guess_deps=True)
     pydist = {
         "bar": [pydist(name="bar", dependency="python3-bar")],
         "baz": [pydist(name="baz", dependency="python3-baz", standard=Standard.PEP386)],
@@ -65,5 +63,5 @@ gTranscribe is a software focused on easy transcription of spoken words.
             )
         cleanup = prime_pydist(self.impl, self.pydist)
         self.addCleanup(cleanup)
-        self.d.parse(stats, cast(Namespace, self.options))
+        self.d.parse(stats, self.options)
         self.assertIn("python3-bar", self.d.depends)

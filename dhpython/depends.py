@@ -19,13 +19,13 @@
 # THE SOFTWARE.
 
 import logging
-from argparse import Namespace
 from functools import partial
 from os.path import exists, join
 
 from dhpython import PKG_PREFIX_MAP, MINPYCDEP
 from dhpython.fs import ScanResult
 from dhpython.debhelper import BD, DebHelper
+from dhpython.options import DHPythonOptions
 from dhpython.pydist import (
     NewDependencies,
     guess_dependency,
@@ -144,7 +144,7 @@ class Dependencies:
         for dep in new_dependencies["suggests"]:
             self.suggest(dep)
 
-    def parse(self, stats: ScanResult, options: Namespace) -> None:
+    def parse(self, stats: ScanResult, options: DHPythonOptions) -> None:
         log.debug("generating dependencies for package %s", self.package)
         tpl = self.ipkg_tpl
         vtpl = self.ipkg_vtpl
@@ -261,11 +261,6 @@ class Dependencies:
                     args += " -X '%s'" % regex.pattern.replace("'", r"'\''")
                 self.rtscript((private_dir, args))
 
-        section_options = {
-            "depends_sec": options.depends_section,
-            "recommends_sec": options.recommends_section,
-            "suggests_sec": options.suggests_section,
-        }
         guess_deps = partial(
             guess_dependency,
             impl=self.impl,
@@ -277,7 +272,14 @@ class Dependencies:
                 # TODO: should options.recommends and options.suggests be
                 # removed from requires.txt?
                 self.add_new_dependencies(
-                    parse_pydep(self.impl, fn, bdep=self.bdep, **section_options)
+                    parse_pydep(
+                        self.impl,
+                        fn,
+                        bdep=self.bdep,
+                        depends_sec=options.depends_section,
+                        recommends_sec=options.recommends_section,
+                        suggests_sec=options.suggests_section,
+                    )
                 )
             for fpath in stats["egg-info"]:
                 with open(fpath, encoding="utf-8") as fp:
@@ -288,7 +290,12 @@ class Dependencies:
             for fpath in stats["dist-info"]:
                 self.add_new_dependencies(
                     parse_requires_dist(
-                        self.impl, fpath, bdep=self.bdep, **section_options
+                        self.impl,
+                        fpath,
+                        bdep=self.bdep,
+                        depends_sec=options.depends_section,
+                        recommends_sec=options.recommends_section,
+                        suggests_sec=options.suggests_section,
                     )
                 )
 
@@ -310,7 +317,14 @@ class Dependencies:
                     log.warning("cannot find requirements file: %s", fn)
                     continue
             self.add_new_dependencies(
-                parse_pydep(self.impl, fpath, bdep=self.bdep, **section_options)
+                parse_pydep(
+                    self.impl,
+                    fpath,
+                    bdep=self.bdep,
+                    depends_sec=options.depends_section,
+                    recommends_sec=options.recommends_section,
+                    suggests_sec=options.suggests_section,
+                )
             )
 
         log.debug(self)

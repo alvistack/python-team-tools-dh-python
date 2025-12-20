@@ -30,8 +30,10 @@ from shutil import rmtree
 from os.path import exists, getsize, isdir, islink, join, split
 from pathlib import Path
 from subprocess import Popen, PIPE
-from typing import Literal, TextIO, NamedTuple, overload
+from typing import TYPE_CHECKING, Literal, TextIO, NamedTuple, overload
 
+if TYPE_CHECKING:
+    from dhpython.version import VersionRange
 
 log = logging.getLogger("dhpython")
 EGGnPTH_RE = re.compile(r"(.*?)(-py\d\.\d(?:-[^.]*)?)?(\.egg-info|\.pth)$")
@@ -323,7 +325,9 @@ def dpkg_architecture() -> dict[str, str]:
     return arch_data
 
 
-def pyinstall(interpreter: "Interpreter", package: str, vrange: str) -> None:
+def pyinstall(
+    interpreter: "Interpreter", package: str, vrange: "VersionRange | None"
+) -> None:
     """Install local files listed in pkg.pyinstall files as public modules."""
     srcfpath = "./debian/%s.pyinstall" % package
     if not exists(srcfpath):
@@ -367,7 +371,9 @@ def pyinstall(interpreter: "Interpreter", package: str, vrange: str) -> None:
                     os.link(fpath, dstfpath)
 
 
-def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
+def pyremove(
+    interpreter: "Interpreter", package: str, vrange: "VersionRange | None"
+) -> None:
     """Remove public modules listed in pkg.pyremove file."""
     srcfpath = "./debian/%s.pyremove" % package
     if not exists(srcfpath):
@@ -400,7 +406,7 @@ def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
 
 
 from dhpython.interpreter import Interpreter
-from dhpython.version import Version, get_requested_versions, RANGE_PATTERN
+from dhpython.version import RANGE_PATTERN, Version, get_requested_versions
 
 INSTALL_RE = re.compile(
     r"""

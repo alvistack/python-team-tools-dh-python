@@ -1,16 +1,14 @@
 import os
-from argparse import Namespace
 from collections.abc import Sequence
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, cast
+from typing import Any
 from unittest import TestCase
 
 from dhpython.interpreter import Interpreter
 from dhpython.fs import Scan, merge_WHEEL, share_files
+from dhpython.options import DHPythonOptions
 from dhpython.version import Version
-
-from .common import FakeOptions
 
 
 class FSTestCase(TestCase):
@@ -69,7 +67,7 @@ class ShareFilesTestCase(FSTestCase):
             self.tempdir.name,
             self.destdir.name,
             self.interpreter,
-            cast(Namespace, FakeOptions(**options)),
+            DHPythonOptions(**options),
         )
 
     def destPath(self, name: str) -> Path:
@@ -155,7 +153,7 @@ class ScanTestCase(FSTestCase):
             self.scan = Scan(
                 interpreter=Interpreter(self.impl),
                 package=self.package,
-                options=cast(Namespace, FakeOptions(**self.options)),
+                options=DHPythonOptions(**self.options),
             )
         finally:
             os.chdir(pwd)

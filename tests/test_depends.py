@@ -2,18 +2,16 @@ import os
 import logging
 import platform
 import unittest
-from argparse import Namespace
 from collections.abc import Callable, Sequence
 from tempfile import TemporaryDirectory
-from typing import Any, cast
+from typing import Any
 from unittest.mock import patch
 
 from dhpython.fs import ScanResult
 from dhpython.pydist import PyDist, Standard
 from dhpython.depends import Dependencies
+from dhpython.options import DHPythonOptions
 from dhpython.version import Version
-
-from .common import FakeOptions
 
 
 def pep386(d: dict[str, str]) -> dict[str, list[PyDist]]:
@@ -68,7 +66,7 @@ class DependenciesTestCase(unittest.TestCase):
     prepared_stats: ScanResult
     requires: dict[str, Sequence[str]] = {}
     dist_info_metadata: dict[str, Sequence[str]] = {}
-    options = FakeOptions()
+    options = DHPythonOptions()
     parse = True
 
     def setUp(self) -> None:
@@ -120,7 +118,7 @@ class DependenciesTestCase(unittest.TestCase):
         self.addCleanup(cleanup)
 
         if self.parse:
-            self.d.parse(stats, cast(Namespace, self.options))
+            self.d.parse(stats, self.options)
         else:
             self.prepared_stats = stats
 
@@ -134,7 +132,7 @@ class DependenciesTestCase(unittest.TestCase):
 
 
 class TestRequiresCPython3(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True)
+    options = DHPythonOptions(guess_deps=True)
     pydist = {
         "bar": [pydist(name="bar", dependency="python3-bar")],
         "baz": [pydist(name="baz", dependency="python3-baz", standard=Standard.PEP386)],
@@ -161,7 +159,7 @@ class TestRequiresCPython3(DependenciesTestCase):
 
 
 class TestRequiresCompatible(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True)
+    options = DHPythonOptions(guess_deps=True)
     pydist = {
         "bar": [pydist(name="bar", dependency="python3-bar")],
         "baz": [pydist(name="baz", dependency="python3-baz", standard=Standard.PEP386)],
@@ -197,7 +195,7 @@ class TestRequiresCompatible(DependenciesTestCase):
 
 
 class TestRequiresDistPython3(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True)
+    options = DHPythonOptions(guess_deps=True)
     pydist = {
         "bar": [pydist(name="bar", dependency="python3-bar")],
         "baz": [pydist(name="baz", dependency="python3-baz", standard=Standard.PEP386)],
@@ -236,7 +234,7 @@ class TestRequiresDistPython3(DependenciesTestCase):
 
 
 class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True, depends_section=["feature"])
+    options = DHPythonOptions(guess_deps=True, depends_section=["feature"])
     pydist = pep386(
         {
             "no_markers": "python3-no-markers",
@@ -733,7 +731,7 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
 
 
 class TestIgnoresUnusedModulesDistInfo(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True, depends_section=["feature"])
+    options = DHPythonOptions(guess_deps=True, depends_section=["feature"])
     dist_info_metadata = {
         "debian/foo/usr/lib/python3/dist-packages/foo.dist-info/METADATA": (
             "Requires-Dist: unusued-complex-module ; "
@@ -748,7 +746,7 @@ class TestIgnoresUnusedModulesDistInfo(DependenciesTestCase):
         if not hasattr(self, "assertLogs"):
             raise unittest.SkipTest("Requires Python >= 3.4")
         with self.assertLogs(logger="dhpython", level=logging.INFO) as logs:
-            self.d.parse(self.prepared_stats, cast(Namespace, self.options))
+            self.d.parse(self.prepared_stats, self.options)
         for line in logs.output:
             self.assertTrue(
                 line.startswith("INFO:dhpython:Ignoring complex environment marker"),
@@ -758,7 +756,7 @@ class TestIgnoresUnusedModulesDistInfo(DependenciesTestCase):
 
 
 class TestIgnoresUnusedModulesEggInfo(DependenciesTestCase):
-    options = FakeOptions(guess_deps=True, depends_section=["feature"])
+    options = DHPythonOptions(guess_deps=True, depends_section=["feature"])
     requires = {
         "debian/foo/usr/lib/python3/dist-packages/foo.egg-info/requires.txt": (
             "[nativelib:(sys_platform == 'darwin')]",
@@ -775,7 +773,7 @@ class TestIgnoresUnusedModulesEggInfo(DependenciesTestCase):
         if not hasattr(self, "assertNoLogs"):
             raise unittest.SkipTest("Requires Python >= 3.10")
         with self.assertNoLogs(logger="dhpython", level=logging.INFO):
-            self.d.parse(self.prepared_stats, cast(Namespace, self.options))
+            self.d.parse(self.prepared_stats, self.options)
 
 
 class TestCExtensionPython3(DependenciesTestCase):

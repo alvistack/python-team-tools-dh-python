@@ -23,7 +23,6 @@ import logging
 import os
 import re
 import sys
-from argparse import Namespace
 from collections.abc import Iterable, Sequence
 from filecmp import cmp as cmpfile
 from os.path import lexists, exists, isdir, islink, join, realpath, split, splitext
@@ -35,6 +34,7 @@ from typing import Literal, TypedDict
 from dhpython import MULTIARCH_DIR_TPL
 from dhpython.tools import fix_shebang, clean_egg_name
 from dhpython.interpreter import EXTFILE_RE, Interpreter
+from dhpython.options import DHPythonOptions
 from dhpython.version import Version
 
 log = logging.getLogger("dhpython")
@@ -44,7 +44,7 @@ def fix_locations(
     package: str,
     interpreter: Interpreter,
     versions: Sequence[Version],
-    options: Namespace,
+    options: DHPythonOptions,
 ) -> None:
     """Move files to the right location."""
     # make a copy since we change version later
@@ -80,7 +80,7 @@ def share_files(
     srcdir: str,
     dstdir: str,
     interpreter: Interpreter,
-    options: Namespace,
+    options: DHPythonOptions,
 ) -> None:
     """Try to move as many files from srcdir to dstdir as possible."""
     for i in os.listdir(srcdir):
@@ -238,7 +238,7 @@ class Scan:
     package: str
     proot: str
     dpath: str | None | Literal[False]
-    options: Namespace
+    options: DHPythonOptions
     result: ScanResult
 
     def __init__(
@@ -247,7 +247,7 @@ class Scan:
         package: str,
         dpath: str | None = None,
         *,
-        options: Namespace,
+        options: DHPythonOptions,
     ) -> None:
         self.interpreter = interpreter
         self.impl = interpreter.impl

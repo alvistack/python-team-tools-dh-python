@@ -435,7 +435,7 @@ def supported(impl: str) -> list[Version]:
 
 def get_requested_versions(
     impl: str,
-    vrange: str | None = None,
+    vrange: VersionRange | str | None = None,
     available: bool | None = None,
 ) -> set[Version]:
     """Return a set of requested and supported Python versions.

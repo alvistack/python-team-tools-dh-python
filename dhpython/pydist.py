@@ -25,7 +25,6 @@ import platform
 import os
 import re
 import subprocess
-from argparse import Namespace
 from collections.abc import Callable
 from enum import Enum, StrEnum, auto
 from functools import cache, partial
@@ -46,6 +45,7 @@ from dhpython import (
 )
 from dhpython.debhelper import BD
 from dhpython.markers import ComplexEnvironmentMarker, parse_environment_marker
+from dhpython.options import DHPythonOptions
 from dhpython.version import get_requested_versions, Version
 
 log = logging.getLogger("dhpython")
@@ -619,7 +619,7 @@ def parse_pydep(
     fname: str,
     bdep: BD | None = None,
     *,
-    options: Namespace | None = None,
+    options: DHPythonOptions | None = None,
     depends_sec: list[str] | None = None,
     recommends_sec: list[str] | None = None,
     suggests_sec: list[str] | None = None,
@@ -714,7 +714,7 @@ def parse_requires_dist(
     fname: str,
     bdep: BD | None = None,
     *,
-    options: Namespace | None = None,
+    options: DHPythonOptions | None = None,
     depends_sec: list[str] | None = None,
     recommends_sec: list[str] | None = None,
     suggests_sec: list[str] | None = None,
