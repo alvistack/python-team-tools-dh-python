@@ -258,27 +258,13 @@ class Base:
             if args['autopkgtest']:
                 tox_cmd += ['--skip-pkg-install']
 
-            # --installpkg was added in tox 4. Keep tox 3 support for now,
-            # for backportability
-            r = execute(['tox', '--version', '--quiet'], shell=False)
-            try:
-                major_version = int(r['stdout'].split('.', 1)[0])
-            except ValueError as err:
-                raise Exception(f"tox was installed but broken: stdout='{r['stdout']}', stderr='{r['stderr']}'") from err
-            if major_version < 4:
-                # tox will call pip to install the module. Let it install the
-                # module inside the virtualenv
-                pydistutils_cfg = join(args['home_dir'], '.pydistutils.cfg')
-                if exists(pydistutils_cfg):
-                    remove(pydistutils_cfg)
-            else:
-                if not args['autopkgtest']:
+            if not args['autopkgtest']:
+                wheel = self.built_wheel(context, args)
+                if not wheel:
+                    self.build_wheel(context, args)
                     wheel = self.built_wheel(context, args)
-                    if not wheel:
-                        self.build_wheel(context, args)
-                        wheel = self.built_wheel(context, args)
-                    args['wheel'] = wheel
-                    tox_cmd += ['--installpkg', '{wheel}']
+                args['wheel'] = wheel
+                tox_cmd += ['--installpkg', '{wheel}']
 
             tox_cmd.append('{args}')
             return ' '.join(tox_cmd)
