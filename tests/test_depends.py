@@ -253,6 +253,10 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
             'python3-platform-python-implementation-cpython',
         'platform_python_implementation_jython':
             'python3-platform-python-implementation-jython',
+        'platform_python_implementation_not_pypy':
+            'python3-platform-python-implementation-not-pypy',
+        'platform_python_implementation_pypy':
+            'python3-platform-python-implementation-pypy',
         'platform_release_lt2': 'python3-platform-release-lt2',
         'platform_release_ge2': 'python3-platform-release-ge2',
         'platform_system_linux': 'python3-platform-system-linux',
@@ -313,6 +317,10 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
                 "platform_python_implementation == 'CPython'",
             "Requires-Dist: platform_python_implementation_jython; "
                 "platform_python_implementation == 'Jython'",
+            "Requires-Dist: platform_python_implementation_pypy; "
+                "platform_python_implementation == 'PyPy'",
+            "Requires-Dist: platform_python_implementation_not_pypy; "
+                "platform_python_implementation != 'PyPy'",
             "Requires-Dist: platform_release_lt2; platform_release < '2.0'",
             "Requires-Dist: platform_release_ge2; platform_release >= '2.0'",
             "Requires-Dist: platform_system_linux; platform_system == 'Linux'",
@@ -407,6 +415,14 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
 
     def test_depends_on_plat_cpython_packages(self) -> None:
         self.assertIn('python3-platform-python-implementation-cpython',
+                      self.d.depends)
+
+    def test_depends_on_plat_pypy_packages(self) -> None:
+        self.assertIn('python3-platform-python-implementation-pypy',
+                      self.d.depends)
+
+    def test_depends_on_plat_not_pypy_packages(self) -> None:
+        self.assertIn('python3-platform-python-implementation-not-pypy',
                       self.d.depends)
 
     def test_skips_plat_jython_packages(self) -> None:
@@ -595,6 +611,10 @@ class TestEnvironmentMarkersEggInfo(TestEnvironmentMarkersDistInfo):
             "platform_python_implementation_cpython",
             "[:platform_python_implementation == 'Jython']",
             "platform_python_implementation_jython",
+            "[:platform_python_implementation == 'PyPy']",
+            "platform_python_implementation_pypy",
+            "[:platform_python_implementation != 'PyPy']",
+            "platform_python_implementation_not_pypy",
             "[:platform_release < '2.0']",
             "platform_release_lt2",
             "[:platform_release >= '2.0']",

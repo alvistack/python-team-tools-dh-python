@@ -402,11 +402,18 @@ def check_environment_marker_restrictions(
     if marker in supported_values:
         sv = supported_values[marker]
         if op in ('==', '!='):
-            if ((op == '==' and value not in sv)
-                    or (op == '!=' and value in sv)):
+            if op == '==' and value not in sv:
                 log.debug('Skipping requirement (%s != %s): %s',
                           value, sv, req)
                 return RequirementModification(action=ModificationAction.SKIP)
+            if op == '!=' and len(supported_values[marker]) > 1:
+                log.debug(
+                    (
+                        "Keeping requirement as it applies to one of several "
+                        "supported environments: %s"
+                    ), req
+                )
+                return RequirementModification(action=ModificationAction.KEEP)
         else:
             log.info(
                 'Skipping requirement with unhandled environment marker '
