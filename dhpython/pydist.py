@@ -391,13 +391,10 @@ def check_environment_marker_restrictions(
     supported_values = {
         'implementation_name': ('cpython', 'pypy'),
         'os_name': ('posix',),
-        'platform_system': ('GNU/kFreeBSD', 'Linux'),
+        'platform_system': ('Linux',),
         'platform_machine': (platform.machine(),),
         'platform_python_implementation': ('CPython', 'PyPy'),
-        'sys_platform': (
-            'gnukfreebsd8', 'gnukfreebsd9', 'gnukfreebsd10',
-            'gnukfreebsd11', 'gnukfreebsd12', 'gnukfreebsd13',
-            'linux'),
+        'sys_platform': ('linux',),
     }
     if marker in supported_values:
         sv = supported_values[marker]
