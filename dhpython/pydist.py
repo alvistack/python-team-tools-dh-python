@@ -123,6 +123,7 @@ class ModificationAction(Enum):
     SKIP = auto()
     KEEP = auto()
     APPEND = auto()
+    PREPEND = auto()
 
 
 class RequirementModification(NamedTuple):
@@ -246,6 +247,12 @@ def guess_dependency(
                 merge_marker = partial(
                     merge_alternative_dependency,
                     second=modification.alternative
+                )
+            case ModificationAction.PREPEND:
+                assert modification.alternative
+                merge_marker = partial(
+                    merge_alternative_dependency,
+                    modification.alternative
                 )
 
     name = req_d['name']
@@ -471,12 +478,12 @@ def check_environment_marker_restrictions(
             if int_ver <= MIN_PY_VERSION:
                 return RequirementModification(action=ModificationAction.SKIP)
             return RequirementModification(
-                action=ModificationAction.APPEND,
+                action=ModificationAction.PREPEND,
                 alternative=f'python3-supported-min (>= {env_ver})',
             )
         elif op == '<=':
             return RequirementModification(
-                action=ModificationAction.APPEND,
+                action=ModificationAction.PREPEND,
                 alternative=f'python3-supported-min (>> {env_ver})',
             )
         elif op == '>=':
@@ -631,6 +638,11 @@ def parse_pydep(
                 assert modification.alternative
                 dependency = ', '.join(
                     part.strip() + ' | ' + modification.alternative
+                    for part in dependency.split(','))
+            if dependency and modification.action == ModificationAction.PREPEND:
+                assert modification.alternative
+                dependency = ', '.join(
+                    modification.alternative + ' | ' + part.strip()
                     for part in dependency.split(','))
 
             if dependency:

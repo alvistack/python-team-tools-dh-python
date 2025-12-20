@@ -446,12 +446,12 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         self.assertNotInDepends('python3-python-version-lt38')
 
     def test_depends_on_py_version_lt_313_packages(self) -> None:
-        self.assertIn('python3-python-version-lt313 '
-                      '| python3-supported-min (>= 3.13)', self.d.depends)
+        self.assertIn('python3-supported-min (>= 3.13) '
+                      '| python3-python-version-lt313', self.d.depends)
 
     def test_depends_on_py_version_le_313_packages(self) -> None:
-        self.assertIn('python3-python-version-le313 '
-                      '| python3-supported-min (>> 3.13)', self.d.depends)
+        self.assertIn('python3-supported-min (>> 3.13) '
+                      '| python3-python-version-le313', self.d.depends)
 
     def test_depends_on_py_version_ge_27_packages(self) -> None:
         self.assertIn('python3-python-version-ge27',
@@ -493,12 +493,12 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         self.assertNotInDepends('python3-python-version-full-lt300')
 
     def test_depends_on_py_version_full_lt_3131_packages(self) -> None:
-        self.assertIn('python3-python-version-full-lt3131 '
-                      '| python3-supported-min (>= 3.13.1)', self.d.depends)
+        self.assertIn('python3-supported-min (>= 3.13.1) '
+                      '| python3-python-version-full-lt3131', self.d.depends)
 
     def test_depends_on_py_version_full_le_3131_packages(self) -> None:
-        self.assertIn('python3-python-version-full-le3131 '
-                      '| python3-supported-min (>> 3.13.1)', self.d.depends)
+        self.assertIn('python3-supported-min (>> 3.13.1) '
+                      '| python3-python-version-full-le3131', self.d.depends)
 
     def test_depends_on_py_version_full_ge_3131_packages(self) -> None:
         self.assertIn('python3-python-version-full-ge3131 '
@@ -548,8 +548,8 @@ class TestEnvironmentMarkersDistInfo(DependenciesTestCase):
         self.assertIn('python3-implementation-name-pypy', self.d.depends)
 
     def test_depends_on_sys_implementation_lt313_packages(self) -> None:
-        self.assertIn('python3-implementation-version-lt313 '
-                      '| python3-supported-min (>= 3.13)',
+        self.assertIn('python3-supported-min (>= 3.13) '
+                      '| python3-implementation-version-lt313',
                       self.d.depends)
 
     def test_depends_on_sys_implementation_ge313_packages(self) -> None:
