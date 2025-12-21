@@ -705,6 +705,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="use stestr in --test step",
     )
     tests.add_argument(
+        "--test-unittest",
+        action="store_true",
+        default=environ.get("PYBUILD_TEST_UNITTEST") == "1",
+        help="use unittest in --test step",
+    )
+    tests.add_argument(
         "--test-custom",
         action="store_true",
         default=environ.get("PYBUILD_TEST_CUSTOM") == "1",

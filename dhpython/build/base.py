@@ -320,11 +320,16 @@ class Base:
                 'stestr --config {dir}/.stestr.conf init;'
                 'PYTHON=python{version} stestr --config {dir}/.stestr.conf run'
             )
+        elif self.cfg.test_unittest:
+            return 'cd {build_dir}; {interpreter} -m unittest discover -v {args}'
         elif self.cfg.test_custom:
             return 'cd {build_dir}; {args}'
         else:
-            # Temporary: Until Python 3.12 is established, and packages without
-            # test suites have explicitly disabled tests.
+            log.warning(
+                "No test runner selected, defaulting to unittest, ignoring "
+                "test discovery problems.\nUse --test-unittest to explicitly "
+                "select the unittest runner.")
+            # As this is the fallback option, we allow 0 discovered tests.
             args['ignore_no_tests'] = True
             return 'cd {build_dir}; {interpreter} -m unittest discover -v {args}'
 

@@ -87,7 +87,9 @@ ACTION
 
 TESTS
 -----
-    unittest's discover from standard library is used in test step by default.
+    unittest's discover from standard library is used in test step by
+    default. But if no tests are found, this is ignored. Use
+    `--test-unittest` to require tests to be run.
 
     --test-nose
         use nose module in test step, remember to add python3-nose to
@@ -104,6 +106,9 @@ TESTS
     --test-stestr
         use stestr command in test step, remember to add python3-stestr
         to Build-Depends.
+    --test-unittest
+        use unittest discover in the test step, requiring at least 1
+        test to be discovered.
     --test-custom
         use a custom command in the test step. The full test command is
         then specified with `--test-args` or by setting the
