@@ -1,11 +1,25 @@
-dh-python (6.20251204.2) UNRELEASED; urgency=medium
+dh-python (6.20251221) unstable; urgency=medium
 
+  [ Michael R. Crusoe ]
   * Enable parallel building of setuptools extensions, both with the distutils
     backend and the pyproject backend. Parallel building is only enabled
     if "parallel=N" is present in DEB_BUILD_OPTIONS in accordance with
     Debian policy § 4.9.1. (Closes: #1093869)
 
- -- Michael R. Crusoe <crusoe@debian.org>  Tue, 16 Dec 2025 13:45:50 +0100
+  [ Stefano Rivera ]
+  * Remove tox 3 support.
+  * Add Type annotations and blacken the codebase.
+  * Some related code-base refactoring and cleanup.
+  * Prepend python3-supported-min (>= 3.13.1) | before packages requiring a
+    minimum Python version. (Closes: #1119036)
+  * Keep platform requirements if they apply to one of several supported
+    environments. (Closes: #1100737)
+  * Drop GNU/kFreeBSD from supported platforms.
+  * Ignore blank lines in pybuild.testfiles. (Closes: #1123536)
+  * Update cpython3_fallback.
+  * Add --test-unittest to explicitly select the unittest runner.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 21 Dec 2025 17:07:09 -0400
 
 dh-python (6.20251204.1) unstable; urgency=medium
 
