@@ -25,19 +25,23 @@ from os.path import exists
 
 from dhpython import _defaults
 
-RANGE_PATTERN = r'(-)?(\d\.\d+)(?:(-)(\d\.\d+)?)?'
+RANGE_PATTERN = r"(-)?(\d\.\d+)(?:(-)(\d\.\d+)?)?"
 RANGE_RE = re.compile(RANGE_PATTERN)
-VERSION_RE = re.compile(r'''
+VERSION_RE = re.compile(
+    r"""
     (?P<major>\d+)\.?
     (?P<minor>\d+)?\.?
     (?P<micro>\d+)?[.\s]?
     (?P<releaselevel>alpha|beta|candidate|final)?[.\s]?
-    (?P<serial>\d+)?''', re.VERBOSE)
+    (?P<serial>\d+)?""",
+    re.VERBOSE,
+)
 
-log = logging.getLogger('dhpython')
+log = logging.getLogger("dhpython")
 Interpreter = None
 
 type V = "str | Version | Iterable[int]"
+
 
 class Version:
     major: int
@@ -67,14 +71,14 @@ class Version:
         """
         # pylint: disable=unused-argument
         if isinstance(value, (tuple, list)):
-            value = '.'.join(str(i) for i in value)
+            value = ".".join(str(i) for i in value)
         if isinstance(value, Version):
-            for name in ('major', 'minor', 'micro', 'releaselevel', 'serial'):
+            for name in ("major", "minor", "micro", "releaselevel", "serial"):
                 setattr(self, name, getattr(value, name))
             return
         comp = locals()
-        del comp['self']
-        del comp['value']
+        del comp["self"]
+        del comp["value"]
         if value:
             assert isinstance(value, str)
             match = VERSION_RE.match(value)
@@ -87,7 +91,7 @@ class Version:
         for name, value in comp.items():
             setattr(self, name, value)
         if self.major is None:
-            raise ValueError('major component is required')
+            raise ValueError("major component is required")
 
     def __str__(self) -> str:
         """Return major.minor or major string.
@@ -99,7 +103,7 @@ class Version:
         """
         result = str(self.major)
         if self.minor is not None:
-            result += '.{}'.format(self.minor)
+            result += ".{}".format(self.minor)
         return result
 
     def __hash__(self) -> int:
@@ -114,11 +118,11 @@ class Version:
         "Version('2')"
         """
         result = "Version('{}".format(self)
-        for name in ('micro', 'releaselevel', 'serial'):
+        for name in ("micro", "releaselevel", "serial"):
             value = getattr(self, name)
             if not value:
                 break
-            result += '.{}'.format(value)
+            result += ".{}".format(value)
         return result + "')"
 
     def __add__(self, other: int | str) -> "Version":
@@ -152,7 +156,7 @@ class Version:
             result.minor -= int(other)
             new = result.minor
         if new < 0:
-            raise ValueError('cannot decrease version further')
+            raise ValueError("cannot decrease version further")
         return result
 
     def __eq__(self, other: object) -> bool:
@@ -191,9 +195,9 @@ class Version:
         if not isinstance(other, Version):
             other = Version(other)
         if self.minor is None or other.minor is None:
-            return self.__cmp(other, ignore='minor') < 0
+            return self.__cmp(other, ignore="minor") < 0
         else:
-            return self.__cmp(other, ignore='micro') < 0
+            return self.__cmp(other, ignore="micro") < 0
 
     def __rshift__(self, other: V) -> bool:
         """Compare major.minor or major only (if minor is not set).
@@ -212,9 +216,9 @@ class Version:
         if not isinstance(other, Version):
             other = Version(other)
         if self.minor is None or other.minor is None:
-            return self.__cmp(other, ignore='minor') > 0
+            return self.__cmp(other, ignore="minor") > 0
         else:
-            return self.__cmp(other, ignore='micro') > 0
+            return self.__cmp(other, ignore="micro") > 0
 
     def __cmp(self, other: object, ignore: str | None = None) -> int:
         if not isinstance(other, Version):
@@ -222,15 +226,15 @@ class Version:
                 other = Version(other)  # type: ignore
             except Exception:
                 raise ValueError(f"Cannot compare Version with {other!r}")
-        for name in ('major', 'minor', 'micro', 'releaselevel', 'serial'):
+        for name in ("major", "minor", "micro", "releaselevel", "serial"):
             if name == ignore:
                 break
-            if name == 'releaselevel':
+            if name == "releaselevel":
                 rmap: dict[str | None, int] = {
-                    'alpha': -3,
-                    'beta': -2,
-                    'candidate': -1,
-                    'final': 0,
+                    "alpha": -3,
+                    "beta": -2,
+                    "candidate": -1,
+                    "final": 0,
                 }
                 value1 = rmap.get(self.releaselevel, 0)
                 value2 = rmap.get(other.releaselevel, 0)
@@ -291,15 +295,15 @@ class VersionRange:
         '-'
         """
         if self.minver is None is self.maxver:
-            return '-'
+            return "-"
         if self.minver == self.maxver:
             return str(self.minver)
         elif self.minver is None:
-            return '-{}'.format(self.maxver)
+            return "-{}".format(self.maxver)
         elif self.maxver is None:
-            return '{}-'.format(self.minver)
+            return "{}-".format(self.minver)
         else:
-            return '{}-{}'.format(self.minver, self.maxver)
+            return "{}-{}".format(self.minver, self.maxver)
 
     def __repr__(self) -> str:
         """Return version range string.
@@ -309,7 +313,7 @@ class VersionRange:
         >>> repr(VersionRange('3.0-3.5'))
         "VersionRange(minver='3.0', maxver='3.5')"
         """
-        result = 'VersionRange('
+        result = "VersionRange("
         if self.minver is not None:
             result += f"minver='{self.minver}'"
             if self.maxver is not None:
@@ -337,7 +341,7 @@ class VersionRange:
         >>> VersionRange.parse('>= 4.0')
         (Version('4.0'), None)
         """
-        if value in ('', '-'):
+        if value in ("", "-"):
             return None, None
 
         match = RANGE_RE.match(value)
@@ -386,18 +390,18 @@ class VersionRange:
         minv = maxv = None
         hardcoded = set()
 
-        for item in value.split(','):
+        for item in value.split(","):
             item = item.strip()
 
-            match = re.match(r'>=\s*([\d\.]+)', item)
+            match = re.match(r">=\s*([\d\.]+)", item)
             if match:
                 minv = match.group(1)
                 continue
-            match = re.match(r'<<\s*([\d\.]+)', item)
+            match = re.match(r"<<\s*([\d\.]+)", item)
             if match:
                 maxv = match.group(1)
                 continue
-            match = re.match(r'^[\d\.]+$', item)
+            match = re.match(r"^[\d\.]+$", item)
             if match:
                 hardcoded.add(match.group(0))
 
@@ -432,7 +436,7 @@ def get_requested_versions(
     impl: str,
     vrange: str | None = None,
     available: bool | None = None,
-)-> set[Version]:
+) -> set[Version]:
     """Return a set of requested and supported Python versions.
 
     :param impl: interpreter implementation
@@ -457,8 +461,16 @@ def get_requested_versions(
     if not parsed_vrange:
         versions = set(supported(impl))
     else:
-        minv = Version(major=0, minor=0) if parsed_vrange.minver is None else parsed_vrange.minver
-        maxv = Version(major=99, minor=99) if parsed_vrange.maxver is None else parsed_vrange.maxver
+        minv = (
+            Version(major=0, minor=0)
+            if parsed_vrange.minver is None
+            else parsed_vrange.minver
+        )
+        maxv = (
+            Version(major=99, minor=99)
+            if parsed_vrange.maxver is None
+            else parsed_vrange.maxver
+        )
         if minv == maxv:
             versions = set([minv] if minv in supported(impl) else tuple())
         else:
@@ -466,19 +478,17 @@ def get_requested_versions(
 
     if available:
         interpreter = Interpreter(impl=impl)
-        versions = set(v for v in versions
-                       if exists(interpreter.binary(v)))
+        versions = set(v for v in versions if exists(interpreter.binary(v)))
     elif available is False:
         interpreter = Interpreter(impl=impl)
-        versions = set(v for v in versions
-                       if not exists(interpreter.binary(v)))
+        versions = set(v for v in versions if not exists(interpreter.binary(v)))
 
     return versions
 
 
 def build_sorted(
     versions: Iterable[V],
-    impl: str='cpython3',
+    impl: str = "cpython3",
 ) -> list[Version]:
     """Return sorted list of versions in a build friendly order.
 

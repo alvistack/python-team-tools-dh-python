@@ -28,13 +28,13 @@ from typing import NamedTuple
 
 
 SUPPORTED: dict[str, tuple[tuple[int, int], ...]] = {
-    'cpython3': ((3, 8),),
+    "cpython3": ((3, 8),),
 }
 DEFAULT: dict[str, tuple[int, int]] = {
-    'cpython3': (3, 8),
+    "cpython3": (3, 8),
 }
 
-log = logging.getLogger('dhpython')
+log = logging.getLogger("dhpython")
 
 
 class CPythonVersions(NamedTuple):
@@ -59,22 +59,21 @@ def cpython_versions(major: int) -> CPythonVersions:
         config = ConfigParser()
         config.read("/usr/share/python{}/debian_defaults".format(ver))
         if not default:
-            default = config.get('DEFAULT', 'default-version', fallback='')[6:]
+            default = config.get("DEFAULT", "default-version", fallback="")[6:]
         if not supported:
-            supported = config.get('DEFAULT', 'supported-versions', fallback='')\
-                .replace('python', '')
+            supported = config.get(
+                "DEFAULT", "supported-versions", fallback=""
+            ).replace("python", "")
     if default:
         try:
             default_ver = _parse_version(default)
         except Exception as err:
-            log.warning('invalid debian_defaults file: %s', err)
+            log.warning("invalid debian_defaults file: %s", err)
     if supported:
         try:
-            supported_vers = tuple(
-                _parse_version(i) for i in supported.split(',')
-            )
+            supported_vers = tuple(_parse_version(i) for i in supported.split(","))
         except Exception as err:
-            log.warning('invalid debian_defaults file: %s', err)
+            log.warning("invalid debian_defaults file: %s", err)
     return CPythonVersions(
         default=default_ver,
         supported=supported_vers,
@@ -93,17 +92,18 @@ def from_file(fpath: str) -> None:
 
 cpython3 = cpython_versions(3)
 if cpython3.default:
-    DEFAULT['cpython3'] = cpython3.default
+    DEFAULT["cpython3"] = cpython3.default
 if cpython3.supported:
-    SUPPORTED['cpython3'] = cpython3.supported
+    SUPPORTED["cpython3"] = cpython3.supported
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) != 3:
-        print('invalid number of arguments', file=sys.stderr)
+        print("invalid number of arguments", file=sys.stderr)
         sys.exit(1)
-    if sys.argv[1] == 'default':
-        print('.'.join(str(i) for i in DEFAULT[sys.argv[2]]))
-    elif sys.argv[1] == 'supported':
-        print(','.join(('.'.join(str(i) for i in v) for v in SUPPORTED[sys.argv[2]])))
+    if sys.argv[1] == "default":
+        print(".".join(str(i) for i in DEFAULT[sys.argv[2]]))
+    elif sys.argv[1] == "supported":
+        print(",".join((".".join(str(i) for i in v) for v in SUPPORTED[sys.argv[2]])))

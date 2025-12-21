@@ -30,7 +30,8 @@ import re
 from typing import Literal, NamedTuple, cast
 
 
-SIMPLE_ENV_MARKER_RE = re.compile(r'''
+SIMPLE_ENV_MARKER_RE = re.compile(
+    r"""
     (?P<marker>[a-z_]+)
     \s*
     (?P<op><=?|>=?|[=!~]=|===)
@@ -38,12 +39,17 @@ SIMPLE_ENV_MARKER_RE = re.compile(r'''
     (?P<quote>['"])
     (?P<value>.*)  # Could contain additional markers
     (?P=quote)
-    ''', re.VERBOSE)
-COMPLEX_ENV_MARKER_RE = re.compile(r'''
+    """,
+    re.VERBOSE,
+)
+COMPLEX_ENV_MARKER_RE = re.compile(
+    r"""
     (?:\s|\))
     (?:and|or)
     (?:\s|\()
-    ''', re.VERBOSE)
+    """,
+    re.VERBOSE,
+)
 
 
 class ComplexEnvironmentMarker(Exception):
@@ -62,7 +68,7 @@ class ParsedMarker(NamedTuple):
 def parse_environment_marker(marker: str) -> ParsedMarker:
     """Parse a simple marker of <= 1 environment restriction"""
     marker = marker.strip()
-    if marker.startswith('(') and marker.endswith(')'):
+    if marker.startswith("(") and marker.endswith(")"):
         marker = marker[1:-1].strip()
 
     m = COMPLEX_ENV_MARKER_RE.search(marker)
@@ -74,7 +80,7 @@ def parse_environment_marker(marker: str) -> ParsedMarker:
         raise ComplexEnvironmentMarker()
 
     return ParsedMarker(
-        marker=m.group('marker'),
-        op=cast(OP, m.group('op')),
-        value=m.group('value'),
+        marker=m.group("marker"),
+        op=cast(OP, m.group("op")),
+        value=m.group("value"),
     )

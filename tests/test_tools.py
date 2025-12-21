@@ -8,49 +8,49 @@ from dhpython.tools import fix_shebang, relpath, move_matching_files
 
 class TestRelpath(unittest.TestCase):
     def test_common_parent_dir(self) -> None:
-        r = relpath('/usr/share/python-foo/foo.py', '/usr/bin/foo')
-        self.assertEqual(r, '../share/python-foo/foo.py')
+        r = relpath("/usr/share/python-foo/foo.py", "/usr/bin/foo")
+        self.assertEqual(r, "../share/python-foo/foo.py")
 
     def test_strips_common_prefix(self) -> None:
-        r = relpath('/usr/share/python-foo/foo.py', '/usr/share')
-        self.assertEqual(r, 'python-foo/foo.py')
+        r = relpath("/usr/share/python-foo/foo.py", "/usr/share")
+        self.assertEqual(r, "python-foo/foo.py")
 
     def test_trailing_slash_ignored(self) -> None:
-        r = relpath('/usr/share/python-foo/foo.py', '/usr/share/')
-        self.assertEqual(r, 'python-foo/foo.py')
+        r = relpath("/usr/share/python-foo/foo.py", "/usr/share/")
+        self.assertEqual(r, "python-foo/foo.py")
 
 
 class TestMoveMatchingFiles(unittest.TestCase):
     def setUp(self) -> None:
         self.tmpdir = TemporaryDirectory()  # pylint: disable=consider-using-with
         self.addCleanup(self.tmpdir.cleanup)
-        os.makedirs(self.tmppath('foo/bar/a/b/c/spam'))
-        for path in ('foo/bar/a/b/c/spam/file.so',
-                     'foo/bar/a/b/c/spam/file.py'):
-            with open(self.tmppath(path), 'wb'):
+        os.makedirs(self.tmppath("foo/bar/a/b/c/spam"))
+        for path in ("foo/bar/a/b/c/spam/file.so", "foo/bar/a/b/c/spam/file.py"):
+            with open(self.tmppath(path), "wb"):
                 # create a 0 byte file for the test
                 pass
 
-        move_matching_files(self.tmppath('foo/bar/'),
-                            self.tmppath('foo/baz/'),
-                            r'spam/.*\.so$')
+        move_matching_files(
+            self.tmppath("foo/bar/"), self.tmppath("foo/baz/"), r"spam/.*\.so$"
+        )
 
     def tmppath(self, *path: str) -> str:
         return os.path.join(self.tmpdir.name, *path)
 
     def test_moved_matching_file(self) -> None:
-        self.assertTrue(os.path.exists(
-            self.tmppath('foo/baz/a/b/c/spam/file.so')))
+        self.assertTrue(os.path.exists(self.tmppath("foo/baz/a/b/c/spam/file.so")))
 
     def test_left_non_matching_file(self) -> None:
-        self.assertTrue(os.path.exists(
-            self.tmppath('foo/bar/a/b/c/spam/file.py')))
+        self.assertTrue(os.path.exists(self.tmppath("foo/bar/a/b/c/spam/file.py")))
 
 
 class TestFixShebang(unittest.TestCase):
     def setUp(self) -> None:
-        self.tmpfile = Path(NamedTemporaryFile(
-            prefix="dhptest_", suffix="_shebang.py", delete=False).name)
+        self.tmpfile = Path(
+            NamedTemporaryFile(
+                prefix="dhptest_", suffix="_shebang.py", delete=False
+            ).name
+        )
         self.addCleanup(self.tmpfile.unlink)
 
     def write_shebang(self, shebang: str) -> None:

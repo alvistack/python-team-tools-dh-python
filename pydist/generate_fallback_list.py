@@ -21,6 +21,7 @@
 
 import re
 import sys
+
 try:
     from distro_info import DistroInfo  # python3-distro-info package
 except ImportError:
@@ -30,30 +31,31 @@ from os import chdir, mkdir
 from os.path import dirname, exists, isdir, join, split
 from urllib.request import urlopen
 
-if '--ubuntu' in sys.argv and DistroInfo:
+if "--ubuntu" in sys.argv and DistroInfo:
     SOURCES = [
-        'http://archive.ubuntu.com/ubuntu/dists/%s/Contents-amd64.gz' %
-        DistroInfo('ubuntu').devel(),
+        "http://archive.ubuntu.com/ubuntu/dists/%s/Contents-amd64.gz"
+        % DistroInfo("ubuntu").devel(),
     ]
 else:
     SOURCES = [
-        'http://ftp.debian.org/debian/dists/unstable/main/Contents-all.gz',
-        'http://ftp.debian.org/debian/dists/unstable/main/Contents-amd64.gz',
+        "http://ftp.debian.org/debian/dists/unstable/main/Contents-all.gz",
+        "http://ftp.debian.org/debian/dists/unstable/main/Contents-amd64.gz",
     ]
 
 IGNORED_PKGS = set()
 OVERRIDES = {
-    'cpython3': {
-        'argparse': 'python3 (>= 3.2)',
-        'cython': 'cython3',
-        'pil': 'python3-pil',
-        'pillow': 'python3-pil',
-        'pylint': 'pylint',
-        'pyside6': None,
+    "cpython3": {
+        "argparse": "python3 (>= 3.2)",
+        "cython": "cython3",
+        "pil": "python3-pil",
+        "pillow": "python3-pil",
+        "pylint": "pylint",
+        "pyside6": None,
     },
 }
 
-public_egg = re.compile(r'''
+public_egg = re.compile(
+    r"""
     /usr/
     (
         (?P<cpython3>
@@ -61,38 +63,38 @@ public_egg = re.compile(r'''
         )
     )
     /[^/]*\.(dist|egg)-info
-''', re.VERBOSE).match
+""",
+    re.VERBOSE,
+).match
 
-skip_sensible_names = True if '--skip-sensible-names' in sys.argv else False
+skip_sensible_names = True if "--skip-sensible-names" in sys.argv else False
 
 chdir(dirname(__file__))
-if isdir('../dhpython'):
-    sys.path.append('..')
+if isdir("../dhpython"):
+    sys.path.append("..")
 else:
-    sys.path.append('/usr/share/dh-python/dhpython/')
+    sys.path.append("/usr/share/dh-python/dhpython/")
 from dhpython.pydist import normalize_name, sensible_pname
 
-data = ''
-if not isdir('cache'):
-    mkdir('cache')
+data = ""
+if not isdir("cache"):
+    mkdir("cache")
 for source in SOURCES:
-    cache_fpath = join('cache', split(source)[-1])
+    cache_fpath = join("cache", split(source)[-1])
     if not exists(cache_fpath):
         with urlopen(source) as fp:
             source_data = fp.read()
-        with open(cache_fpath, 'wb') as fp:
+        with open(cache_fpath, "wb") as fp:
             fp.write(source_data)
     else:
-        with open(cache_fpath, 'rb') as fp:
+        with open(cache_fpath, "rb") as fp:
             source_data = fp.read()
     try:
-        data += str(decompress(source_data), encoding='UTF-8')
+        data += str(decompress(source_data), encoding="UTF-8")
     except UnicodeDecodeError as e:  # Ubuntu
-        data += str(decompress(source_data), encoding='ISO-8859-15')
+        data += str(decompress(source_data), encoding="ISO-8859-15")
 
-result = {
-    'cpython3': {}
-}
+result = {"cpython3": {}}
 
 for line in data.splitlines():
     try:
@@ -100,22 +102,24 @@ for line in data.splitlines():
     except ValueError:
         # NOTE(jamespage) some lines in Ubuntu are not parseable.
         continue
-    path = '/' + path.rstrip()
-    section, pkg_name = desc.rsplit('/', 1)
+    path = "/" + path.rstrip()
+    section, pkg_name = desc.rsplit("/", 1)
     if pkg_name in IGNORED_PKGS:
         continue
     match = public_egg(path)
     if match:
-        dist_name = [i.split('-', 1)[0] for i in path.split('/')
-                     if i.endswith(('.egg-info', '.dist-info'))][0]
-        if dist_name.endswith('.egg'):
+        dist_name = [
+            i.split("-", 1)[0]
+            for i in path.split("/")
+            if i.endswith((".egg-info", ".dist-info"))
+        ][0]
+        if dist_name.endswith(".egg"):
             dist_name = dist_name[:-4]
         dist_name = normalize_name(dist_name)
 
         impl = next(key for key, value in match.groupdict().items() if value)
 
-        if skip_sensible_names and\
-                sensible_pname(impl, dist_name) == pkg_name:
+        if skip_sensible_names and sensible_pname(impl, dist_name) == pkg_name:
             continue
 
         if impl not in result:
@@ -126,13 +130,15 @@ for line in data.splitlines():
             processed[dist_name] = pkg_name
 
 for impl, details in result.items():
-    with open('{}_fallback'.format(impl), 'w') as fp:
+    with open("{}_fallback".format(impl), "w") as fp:
         overrides = OVERRIDES[impl]
         lines = []
         for egg, value in overrides.items():
             if value:
-                lines.append('{} {}\n'.format(egg, value))
+                lines.append("{} {}\n".format(egg, value))
         lines.extend(
-            '{} {}\n'.format(egg, pkg) for egg, pkg in details.items() if egg not in overrides
+            "{} {}\n".format(egg, pkg)
+            for egg, pkg in details.items()
+            if egg not in overrides
         )
         fp.writelines(sorted(lines))

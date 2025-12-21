@@ -31,19 +31,26 @@ from functools import cache, partial
 from os.path import exists, isdir, join
 from typing import Callable, Literal, NamedTuple, TypedDict, cast
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
-    sys.path.append(os.path.abspath(join(os.path.dirname(__file__), '..')))
 
-from dhpython import PKG_PREFIX_MAP, PUBLIC_DIR_RE,\
-    PYDIST_DIRS, PYDIST_OVERRIDES_FNAMES, PYDIST_DPKG_SEARCH_TPLS
+    sys.path.append(os.path.abspath(join(os.path.dirname(__file__), "..")))
+
+from dhpython import (
+    PKG_PREFIX_MAP,
+    PUBLIC_DIR_RE,
+    PYDIST_DIRS,
+    PYDIST_OVERRIDES_FNAMES,
+    PYDIST_DPKG_SEARCH_TPLS,
+)
 from dhpython.debhelper import BD
 from dhpython.markers import ComplexEnvironmentMarker, parse_environment_marker
 from dhpython.version import get_requested_versions, Version
 
-log = logging.getLogger('dhpython')
+log = logging.getLogger("dhpython")
 
-PYDIST_RE = re.compile(r"""
+PYDIST_RE = re.compile(
+    r"""
     (?P<name>[A-Za-z][A-Za-z0-9_.-]*)            # Python distribution name
     \s*
     (?P<vrange>(?:-?\d\.\d+(?:-(?:\d\.\d+)?)?)?) # version range
@@ -55,8 +62,11 @@ PYDIST_RE = re.compile(r"""
         \s*
         (?P<rules>(?:s|tr|y).*)?                 # translator rules
     )?
-    """, re.VERBOSE)
-REQUIRES_RE = re.compile(r'''
+    """,
+    re.VERBOSE,
+)
+REQUIRES_RE = re.compile(
+    r"""
     (?P<name>[A-Za-z][A-Za-z0-9_.-]*)    # Python distribution name
     \s*
     (?P<enabled_extras>(?:\[[^\]]*\])?)  # ignored for now
@@ -80,8 +90,11 @@ REQUIRES_RE = re.compile(r'''
     (?:;  # optional environment markers
         (?P<environment_marker>.+)
     )?
-    ''', re.VERBOSE)
-EXTRA_RE = re.compile(r'''
+    """,
+    re.VERBOSE,
+)
+EXTRA_RE = re.compile(
+    r"""
     ;
     \s*
     extra
@@ -91,8 +104,11 @@ EXTRA_RE = re.compile(r'''
     (?P<quote>['"])
     (?P<section>[a-zA-Z0-9-_.]+)
     (?P=quote)
-    ''', re.VERBOSE)
-REQ_SECTIONS_RE = re.compile(r'''
+    """,
+    re.VERBOSE,
+)
+REQ_SECTIONS_RE = re.compile(
+    r"""
     ^
     \[
     (?P<section>[a-zA-Z0-9-_.]+)?
@@ -103,12 +119,14 @@ REQ_SECTIONS_RE = re.compile(r'''
     \]
     \s*
     $
-    ''', re.VERBOSE)
+    """,
+    re.VERBOSE,
+)
 DEB_VERS_OPS = {
-    '==': '=',
-    '<':  '<<',
-    '>':  '>>',
-    '~=': '>=',
+    "==": "=",
+    "<": "<<",
+    ">": ">>",
+    "~=": ">=",
 }
 # Optimize away any dependencies on Python less than:
 MIN_PY_VERSION = [3, 11]
@@ -133,14 +151,15 @@ class RequirementModification(NamedTuple):
 
 def validate(fpath: str) -> bool:
     """Check if pydist file looks good."""
-    with open(fpath, encoding='utf-8') as fp:
+    with open(fpath, encoding="utf-8") as fp:
         for line in fp:
             line = line.strip()
-            if line.startswith('#') or not line:
+            if line.startswith("#") or not line:
                 continue
             if not PYDIST_RE.match(line):
-                log.error('invalid pydist data in file %s: %s',
-                          fpath.rsplit('/', 1)[-1], line)
+                log.error(
+                    "invalid pydist data in file %s: %s", fpath.rsplit("/", 1)[-1], line
+                )
                 return False
     return True
 
@@ -170,28 +189,28 @@ def load(impl: str) -> dict[str, list[PyDist]]:
     if dname and isdir(dname):
         to_check.extend(join(dname, i) for i in os.listdir(dname))
 
-    fbdir = os.environ.get('DH_PYTHON_DIST', '/usr/share/dh-python/dist/')
-    fbname = join(fbdir, '{}_fallback'.format(impl))
+    fbdir = os.environ.get("DH_PYTHON_DIST", "/usr/share/dh-python/dist/")
+    fbname = join(fbdir, "{}_fallback".format(impl))
     if exists(fbname):  # fall back generated at dh-python build time
         to_check.append(fbname)  # last one!
 
     result: dict[str, list[PyDist]] = {}
     for fpath in to_check:
         assert fpath
-        with open(fpath, encoding='utf-8') as fp:
+        with open(fpath, encoding="utf-8") as fp:
             for line in fp:
                 line = line.strip()
-                if line.startswith('#') or not line:
+                if line.startswith("#") or not line:
                     continue
                 if not (m := PYDIST_RE.search(line)):
-                    raise Exception('invalid pydist line: %s (in %s)' % (line, fpath))
+                    raise Exception("invalid pydist line: %s (in %s)" % (line, fpath))
                 data = m.groupdict()
                 dist = PyDist(
-                    name=normalize_name(data['name']),
-                    versions=get_requested_versions(impl, data['vrange']),
-                    dependency=data['dependency'].strip(),
-                    rules=data['rules'].split(';') if data["rules"] else [],
-                    standard=cast(Standard | None, data['standard'])
+                    name=normalize_name(data["name"]),
+                    versions=get_requested_versions(impl, data["vrange"]),
+                    dependency=data["dependency"].strip(),
+                    rules=data["rules"].split(";") if data["rules"] else [],
+                    standard=cast(Standard | None, data["standard"]),
                 )
                 result.setdefault(dist["name"], []).append(dist)
     return result
@@ -209,16 +228,15 @@ def guess_dependency(
     req: str,
     version: Version | str | None = None,
     bdep: BD | None = None,
-    accept_upstream_versions: bool = False
+    accept_upstream_versions: bool = False,
 ) -> str | None:
     bdep = bdep or {}
-    log.debug('trying to find dependency for %s (python=%s)',
-              req, version)
+    log.debug("trying to find dependency for %s (python=%s)", req, version)
     if isinstance(version, str):
         version = Version(version)
 
     # some upstreams have weird ideas for distribution name...
-    if not (m := re.compile(r'([^!><=~ \(\)\[;]+)(.*)').match(req)):
+    if not (m := re.compile(r"([^!><=~ \(\)\[;]+)(.*)").match(req)):
         raise Exception(f"Unable to parse requirement: {req}")
     name, rest = m.groups()
     # TODO: check stdlib and dist-packaged for name.py and name.so files
@@ -226,17 +244,18 @@ def guess_dependency(
 
     data = load(impl)
     if not (m := REQUIRES_RE.match(req)):
-        log.info('please ask dh_python3 author to fix REQUIRES_RE '
-                 'or your upstream author to fix requires.txt')
-        raise Exception(f'requirement is not valid: {req}')
+        log.info(
+            "please ask dh_python3 author to fix REQUIRES_RE "
+            "or your upstream author to fix requires.txt"
+        )
+        raise Exception(f"requirement is not valid: {req}")
     req_d: dict[str, str] = m.groupdict()
 
     merge_marker: Callable[[str], str] = str
-    if req_d['environment_marker']:
+    if req_d["environment_marker"]:
         modification = check_environment_marker_restrictions(
-            req,
-            req_d['environment_marker'],
-            impl)
+            req, req_d["environment_marker"], impl
+        )
         match modification.action:
             case ModificationAction.SKIP:
                 return None
@@ -245,46 +264,49 @@ def guess_dependency(
             case ModificationAction.APPEND:
                 assert modification.alternative
                 merge_marker = partial(
-                    merge_alternative_dependency,
-                    second=modification.alternative
+                    merge_alternative_dependency, second=modification.alternative
                 )
             case ModificationAction.PREPEND:
                 assert modification.alternative
                 merge_marker = partial(
-                    merge_alternative_dependency,
-                    modification.alternative
+                    merge_alternative_dependency, modification.alternative
                 )
 
-    name = req_d['name']
+    name = req_d["name"]
     details = data.get(normalize_name(name))
     if details:
         log.debug("dependency: module %s is known to pydist: %r", name, details)
         for item in details:
-            if version and version not in item.get('versions', version):
+            if version and version not in item.get("versions", version):
                 # rule doesn't match version, try next one
                 continue
-            if not item['dependency']:
+            if not item["dependency"]:
                 log.debug("dependency: requirement ignored")
                 return None  # this requirement should be ignored
-            if item['dependency'].endswith(')'):
+            if item["dependency"].endswith(")"):
                 # no need to translate versions if version is hardcoded in
                 # Debian dependency
                 log.debug("dependency: requirement already has hardcoded version")
-                return merge_marker(item['dependency'])
-            if req_d['operator'] == '==' and req_d['version'].endswith('*'):
+                return merge_marker(item["dependency"])
+            if req_d["operator"] == "==" and req_d["version"].endswith("*"):
                 # Translate "== 1.*" to "~= 1.0"
-                req_d['operator'] = '~='
-                req_d['version'] = req_d['version'].replace('*', '0')
+                req_d["operator"] = "~="
+                req_d["version"] = req_d["version"].replace("*", "0")
                 log.debug("dependency: translated wildcard version to semver limit")
-            if req_d['version'] and (item['standard'] or item['rules']) and\
-                    req_d['operator'] not in (None, '!='):
-                o = _translate_op(req_d['operator'])
-                v = _translate(req_d['version'], item['rules'], item['standard'])
-                if req_d['operator'] == '==' and req_d['operator2'] is None:
+            if (
+                req_d["version"]
+                and (item["standard"] or item["rules"])
+                and req_d["operator"] not in (None, "!=")
+            ):
+                o = _translate_op(req_d["operator"])
+                v = _translate(req_d["version"], item["rules"], item["standard"])
+                if req_d["operator"] == "==" and req_d["operator2"] is None:
                     # Loosen for Debian revisions
                     m = re.search(r"(.*)(\d+)(\D*)$", v)
                     if m:
-                        max_v = m.group(1) + str((int(m.group(2))) + 1) + m.group(3) + "~"
+                        max_v = (
+                            m.group(1) + str((int(m.group(2))) + 1) + m.group(3) + "~"
+                        )
                     else:
                         max_v = v + ".0~"
                     d = (
@@ -294,26 +316,34 @@ def guess_dependency(
                     )
                 else:
                     d = merge_marker(f"{item['dependency']} ({o} {v})")
-                if req_d['version2'] and req_d['operator2'] not in (None, '!='):
-                    o2 = _translate_op(req_d['operator2'])
-                    v2 = _translate(req_d['version2'], item['rules'], item['standard'])
+                if req_d["version2"] and req_d["operator2"] not in (None, "!="):
+                    o2 = _translate_op(req_d["operator2"])
+                    v2 = _translate(req_d["version2"], item["rules"], item["standard"])
                     d += ", " + merge_marker(f"{item['dependency']} ({o2} {v2})")
-                elif req_d['operator'] == '~=':
-                    o2 = '<<'
-                    v2 = _translate(_max_compatible(req_d['version']), item['rules'], item['standard'])
+                elif req_d["operator"] == "~=":
+                    o2 = "<<"
+                    v2 = _translate(
+                        _max_compatible(req_d["version"]),
+                        item["rules"],
+                        item["standard"],
+                    )
                     d += ", " + merge_marker(f"{item['dependency']} ({o2} {v2})")
                 log.debug("dependency: constructed version")
                 return d
-            elif accept_upstream_versions and req_d['version'] and \
-                    req_d['operator'] not in (None,'!='):
-                o = _translate_op(req_d['operator'])
+            elif (
+                accept_upstream_versions
+                and req_d["version"]
+                and req_d["operator"] not in (None, "!=")
+            ):
+                o = _translate_op(req_d["operator"])
                 d = merge_marker(f"{item['dependency']} ({o} {req_d['version']})")
-                if req_d['version2'] and req_d['operator2'] not in (None,'!='):
-                    o2 = _translate_op(req_d['operator2'])
+                if req_d["version2"] and req_d["operator2"] not in (None, "!="):
+                    o2 = _translate_op(req_d["operator2"])
                     d += ", " + merge_marker(
-                        f"{item['dependency']} ({o2} {req_d['version2']})")
-                elif req_d['operator'] == '~=':
-                    o2 = '<<'
+                        f"{item['dependency']} ({o2} {req_d['version2']})"
+                    )
+                elif req_d["operator"] == "~=":
+                    o2 = "<<"
                     d += ", " + merge_marker(
                         f"{item['dependency']} "
                         f"({o2} {_max_compatible(req_d['version'])})"
@@ -321,8 +351,11 @@ def guess_dependency(
                 log.debug("dependency: constructed upstream version")
                 return d
             else:
-                if item['dependency'] in bdep:
-                    if None in bdep[item['dependency']] and bdep[item['dependency']][None]:
+                if item["dependency"] in bdep:
+                    if (
+                        None in bdep[item["dependency"]]
+                        and bdep[item["dependency"]][None]
+                    ):
                         log.debug("dependency: included in build-deps with limits ")
                         return merge_marker(
                             f"{item['dependency']} "
@@ -332,7 +365,7 @@ def guess_dependency(
                     # TODO: handle architecture specific dependencies from build depends
                     #       (current architecture is needed here)
                 log.debug("dependency: included in build-deps")
-                return merge_marker(item['dependency'])
+                return merge_marker(item["dependency"])
 
     # search for Egg metadata file or directory (using dpkg -S)
     dpkg_query_tpl, regex_filter = PYDIST_DPKG_SEARCH_TPLS[impl]
@@ -340,34 +373,41 @@ def guess_dependency(
 
     log.debug("invoking dpkg -S %s", dpkg_query)
     process = subprocess.run(
-        ('/usr/bin/dpkg', '-S', dpkg_query),
-        check=False, encoding="UTF-8", capture_output=True,
+        ("/usr/bin/dpkg", "-S", dpkg_query),
+        check=False,
+        encoding="UTF-8",
+        capture_output=True,
     )
     if process.returncode == 0:
         result = set()
-        for line in process.stdout.split('\n'):
+        for line in process.stdout.split("\n"):
             if not line.strip():
                 continue
-            pkg, path = line.split(':', 1)
+            pkg, path = line.split(":", 1)
             if regex_filter and not re.search(regex_filter, path):
                 continue
             result.add(pkg)
         if len(result) > 1:
-            log.error('more than one package name found for %s dist', name)
+            log.error("more than one package name found for %s dist", name)
         elif not result:
-            log.debug('dpkg -S did not find package for %s', name)
+            log.debug("dpkg -S did not find package for %s", name)
         else:
-            log.debug('dependency: found a result with dpkg -S')
+            log.debug("dependency: found a result with dpkg -S")
             return merge_marker(result.pop())
     else:
-        log.debug('dpkg -S did not find package for %s: %s', name, process.stderr)
+        log.debug("dpkg -S did not find package for %s: %s", name, process.stderr)
 
     pname = sensible_pname(impl, normalize_name(name))
-    log.info('Cannot find package that provides %s. '
-             'Please add package that provides it to Build-Depends or '
-             'add "%s %s" line to %s or add proper '
-             'dependency to Depends by hand and ignore this info.',
-             name, normalize_name(name), pname, PYDIST_OVERRIDES_FNAMES[impl])
+    log.info(
+        "Cannot find package that provides %s. "
+        "Please add package that provides it to Build-Depends or "
+        'add "%s %s" line to %s or add proper '
+        "dependency to Depends by hand and ignore this info.",
+        name,
+        normalize_name(name),
+        pname,
+        PYDIST_OVERRIDES_FNAMES[impl],
+    )
     return None
 
 
@@ -375,84 +415,84 @@ def check_environment_marker_restrictions(
     req: str, marker_str: str, impl: str
 ) -> RequirementModification:
     """Should we keep or skip a dependency based on its environment markers."""
-    if impl != 'cpython3':
-        log.info('Ignoring environment markers for non-Python 3.x: %s', req)
+    if impl != "cpython3":
+        log.info("Ignoring environment markers for non-Python 3.x: %s", req)
         return RequirementModification(action=ModificationAction.SKIP)
 
     try:
         marker, op, value = parse_environment_marker(marker_str)
     except ComplexEnvironmentMarker:
-        log.info('Ignoring complex environment marker: %s', req)
+        log.info("Ignoring complex environment marker: %s", req)
         return RequirementModification(action=ModificationAction.SKIP)
 
     # TODO: Use dynamic values when building arch-dependent
     # binaries, otherwise static values
     # TODO: Hurd values?
     supported_values = {
-        'implementation_name': ('cpython', 'pypy'),
-        'os_name': ('posix',),
-        'platform_system': ('Linux',),
-        'platform_machine': (platform.machine(),),
-        'platform_python_implementation': ('CPython', 'PyPy'),
-        'sys_platform': ('linux',),
+        "implementation_name": ("cpython", "pypy"),
+        "os_name": ("posix",),
+        "platform_system": ("Linux",),
+        "platform_machine": (platform.machine(),),
+        "platform_python_implementation": ("CPython", "PyPy"),
+        "sys_platform": ("linux",),
     }
     if marker in supported_values:
         sv = supported_values[marker]
-        if op in ('==', '!='):
-            if op == '==' and value not in sv:
-                log.debug('Skipping requirement (%s != %s): %s',
-                          value, sv, req)
+        if op in ("==", "!="):
+            if op == "==" and value not in sv:
+                log.debug("Skipping requirement (%s != %s): %s", value, sv, req)
                 return RequirementModification(action=ModificationAction.SKIP)
-            if op == '!=' and len(supported_values[marker]) > 1:
+            if op == "!=" and len(supported_values[marker]) > 1:
                 log.debug(
                     (
                         "Keeping requirement as it applies to one of several "
                         "supported environments: %s"
-                    ), req
+                    ),
+                    req,
                 )
                 return RequirementModification(action=ModificationAction.KEEP)
         else:
             log.info(
-                'Skipping requirement with unhandled environment marker '
-                'comparison: %s', req)
+                "Skipping requirement with unhandled environment marker "
+                "comparison: %s",
+                req,
+            )
             return RequirementModification(action=ModificationAction.SKIP)
 
-    elif marker in ('python_version', 'python_full_version',
-                        'implementation_version'):
+    elif marker in ("python_version", "python_full_version", "implementation_version"):
         # TODO: Replace with full PEP-440 parser
         env_ver = value
-        split_ver = value.split('.')
-        if marker == 'python_version':
+        split_ver = value.split(".")
+        if marker == "python_version":
             version_parts = 2
-        elif marker == 'python_full_version':
+        elif marker == "python_full_version":
             version_parts = 3
         else:
             version_parts = len(split_ver)
 
-        if '*' in env_ver:
-            if split_ver.index('*') != len(split_ver) -1:
-                log.info('Skipping requirement with intermediate wildcard: %s',
-                         req)
+        if "*" in env_ver:
+            if split_ver.index("*") != len(split_ver) - 1:
+                log.info("Skipping requirement with intermediate wildcard: %s", req)
                 return RequirementModification(action=ModificationAction.SKIP)
             split_ver.pop()
-            env_ver = '.'.join(split_ver)
-            if op == '==':
-                if marker == 'python_full_version':
-                    marker = 'python_version'
+            env_ver = ".".join(split_ver)
+            if op == "==":
+                if marker == "python_full_version":
+                    marker = "python_version"
                     version_parts = 2
-            elif op == '!=':
-                if marker == 'python_full_version':
-                    marker = 'python_version'
+            elif op == "!=":
+                if marker == "python_full_version":
+                    marker = "python_version"
                     version_parts = 2
                 else:
-                    log.info('Ignoring wildcard != requirement, not '
-                             'representable in Debian: %s', req)
-                    return RequirementModification(
-                        action=ModificationAction.KEEP
+                    log.info(
+                        "Ignoring wildcard != requirement, not "
+                        "representable in Debian: %s",
+                        req,
                     )
+                    return RequirementModification(action=ModificationAction.KEEP)
             else:
-                log.info('Skipping requirement with %s on a wildcard: %s',
-                         op, req)
+                log.info("Skipping requirement with %s on a wildcard: %s", op, req)
                 return RequirementModification(action=ModificationAction.SKIP)
 
         int_ver = []
@@ -460,103 +500,109 @@ def check_environment_marker_restrictions(
             if ver_part.isdigit():
                 int_ver.append(int(ver_part))
             else:
-                env_ver = '.'.join(str(x) for x in int_ver)
-                log.info('Truncating unparseable version %s to %s in %s',
-                         value, env_ver, req)
+                env_ver = ".".join(str(x) for x in int_ver)
+                log.info(
+                    "Truncating unparseable version %s to %s in %s", value, env_ver, req
+                )
                 break
 
         if len(int_ver) < version_parts:
             int_ver.append(0)
-            env_ver += '.0'
+            env_ver += ".0"
         int_next_ver = int_ver.copy()
         int_next_ver[version_parts - 1] += 1
-        next_ver = '.'.join(str(x) for x in int_next_ver)
-        #int_prev_ver = int_ver.copy()
-        #int_prev_ver[version_parts - 1] -= 1
-        #prev_ver = '.'.join(str(x) for x in int_prev_ver)
+        next_ver = ".".join(str(x) for x in int_next_ver)
+        # int_prev_ver = int_ver.copy()
+        # int_prev_ver[version_parts - 1] -= 1
+        # prev_ver = '.'.join(str(x) for x in int_prev_ver)
 
         # We try to do something somewhat sensible with micro versions
         # even though we don't currently emit them in python3-supported-min/max
 
-        if op == '<':
+        if op == "<":
             if int_ver <= MIN_PY_VERSION:
                 return RequirementModification(action=ModificationAction.SKIP)
             return RequirementModification(
                 action=ModificationAction.PREPEND,
-                alternative=f'python3-supported-min (>= {env_ver})',
+                alternative=f"python3-supported-min (>= {env_ver})",
             )
-        elif op == '<=':
+        elif op == "<=":
             return RequirementModification(
                 action=ModificationAction.PREPEND,
-                alternative=f'python3-supported-min (>> {env_ver})',
+                alternative=f"python3-supported-min (>> {env_ver})",
             )
-        elif op == '>=':
+        elif op == ">=":
             if int_ver < MIN_PY_VERSION:
                 return RequirementModification(action=ModificationAction.KEEP)
             return RequirementModification(
                 action=ModificationAction.APPEND,
-                alternative=f'python3-supported-max (<< {env_ver})',
+                alternative=f"python3-supported-max (<< {env_ver})",
             )
-        elif op == '>':
+        elif op == ">":
             if int_ver < MIN_PY_VERSION:
                 return RequirementModification(action=ModificationAction.KEEP)
             return RequirementModification(
                 action=ModificationAction.APPEND,
-                alternative=f'python3-supported-max (<= {env_ver})',
+                alternative=f"python3-supported-max (<= {env_ver})",
             )
-        elif op == '==':
-            if marker == 'python_version':
+        elif op == "==":
+            if marker == "python_version":
                 return RequirementModification(
                     action=ModificationAction.APPEND,
                     alternative=(
-                        f'python3-supported-max (<< {env_ver}) '
-                        f'| python3-supported-min (>= {next_ver})'
-                    )
+                        f"python3-supported-max (<< {env_ver}) "
+                        f"| python3-supported-min (>= {next_ver})"
+                    ),
                 )
             return RequirementModification(
                 action=ModificationAction.APPEND,
                 alternative=(
-                    f'python3-supported-max (<< {env_ver}) '
-                    f'| python3-supported-min (>> {env_ver})'
-                )
+                    f"python3-supported-max (<< {env_ver}) "
+                    f"| python3-supported-min (>> {env_ver})"
+                ),
             )
-        elif op == '===':
+        elif op == "===":
             # === is arbitrary equality (PEP 440)
-            if marker == 'python_version':
+            if marker == "python_version":
                 return RequirementModification(
                     action=ModificationAction.APPEND,
                     alternative=(
-                        f'python3-supported-max (<< {env_ver}) '
-                        f'| python3-supported-min (>> {env_ver})'
-                    )
+                        f"python3-supported-max (<< {env_ver}) "
+                        f"| python3-supported-min (>> {env_ver})"
+                    ),
                 )
             else:
                 log.info(
-                    'Skipping requirement with %s environment marker, cannot '
-                    'model in Debian deps: %s', op, req)
+                    "Skipping requirement with %s environment marker, cannot "
+                    "model in Debian deps: %s",
+                    op,
+                    req,
+                )
                 return RequirementModification(action=ModificationAction.SKIP)
-        elif op == '~=':  # Compatible equality (PEP 440)
+        elif op == "~=":  # Compatible equality (PEP 440)
             int_ceq_next_ver = int_ver[:2]
             int_ceq_next_ver[1] += 1
-            ceq_next_ver = '.'.join(str(x) for x in int_ceq_next_ver)
+            ceq_next_ver = ".".join(str(x) for x in int_ceq_next_ver)
             return RequirementModification(
                 action=ModificationAction.APPEND,
                 alternative=(
-                    f'python3-supported-max (<< {env_ver}) '
-                    f'| python3-supported-min (>= {ceq_next_ver})'
-                )
+                    f"python3-supported-max (<< {env_ver}) "
+                    f"| python3-supported-min (>= {ceq_next_ver})"
+                ),
             )
-        elif op == '!=':
-            log.info('Ignoring != comparison in environment marker, cannot '
-                     'model in Debian deps: %s', req)
+        elif op == "!=":
+            log.info(
+                "Ignoring != comparison in environment marker, cannot "
+                "model in Debian deps: %s",
+                req,
+            )
             return RequirementModification(action=ModificationAction.KEEP)
 
-    elif marker == 'extra':
+    elif marker == "extra":
         # Handled in section logic of parse_requires_dist()
         return RequirementModification(action=ModificationAction.KEEP)
     else:
-        log.info('Skipping requirement with unknown environment marker: %s',
-                 marker)
+        log.info("Skipping requirement with unknown environment marker: %s", marker)
         return RequirementModification(action=ModificationAction.SKIP)
     return RequirementModification(action=ModificationAction.KEEP)
 
@@ -586,68 +632,70 @@ def parse_pydep(
     if public_dir and public_dir.groups() and len(public_dir.group(1)) != 1:
         ver = public_dir.group(1)
 
-    guess_deps = partial(guess_dependency, impl=impl, version=ver, bdep=bdep,
-                         accept_upstream_versions=getattr(
-                             options, 'accept_upstream_versions', False))
+    guess_deps = partial(
+        guess_dependency,
+        impl=impl,
+        version=ver,
+        bdep=bdep,
+        accept_upstream_versions=getattr(options, "accept_upstream_versions", False),
+    )
 
     result = NewDependencies(depends=[], recommends=[], suggests=[])
     modified: bool = False
     section: str | None = None
     modification = RequirementModification(action=ModificationAction.KEEP)
     processed = []
-    with open(fname, 'r', encoding='utf-8') as fp:
+    with open(fname, "r", encoding="utf-8") as fp:
         for line in fp:
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 processed.append(line)
                 continue
-            if line.startswith('['):
+            if line.startswith("["):
                 m = REQ_SECTIONS_RE.match(line)
                 if not m:
-                    log.info('Skipping section %s, unable to parse header',
-                             line)
+                    log.info("Skipping section %s, unable to parse header", line)
                     processed.append(line)
                     # something that won't map to a result_key
-                    section = '[non-existent section]'
+                    section = "[non-existent section]"
                     continue
-                section = m.group('section')
-                modification = RequirementModification(
-                    action=ModificationAction.KEEP
-                )
-                if m.group('environment_marker'):
+                section = m.group("section")
+                modification = RequirementModification(action=ModificationAction.KEEP)
+                if m.group("environment_marker"):
                     modification = check_environment_marker_restrictions(
-                        line,
-                        m.group('environment_marker'),
-                        impl)
+                        line, m.group("environment_marker"), impl
+                    )
                 processed.append(line)
                 continue
             result_key: Literal["depends", "recommends", "suggests"]
             if section:
                 if section in depends_sec:
-                    result_key = 'depends'
+                    result_key = "depends"
                 elif section in recommends_sec:
-                    result_key = 'recommends'
+                    result_key = "recommends"
                 elif section in suggests_sec:
-                    result_key = 'suggests'
+                    result_key = "suggests"
                 else:
                     processed.append(line)
                     continue
             else:
-                result_key = 'depends'
+                result_key = "depends"
 
             dependency = None
             if modification.action != ModificationAction.SKIP:
                 dependency = guess_deps(req=line)
             if dependency and modification.action == ModificationAction.APPEND:
                 assert modification.alternative
-                dependency = ', '.join(
-                    part.strip() + ' | ' + modification.alternative
-                    for part in dependency.split(','))
+                dependency = ", ".join(
+                    part.strip() + " | " + modification.alternative
+                    for part in dependency.split(",")
+                )
             if dependency and modification.action == ModificationAction.PREPEND:
                 assert modification.alternative
-                dependency = ', '.join(
-                    modification.alternative + ' | ' + part.strip()
-                    for part in dependency.split(','))
+                dependency = ", ".join(
+                    modification.alternative + " | " + part.strip()
+                    for part in dependency.split(",")
+                )
 
             if dependency:
                 result[result_key].append(dependency)
@@ -655,8 +703,8 @@ def parse_pydep(
             else:
                 processed.append(line)
     if modified and public_dir:
-        with open(fname, 'w', encoding='utf-8') as fp:
-            fp.writelines(i + '\n' for i in processed)
+        with open(fname, "w", encoding="utf-8") as fp:
+            fp.writelines(i + "\n" for i in processed)
     return result
 
 
@@ -680,27 +728,31 @@ def parse_requires_dist(
     if public_dir and public_dir.groups() and len(public_dir.group(1)) != 1:
         ver = public_dir.group(1)
 
-    guess_deps = partial(guess_dependency, impl=impl, version=ver, bdep=bdep,
-                         accept_upstream_versions=getattr(
-                             options, 'accept_upstream_versions', False))
+    guess_deps = partial(
+        guess_dependency,
+        impl=impl,
+        version=ver,
+        bdep=bdep,
+        accept_upstream_versions=getattr(options, "accept_upstream_versions", False),
+    )
     result = NewDependencies(depends=[], recommends=[], suggests=[])
     section = None
-    with open(fname, 'r', encoding='utf-8') as fp:
+    with open(fname, "r", encoding="utf-8") as fp:
         metadata = email.message_from_string(fp.read())
-    requires = metadata.get_all('Requires-Dist', [])
+    requires = metadata.get_all("Requires-Dist", [])
     result_key: Literal["depends", "recommends", "suggests"]
     for req in requires:
         m = EXTRA_RE.search(req)
-        result_key = 'depends'
+        result_key = "depends"
         if m:
-            section = m.group('section')
+            section = m.group("section")
             if section:
                 if section in depends_sec:
-                    result_key = 'depends'
+                    result_key = "depends"
                 elif section in recommends_sec:
-                    result_key = 'recommends'
+                    result_key = "recommends"
                 elif section in suggests_sec:
-                    result_key = 'suggests'
+                    result_key = "suggests"
                 else:
                     continue
         dependency = guess_deps(req=req)
@@ -723,12 +775,14 @@ def sensible_pname(impl: str, dist_name: str) -> str:
 
 def ci_regexp(name: str) -> str:
     """Return case insensitive dpkg -S regexp."""
-    return ''.join("[%s%s]" % (i.upper(), i) if i.isalpha() else i for i in name.lower())
+    return "".join(
+        "[%s%s]" % (i.upper(), i) if i.isalpha() else i for i in name.lower()
+    )
 
 
-PEP386_PRE_VER_RE = re.compile(r'[-.]?(alpha|beta|rc|dev|a|b|c)')
-PEP440_PRE_VER_RE = re.compile(r'[-.]?(a|b|rc)')
-GROUP_RE = re.compile(r'\$(\d+)')
+PEP386_PRE_VER_RE = re.compile(r"[-.]?(alpha|beta|rc|dev|a|b|c)")
+PEP440_PRE_VER_RE = re.compile(r"[-.]?(a|b|rc)")
+GROUP_RE = re.compile(r"\$(\d+)")
 
 
 def _pl2py(pattern: str) -> str:
@@ -737,7 +791,7 @@ def _pl2py(pattern: str) -> str:
     >>> print(_pl2py('foo$3'))
     foo\g<3>
     """
-    return GROUP_RE.sub(r'\\g<\1>', pattern)
+    return GROUP_RE.sub(r"\\g<\1>", pattern)
 
 
 def _max_compatible(version: str) -> str:
@@ -766,9 +820,7 @@ def _max_compatible(version: str) -> str:
     return str(v + 1)
 
 
-def _translate(
-    version: str, rules: list[str], standard: Standard | None
-) -> str:
+def _translate(version: str, rules: list[str], standard: Standard | None) -> str:
     """Translate Python version into Debian one.
 
     >>> _translate('1.C2betac', ['s/c//gi'], None)
@@ -781,29 +833,29 @@ def _translate(
     """
     for rule in rules:
         # uscan supports s, tr and y operations
-        if rule.startswith(('tr', 'y')):
+        if rule.startswith(("tr", "y")):
             # Note: no support for escaped separator in the pattern
-            pos = 1 if rule.startswith('y') else 2
-            tmp = rule[pos + 1:].split(rule[pos])
+            pos = 1 if rule.startswith("y") else 2
+            tmp = rule[pos + 1 :].split(rule[pos])
             version = version.translate(str.maketrans(tmp[0], tmp[1]))
-        elif rule.startswith('s'):
+        elif rule.startswith("s"):
             # uscan supports: g, u and x flags
             tmp = rule[2:].split(rule[1])
             pattern = re.compile(tmp[0])
             count = 1
             if tmp[2:]:
                 flags = tmp[2]
-                if 'g' in flags:
+                if "g" in flags:
                     count = 0
-                if 'i' in flags:
+                if "i" in flags:
                     pattern = re.compile(tmp[0], re.I)
             version = pattern.sub(_pl2py(tmp[1]), version, count)
         else:
-            log.warning('unknown rule ignored: %s', rule)
+            log.warning("unknown rule ignored: %s", rule)
     if standard == Standard.PEP386:
-        version = PEP386_PRE_VER_RE.sub(r'~\g<1>', version)
+        version = PEP386_PRE_VER_RE.sub(r"~\g<1>", version)
     elif standard == Standard.PEP440:
-        version = PEP440_PRE_VER_RE.sub(r'~\g<1>', version)
+        version = PEP440_PRE_VER_RE.sub(r"~\g<1>", version)
     return version
 
 
@@ -820,16 +872,16 @@ def _translate_op(operator: str) -> str:
     return DEB_VERS_OPS.get(operator, operator)
 
 
-if __name__ == '__main__':
-    impl = os.environ.get('IMPL', 'cpython3')
+if __name__ == "__main__":
+    impl = os.environ.get("IMPL", "cpython3")
     for i in sys.argv[1:]:
         if os.path.isfile(i):
             try:
-                print(', '.join(parse_pydep(impl, i)['depends']))
+                print(", ".join(parse_pydep(impl, i)["depends"]))
             except Exception as err:
-                log.error('%s: cannot guess (%s)', i, err)
+                log.error("%s: cannot guess (%s)", i, err)
         else:
             try:
-                print(guess_dependency(impl, i) or '')
+                print(guess_dependency(impl, i) or "")
             except Exception as err:
-                log.error('%s: cannot guess (%s)', i, err)
+                log.error("%s: cannot guess (%s)", i, err)

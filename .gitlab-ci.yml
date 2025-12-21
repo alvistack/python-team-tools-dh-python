@@ -22,10 +22,11 @@ tests:
 style:
   before_script:
   - apt-get update
-  - apt-get -y install --no-install-recommends pylint
+  - apt-get -y install --no-install-recommends black make pylint
 
   script:
   - pylint dhpython dh_python3 pybuild
+  - make black BLACK_ARGS=--check
 
 typecheck:
   before_script:

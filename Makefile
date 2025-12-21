@@ -57,6 +57,9 @@ mypy:
 	mypy --strict dh_python3 dhpython/ tests/*.py
 	mypy --strict pybuild
 
+black:
+	black $(BLACK_ARGS) pybuild dh_python3 dhpython/ pydist/*.py tests/*.py
+
 tests: nose
 	make -C tests
 

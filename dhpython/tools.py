@@ -33,9 +33,9 @@ from subprocess import Popen, PIPE
 from typing import Callable, Iterable, Literal, TextIO, NamedTuple, overload
 
 
-log = logging.getLogger('dhpython')
-EGGnPTH_RE = re.compile(r'(.*?)(-py\d\.\d(?:-[^.]*)?)?(\.egg-info|\.pth)$')
-SHAREDLIB_RE = re.compile(r'NEEDED.*libpython(\d\.\d)')
+log = logging.getLogger("dhpython")
+EGGnPTH_RE = re.compile(r"(.*?)(-py\d\.\d(?:-[^.]*)?)?(\.egg-info|\.pth)$")
+SHAREDLIB_RE = re.compile(r"NEEDED.*libpython(\d\.\d)")
 
 
 def relpath(target: str, link: str) -> str:
@@ -44,11 +44,11 @@ def relpath(target: str, link: str) -> str:
     >>> relpath('/usr/share/python-foo/foo.py', '/usr/bin/foo', )
     '../share/python-foo/foo.py'
     """
-    t = target.split('/')
-    l = link.split('/')
+    t = target.split("/")
+    l = link.split("/")
     while l and l[0] == t[0]:
         del l[0], t[0]
-    return '/'.join(['..'] * (len(l) - 1) + t)
+    return "/".join([".."] * (len(l) - 1) + t)
 
 
 def relative_symlink(target: str, link: str) -> None:
@@ -75,8 +75,8 @@ def move_matching_files(
     src: str,
     dst: str,
     pattern: str,
-    sub: str | None=None,
-    repl: str | None=None,
+    sub: str | None = None,
+    repl: str | None = None,
 ) -> None:
     r"""Move files (preserving path) that match given pattern.
 
@@ -90,7 +90,7 @@ def move_matching_files(
     sub_f: Callable[[str, str], str] | None = None
     if sub:
         sub_f = re.compile(sub).sub
-        repl = repl or ''
+        repl = repl or ""
     for root, _, filenames in os.walk(src):
         for fn in filenames:
             spath = join(root, fn)
@@ -102,10 +102,7 @@ def move_matching_files(
                 os.renames(spath, dpath)
 
 
-def fix_shebang(
-    fpath: str | Path,
-    replacement: str | None = None
-) -> bool | None:
+def fix_shebang(fpath: str | Path, replacement: str | None = None) -> bool | None:
     """Normalize file's shebang.
 
     :param replacement: new shebang command (path to interpreter and options)
@@ -113,30 +110,30 @@ def fix_shebang(
     try:
         interpreter = Interpreter.from_file(fpath)
     except Exception as err:
-        log.debug('fix_shebang (%s): %s', fpath, err)
+        log.debug("fix_shebang (%s): %s", fpath, err)
         return None
 
     if not replacement:
-        if interpreter.version == '3':
+        if interpreter.version == "3":
             # Potentially an unversioned shebang (e.g. produced by setuptools >= 76)
-            replacement = '/usr/bin/python3'
+            replacement = "/usr/bin/python3"
             if interpreter.debug:
-                replacement += '-dbg'
-        elif interpreter.path != '/usr/bin/':  # f.e. /usr/local/* or */bin/env
-            interpreter.path = '/usr/bin'
+                replacement += "-dbg"
+        elif interpreter.path != "/usr/bin/":  # f.e. /usr/local/* or */bin/env
+            interpreter.path = "/usr/bin"
             replacement = repr(interpreter)
     if replacement:
-        log.info('replacing shebang in %s', fpath)
+        log.info("replacing shebang in %s", fpath)
         try:
-            with open(fpath, 'rb') as fp:
+            with open(fpath, "rb") as fp:
                 fcontent = fp.readlines()
         except IOError:
-            log.error('cannot open %s', fpath)
+            log.error("cannot open %s", fpath)
             return False
         # do not catch IOError here, the file is zeroed at this stage so it's
         # better to fail
-        with open(fpath, 'wb') as fp:
-            fp.write(("#! %s\n" % replacement).encode('utf-8'))
+        with open(fpath, "wb") as fp:
+            fp.write(("#! %s\n" % replacement).encode("utf-8"))
             fp.writelines(fcontent[1:])
     return True
 
@@ -167,7 +164,7 @@ def clean_egg_name(name: str) -> str:
     """
     match = EGGnPTH_RE.match(name)
     if match and match.group(2) is not None:
-        return ''.join(match.group(1, 3))
+        return "".join(match.group(1, 3))
     return name
 
 
@@ -178,7 +175,7 @@ def parse_ns(
     """Parse namespace_packages.txt files."""
     result = set(other or [])
     for fpath in fpaths:
-        with open(fpath, 'r', encoding='utf-8') as fp:
+        with open(fpath, "r", encoding="utf-8") as fp:
             for line in fp:
                 if line:
                     result.add(line.strip())
@@ -197,12 +194,12 @@ def remove_ns(
     keep = set()
     for ns in namespaces:
         for version in versions:
-            fpath = join(interpreter.sitedir(package, version), *ns.split('.'))
-            fpath = join(fpath, '__init__.py')
+            fpath = join(interpreter.sitedir(package, version), *ns.split("."))
+            fpath = join(fpath, "__init__.py")
             if not exists(fpath):
                 continue
             if getsize(fpath) != 0:
-                log.warning('file not empty, cannot share %s namespace', ns)
+                log.warning("file not empty, cannot share %s namespace", ns)
                 keep.add(ns)
                 break
 
@@ -212,15 +209,15 @@ def remove_ns(
     # remove empty __init__.py files, if available
     for ns in result:
         for version in versions:
-            dpath = join(interpreter.sitedir(package, version), *ns.split('.'))
-            fpath = join(dpath, '__init__.py')
+            dpath = join(interpreter.sitedir(package, version), *ns.split("."))
+            fpath = join(dpath, "__init__.py")
             if exists(fpath):
                 os.remove(fpath)
                 if not os.listdir(dpath):
                     os.rmdir(dpath)
         # clean pyshared dir as well
-        dpath = join('debian', package, 'usr/share/pyshared', *ns.split('.'))
-        fpath = join(dpath, '__init__.py')
+        dpath = join("debian", package, "usr/share/pyshared", *ns.split("."))
+        fpath = join(dpath, "__init__.py")
         if exists(fpath):
             os.remove(fpath)
             if not os.listdir(dpath):
@@ -245,9 +242,9 @@ def execute(
     cwd: str | None = None,
     env: dict[str, str] | None = None,
     log_output: None = None,
-    shell: bool = True
-) -> ExecutionResultWithOutput:
-    ...
+    shell: bool = True,
+) -> ExecutionResultWithOutput: ...
+
 
 @overload
 def execute(
@@ -256,9 +253,8 @@ def execute(
     cwd: str | None = None,
     env: dict[str, str] | None = None,
     log_output: TextIO | str | Literal[False],
-    shell: bool = True
-) -> ExecutionResult:
-    ...
+    shell: bool = True,
+) -> ExecutionResult: ...
 
 
 def execute(
@@ -267,7 +263,7 @@ def execute(
     cwd: str | None = None,
     env: dict[str, str] | None = None,
     log_output: TextIO | str | Literal[False] | None = None,
-    shell: bool = True
+    shell: bool = True,
 ) -> ExecutionResult | ExecutionResultWithOutput:
     """Execute external shell command.
 
@@ -287,23 +283,23 @@ def execute(
         elif log_output:
             if isinstance(log_output, str):
                 log_output = stack.enter_context(
-                    open(log_output, 'a', encoding='utf-8')
+                    open(log_output, "a", encoding="utf-8")
                 )
             assert isinstance(log_output, TextIO)
             log_output.write(
-                '\n# command executed on {}'.format(datetime.now().isoformat())
+                "\n# command executed on {}".format(datetime.now().isoformat())
             )
-            log_output.write('\n$ {}\n'.format(command))
+            log_output.write("\n$ {}\n".format(command))
             log_output.flush()
             output = log_output
 
-        log.debug('invoking: %s', command)
+        log.debug("invoking: %s", command)
         with Popen(
             command,
             shell=shell,
             cwd=cwd,
             env=env,
-            encoding='utf-8',
+            encoding="utf-8",
             stdout=output,
             stderr=output,
         ) as process:
@@ -321,10 +317,10 @@ def execute(
 def dpkg_architecture() -> dict[str, str]:
     """Parse dpkg-architecture output"""
     arch_data: dict[str, str] = {}
-    if exists('/usr/bin/dpkg-architecture'):
-        res = execute('/usr/bin/dpkg-architecture')
+    if exists("/usr/bin/dpkg-architecture"):
+        res = execute("/usr/bin/dpkg-architecture")
         for line in res.stdout.splitlines():
-            key, value = line.strip().split('=', 1)
+            key, value = line.strip().split("=", 1)
             arch_data[key] = value
     return arch_data
 
@@ -337,28 +333,29 @@ def pyinstall(interpreter: "Interpreter", package: str, vrange: str) -> None:
     impl = interpreter.impl
     versions = get_requested_versions(impl, vrange)
 
-    with open(srcfpath, encoding='utf-8') as fp:
+    with open(srcfpath, encoding="utf-8") as fp:
         for line in fp:
-            if not line.strip() or line.startswith('#'):
+            if not line.strip() or line.startswith("#"):
                 continue
             if not (m := INSTALL_RE.match(line)):
                 raise ValueError("unrecognized line: %s" % line)
             details = m.groupdict()
-            if details['module']:
-                details['module'] = details['module'].replace('.', '/')
-            myvers = versions & get_requested_versions(impl, details['vrange'])
+            if details["module"]:
+                details["module"] = details["module"].replace(".", "/")
+            myvers = versions & get_requested_versions(impl, details["vrange"])
             if not myvers:
-                log.debug('%s.pyinstall: no matching versions for line %s',
-                        package, line)
+                log.debug(
+                    "%s.pyinstall: no matching versions for line %s", package, line
+                )
                 continue
-            files = glob(details['pattern'])
+            files = glob(details["pattern"])
             if not files:
-                raise ValueError("missing file(s): %s" % details['pattern'])
+                raise ValueError("missing file(s): %s" % details["pattern"])
             for fpath in files:
-                fpath = fpath.lstrip('/.')
-                if details['module']:
-                    dstname = join(details['module'], split(fpath)[1])
-                elif fpath.startswith('debian/'):
+                fpath = fpath.lstrip("/.")
+                if details["module"]:
+                    dstname = join(details["module"], split(fpath)[1])
+                elif fpath.startswith("debian/"):
                     dstname = fpath[7:]
                 else:
                     dstname = fpath
@@ -380,22 +377,23 @@ def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
     impl = interpreter.impl
     versions = get_requested_versions(impl, vrange)
 
-    with open(srcfpath, encoding='utf-8') as fp:
+    with open(srcfpath, encoding="utf-8") as fp:
         for line in fp:
-            if not line.strip() or line.startswith('#'):
+            if not line.strip() or line.startswith("#"):
                 continue
             if not (m := REMOVE_RE.match(line)):
                 raise ValueError("unrecognized line: %s: %s" % (package, line))
             details = m.groupdict()
-            myvers = versions & get_requested_versions(impl, details['vrange'])
+            myvers = versions & get_requested_versions(impl, details["vrange"])
             if not myvers:
-                log.debug('%s.pyremove: no matching versions for line %s',
-                        package, line)
+                log.debug(
+                    "%s.pyremove: no matching versions for line %s", package, line
+                )
             for version in myvers:
                 site_dirs = interpreter.old_sitedirs(package, version)
                 site_dirs.append(interpreter.sitedir(package, version))
                 for sdir in site_dirs:
-                    files = glob(sdir + '/' + details['pattern'])
+                    files = glob(sdir + "/" + details["pattern"])
                     for fpath in files:
                         if isdir(fpath):
                             rmtree(fpath)
@@ -405,16 +403,25 @@ def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
 
 from dhpython.interpreter import Interpreter
 from dhpython.version import Version, get_requested_versions, RANGE_PATTERN
-INSTALL_RE = re.compile(r"""
+
+INSTALL_RE = re.compile(
+    r"""
     (?P<pattern>.+?)  # file pattern
     (?:\s+  # optional Python module name:
     (?P<module>[A-Za-z][A-Za-z0-9_.]*)?
     )?
     \s*  # optional version range:
     (?P<vrange>%s)?$
-""" % RANGE_PATTERN, re.VERBOSE)
-REMOVE_RE = re.compile(r"""
+"""
+    % RANGE_PATTERN,
+    re.VERBOSE,
+)
+REMOVE_RE = re.compile(
+    r"""
     (?P<pattern>.+?)  # file pattern
     \s*  # optional version range:
     (?P<vrange>%s)?$
-""" % RANGE_PATTERN, re.VERBOSE)
+"""
+    % RANGE_PATTERN,
+    re.VERBOSE,
+)

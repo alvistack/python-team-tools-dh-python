@@ -7,7 +7,7 @@ from dhpython.debhelper import DebHelper, build_options, Options
 
 
 class DebHelperTestCase(unittest.TestCase):
-    impl = 'cpython3'
+    impl = "cpython3"
     control: list[str] = []
     options: dict[str, Any] = {}
     parse_control = True
@@ -23,143 +23,150 @@ class DebHelperTestCase(unittest.TestCase):
         os.chdir(self.tempdir.name)
         self.addCleanup(os.chdir, old_wd)
 
-        os.mkdir('debian')
-        with open('debian/control', 'w', encoding="UTF-8") as f:
-            f.write('\n'.join(self.control))
+        os.mkdir("debian")
+        with open("debian/control", "w", encoding="UTF-8") as f:
+            f.write("\n".join(self.control))
         if self.parse_control:
             self.dh = DebHelper(self.build_options(), impl=self.impl)
 
 
 CONTROL = [
-    'Source: foo-src',
-    'Build-Depends: python3-all,',
-    ' python-all',
-    '\t, bar (<< 2) [amd64],',
-    ' baz (>= 1.0)',
-    'X-Python3-Version: >= 3.1, << 3.10',
-    '',
-    'Architecture: all',
-    'Package: python3-foo',
-    'Depends: ${python3:Depends}',
-    '',
-    'Package: python3-foo-ext',
-    'Architecture: any',
-    'Depends: ${python3:Depends}, '
-    '# COMMENT',
-    ' ${shlibs:Depends},',
-    '',
-    'Package: python-foo',
-    'Architecture: all',
-    'Depends: ${python:Depends}',
-    '',
-    '',
-    'Package: foo',
-    'Architecture: all',
-    'Depends: ${python3:Depends}',
-    '',
-    '',
-    'Package: recfoo',
-    'Architecture: all',
-    'Recommends: ${python3:Depends}',
-    '',
-    '',
+    "Source: foo-src",
+    "Build-Depends: python3-all,",
+    " python-all",
+    "\t, bar (<< 2) [amd64],",
+    " baz (>= 1.0)",
+    "X-Python3-Version: >= 3.1, << 3.10",
+    "",
+    "Architecture: all",
+    "Package: python3-foo",
+    "Depends: ${python3:Depends}",
+    "",
+    "Package: python3-foo-ext",
+    "Architecture: any",
+    "Depends: ${python3:Depends}, " "# COMMENT",
+    " ${shlibs:Depends},",
+    "",
+    "Package: python-foo",
+    "Architecture: all",
+    "Depends: ${python:Depends}",
+    "",
+    "",
+    "Package: foo",
+    "Architecture: all",
+    "Depends: ${python3:Depends}",
+    "",
+    "",
+    "Package: recfoo",
+    "Architecture: all",
+    "Recommends: ${python3:Depends}",
+    "",
+    "",
 ]
+
 
 class TestControlBlockParsing(DebHelperTestCase):
     control = CONTROL
 
     def test_parses_source(self) -> None:
-        self.assertEqual(self.dh.source_name, 'foo-src')
+        self.assertEqual(self.dh.source_name, "foo-src")
 
     def test_parses_build_depends(self) -> None:
-        self.assertEqual(self.dh.build_depends, {
-            'python3-all': {None: None},
-            'python-all': {None: None},
-            'bar': {'amd64': '<< 2'},
-            'baz': {None: '>= 1.0'},
-        })
+        self.assertEqual(
+            self.dh.build_depends,
+            {
+                "python3-all": {None: None},
+                "python-all": {None: None},
+                "bar": {"amd64": "<< 2"},
+                "baz": {None: ">= 1.0"},
+            },
+        )
 
     def test_parses_XPV(self) -> None:
-        self.assertEqual(self.dh.python_version, '>= 3.1, << 3.10')
+        self.assertEqual(self.dh.python_version, ">= 3.1, << 3.10")
 
     def test_parses_packages(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()),
-                         ['python3-foo', 'python3-foo-ext', 'foo', 'recfoo'])
+        self.assertEqual(
+            list(self.dh.packages.keys()),
+            ["python3-foo", "python3-foo-ext", "foo", "recfoo"],
+        )
 
     def test_parses_arch(self) -> None:
-        self.assertEqual(self.dh.packages['python3-foo-ext']['arch'], 'any')
+        self.assertEqual(self.dh.packages["python3-foo-ext"]["arch"], "any")
 
     def test_parses_arch_all(self) -> None:
-        self.assertEqual(self.dh.packages['python3-foo']['arch'], 'all')
+        self.assertEqual(self.dh.packages["python3-foo"]["arch"], "all")
 
 
 class TestControlSkipIndep(DebHelperTestCase):
     control = CONTROL
     options = {
-        'arch': True,
+        "arch": True,
     }
 
     def test_skip_indep(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()), ['python3-foo-ext'])
+        self.assertEqual(list(self.dh.packages.keys()), ["python3-foo-ext"])
 
 
 class TestControlSkipArch(DebHelperTestCase):
     control = CONTROL
     options = {
-        'arch': False,
+        "arch": False,
     }
 
     def test_skip_arch(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()),
-                         ['python3-foo', 'foo', 'recfoo'])
+        self.assertEqual(
+            list(self.dh.packages.keys()), ["python3-foo", "foo", "recfoo"]
+        )
 
 
 class TestControlSinglePkg(DebHelperTestCase):
     control = CONTROL
     options = {
-        'package': ['python3-foo'],
+        "package": ["python3-foo"],
     }
 
     def test_parses_packages(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()), ['python3-foo'])
+        self.assertEqual(list(self.dh.packages.keys()), ["python3-foo"])
 
 
 class TestControlSkipSinglePkg(DebHelperTestCase):
     control = CONTROL
     options = {
-        'no_package': ['python3-foo'],
+        "no_package": ["python3-foo"],
     }
 
     def test_parses_packages(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()),
-                         ['python3-foo-ext', 'foo', 'recfoo'])
+        self.assertEqual(
+            list(self.dh.packages.keys()), ["python3-foo-ext", "foo", "recfoo"]
+        )
+
 
 class TestControlNoBinaryPackages(DebHelperTestCase):
     control = [
-        'Source: foo-src',
-        'Build-Depends: python3-all',
-        '',
+        "Source: foo-src",
+        "Build-Depends: python3-all",
+        "",
     ]
     parse_control = False
 
     def test_throws_error(self) -> None:
-        msg = 'Unable to parse debian/control, found less than 2 paragraphs'
+        msg = "Unable to parse debian/control, found less than 2 paragraphs"
         with self.assertRaisesRegex(Exception, msg):
             DebHelper(self.build_options())
 
 
 class TestControlMissingPackage(DebHelperTestCase):
     control = [
-        'Source: foo-src',
-        'Build-Depends: python3-all',
-        '',
-        'Architecture: all',
+        "Source: foo-src",
+        "Build-Depends: python3-all",
+        "",
+        "Architecture: all",
     ]
     parse_control = False
 
     def test_parses_packages(self) -> None:
-        msg = ('Unable to parse debian/control, paragraph 2 missing Package '
-               'field')
+        msg = "Unable to parse debian/control, paragraph 2 missing Package " "field"
         with self.assertRaisesRegex(Exception, msg):
             DebHelper(self.build_options())
 
@@ -167,18 +174,19 @@ class TestControlMissingPackage(DebHelperTestCase):
 class TestRemainingPackages(DebHelperTestCase):
     control = CONTROL
     options = {
-        'remaining_packages': True,
+        "remaining_packages": True,
     }
     parse_control = False
 
     def setUp(self) -> None:
         super().setUp()
-        with open('debian/python3-foo.debhelper.log', 'w', encoding="UTF-8") as f:
-            f.write('dh_python3\n')
-        with open('debian/python3-foo-ext.debhelper.log', 'w', encoding="UTF-") as f:
-            f.write('dh_foobar\n')
+        with open("debian/python3-foo.debhelper.log", "w", encoding="UTF-8") as f:
+            f.write("dh_python3\n")
+        with open("debian/python3-foo-ext.debhelper.log", "w", encoding="UTF-") as f:
+            f.write("dh_foobar\n")
         self.dh = DebHelper(self.build_options(), impl=self.impl)
 
     def test_skips_logged_packages(self) -> None:
-        self.assertEqual(list(self.dh.packages.keys()),
-                         ['python3-foo-ext', 'foo', 'recfoo'])
+        self.assertEqual(
+            list(self.dh.packages.keys()), ["python3-foo-ext", "foo", "recfoo"]
+        )
