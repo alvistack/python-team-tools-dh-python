@@ -890,7 +890,6 @@ blake3 python3-blake3
 blazar python3-blazar
 blazar-dashboard python3-blazar-dashboard
 blazar-nova python3-blazarnova
-blazar-tempest-plugin blazar-tempest-plugin
 bleach python3-bleach
 bleak python3-bleak
 bleak-esphome python3-bleak-esphome
@@ -4926,7 +4925,7 @@ rapid-photo-downloader rapid-photo-downloader
 rapidfuzz python3-rapidfuzz
 rapt-ble python3-rapt-ble
 rarfile python3-rarfile
-raritan python3-raritan-json-rpc
+raritan-json-rpc python3-raritan-json-rpc
 rasterio python3-rasterio
 ratelimit python3-ratelimit
 ratelimiter python3-ratelimiter
@@ -5011,7 +5010,7 @@ requests-mock python3-requests-mock
 requests-ntlm python3-requests-ntlm
 requests-oauthlib python3-requests-oauthlib
 requests-toolbelt python3-requests-toolbelt
-requests-unixsocket2 python3-requests-unixsocket
+requests-unixsocket python3-requests-unixsocket
 requestsexceptions python3-requestsexceptions
 requirements-detector python3-requirements-detector
 requirements-parser python3-requirements
@@ -5835,7 +5834,6 @@ traittypes python3-traittypes
 trame python3-trame
 trame-client python3-trame-client
 trame-common python3-trame-common
-trame-server python3-trame-server
 transaction python3-transaction
 transforms3d python3-transforms3d
 transip python3-transip
