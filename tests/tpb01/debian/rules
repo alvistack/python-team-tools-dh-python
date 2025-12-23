@@ -5,6 +5,11 @@ export PYBUILD_NAME=foo
 %:
 	dh $@
 
+override_dh_auto_configure:
+	echo "Package name:"
+	../../pybuild --print package
+	../../pybuild --configure --verbose
+
 override_dh_auto_build:
 	../../pybuild --build --verbose
 

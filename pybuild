@@ -244,6 +244,7 @@ def main(cfg: argparse.Namespace) -> None:
         INSTALL = auto()
         TEST = auto()
         AUTOPKGTEST = auto()
+        PRINT_ARGS = auto()
 
     def get_args(
         context: Context,

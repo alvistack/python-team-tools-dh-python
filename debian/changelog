@@ -1,6 +1,7 @@
 dh-python (7.20251221) UNRELEASED; urgency=medium
 
   * Bump major-version, post-trixie (a little late).
+  * Fix pybuild --print (broken in the last upload).
 
  -- Stefano Rivera <stefanor@debian.org>  Sun, 21 Dec 2025 17:09:43 -0400
 
