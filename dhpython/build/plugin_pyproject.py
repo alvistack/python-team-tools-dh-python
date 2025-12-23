@@ -119,11 +119,14 @@ class BuildSystem(Base):
         self.build_wheel(context, args)
         self.unpack_wheel(context, args)
 
-    def _backend_config_settings(self) -> list[str]:
+    def _backend_config_settings(self, args: Args) -> list[str]:
         backend = _build_backend()
         if backend == "mesonpy":
             arch_data = dpkg_architecture()
             return [
+                # build_dir is where we unpack the wheel, so we need to build
+                # elsewhere.
+                f"build-dir={args['home_dir']}/meson-build",
                 "compile-args=--verbose",
                 # From Debhelper's meson.pm
                 "setup-args=--wrap-mode=nodownload",
@@ -141,7 +144,7 @@ class BuildSystem(Base):
         """ build a wheel using the PEP517 builder defined by upstream """
         log.info('Building wheel for %s with "build" module',
                  args['interpreter'])
-        config_settings = self._backend_config_settings()
+        config_settings = self._backend_config_settings(args)
         context['ENV']['FLIT_NO_NETWORK'] = '1'
         context['ENV']['HOME'] = args['home_dir']
         return ('{interpreter} -m build '
