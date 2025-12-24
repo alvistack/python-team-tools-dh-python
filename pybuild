@@ -277,7 +277,7 @@ def main(cfg: argparse.Namespace) -> None:
             package = ipreter.suggest_pkg_name(cfg.name)
         else:
             package = "PYBUILD_NAME_not_set"
-        if cfg.name and destdir.rstrip("/").endswith("debian/tmp"):
+        if cfg.name and get_option("destdir", interpreter, version) is None:
             destdir = "debian/{}".format(package)
         destdir = abspath(destdir)
 
@@ -453,6 +453,9 @@ def main(cfg: argparse.Namespace) -> None:
     elif cfg.print_args:
         func = plugin.print_args
 
+    # Default value for --dest-dir
+    default_destdir = environ.get("DESTDIR", "debian/tmp")
+
     ### one function for each interpreter at a time mode ###
     if func:
         step = func.__func__.__name__
@@ -474,7 +477,7 @@ def main(cfg: argparse.Namespace) -> None:
                     continue
                 c = cast(Context, dict(context))
                 c["dir"] = get_option("dir", i, version, cfg.dir)
-                c["destdir"] = get_option("destdir", i, version, cfg.destdir)
+                c["destdir"] = get_option("destdir", i, version, default_destdir)
                 try:
                     run(func, i, version, c)
                 except Exception as err:
@@ -517,7 +520,7 @@ def main(cfg: argparse.Namespace) -> None:
                 else:
                     c = cast(Context, dict(context))
                     c["dir"] = get_option("dir", i, version, cfg.dir)
-                    c["destdir"] = get_option("destdir", i, version, cfg.destdir)
+                    c["destdir"] = get_option("destdir", i, version, default_destdir)
                     context_map[key] = c
 
                 if not is_disabled(Step.CLEAN, i, version):
@@ -732,7 +735,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store",
         metavar="DIR",
         dest="destdir",
-        default=environ.get("DESTDIR", "debian/tmp"),
+        default=None,  # We handle this default manually, because --name affects it
         help="destination directory [default: debian/tmp]",
     )
     dirs.add_argument(
