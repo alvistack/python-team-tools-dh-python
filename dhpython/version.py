@@ -20,7 +20,7 @@
 
 import logging
 import re
-from typing import Iterable
+from typing import Iterable, TypeAlias
 from os.path import exists
 
 from dhpython import _defaults
@@ -40,7 +40,7 @@ VERSION_RE = re.compile(
 log = logging.getLogger("dhpython")
 Interpreter = None
 
-type V = "str | Version | Iterable[int]"
+V: TypeAlias = "str | Version | Iterable[int]"
 
 
 class Version:
@@ -53,7 +53,7 @@ class Version:
     # TODO: Upgrade to PEP-440
     def __init__(
         self,
-        value: V | None = None,
+        value: "V | None" = None,
         *,
         major: int | None = None,
         minor: int | None = None,
@@ -254,8 +254,8 @@ class VersionRange:
     def __init__(
         self,
         value: str | None = None,
-        minver: V | None = None,
-        maxver: V | None = None,
+        minver: "V | None" = None,
+        maxver: "V | None" = None,
     ) -> None:
         if minver:
             self.minver = Version(minver)

@@ -24,7 +24,7 @@ import re
 from os import makedirs, chmod, environ
 from os.path import basename, exists, join, dirname
 from sys import argv
-from typing import NamedTuple, TypedDict
+from typing import NamedTuple, TypeAlias, TypedDict
 
 from dhpython import DEPENDS_SUBSTVARS, PKG_NAME_TPLS, RT_LOCATIONS, RT_TPLS
 
@@ -77,7 +77,7 @@ def build_options(
     )
 
 
-type BD = dict[str, dict[str | None, str]]
+BD: TypeAlias = dict[str, dict[str | None, str]]
 
 
 class DebHelper:
