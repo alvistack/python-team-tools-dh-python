@@ -90,20 +90,20 @@ class Dependencies:
         """Fill in debhelper's substvars."""
         prefix = PKG_PREFIX_MAP.get(self.impl, "misc")
         for i in sorted(self.depends):
-            dh.addsubstvar(self.package, "{}:Depends".format(prefix), i)
+            dh.addsubstvar(self.package, f"{prefix}:Depends", i)
         for i in sorted(self.recommends):
-            dh.addsubstvar(self.package, "{}:Recommends".format(prefix), i)
+            dh.addsubstvar(self.package, f"{prefix}:Recommends", i)
         for i in sorted(self.suggests):
-            dh.addsubstvar(self.package, "{}:Suggests".format(prefix), i)
+            dh.addsubstvar(self.package, f"{prefix}:Suggests", i)
         for i in sorted(self.enhances):
-            dh.addsubstvar(self.package, "{}:Enhances".format(prefix), i)
+            dh.addsubstvar(self.package, f"{prefix}:Enhances", i)
         for i in sorted(self.breaks):
-            dh.addsubstvar(self.package, "{}:Breaks".format(prefix), i)
+            dh.addsubstvar(self.package, f"{prefix}:Breaks", i)
         for script in sorted(self.rtscripts):
             dh.add_rtupdate(self.package, script)
 
     def __str__(self) -> str:
-        return "D=%s; R=%s; S=%s; E=%s, B=%s; RT=%s" % (
+        return "D={}; R={}; S={}; E={}, B={}; RT={}".format(
             self.depends,
             self.recommends,
             self.suggests,
@@ -173,17 +173,17 @@ class Dependencies:
                 self.depend(vtpl % minv)
                 minv = maxv = None
             if minv:
-                self.depend("%s (>= %s~)" % (tpl_tmp, minv))
+                self.depend(f"{tpl_tmp} (>= {minv}~)")
             if maxv:
-                self.depend("%s (<< %s)" % (tpl_tmp, maxv))
+                self.depend(f"{tpl_tmp} (<< {maxv})")
 
         if stats["ext_vers"]:
             sorted_vers = sorted(stats["ext_vers"])
             minv = sorted_vers[0]
             maxv = sorted_vers[-1]
             # self.depend('|'.join(vtpl % i for i in stats['ext_vers']))
-            self.depend("%s (>= %s~)" % (tpl, minv))
-            self.depend("%s (<< %s)" % (tpl, maxv + 1))
+            self.depend(f"{tpl} (>= {minv}~)")
+            self.depend(f"{tpl} (<< {maxv + 1})")
         elif stats["ext_stableabi"]:
             self.depend("%s" % tpl)
 
@@ -225,12 +225,12 @@ class Dependencies:
                 extensions = sorted(details.get("ext_vers", set()))
                 # self.depend('|'.join(vtpl % i for i in extensions))
                 if extensions:
-                    self.depend("%s (>= %s~)" % (tpl, extensions[0]))
-                    self.depend("%s (<< %s)" % (tpl, extensions[-1] + 1))
+                    self.depend(f"{tpl} (>= {extensions[0]}~)")
+                    self.depend(f"{tpl} (<< {extensions[-1] + 1})")
                 elif details.get("ext_no_version"):
                     # assume unrecognized extension was built for default interpreter version
-                    self.depend("%s (>= %s~)" % (tpl, default_version))
-                    self.depend("%s (<< %s)" % (tpl, default_version + 1))
+                    self.depend(f"{tpl} (>= {default_version}~)")
+                    self.depend(f"{tpl} (<< {default_version + 1})")
 
             if details.get("compile"):
                 if self.impl in MINPYCDEP:
@@ -253,9 +253,9 @@ class Dependencies:
                         self.depend(vtpl % vrange.minver)
                     else:
                         if vrange.minver:  # minimum version specified
-                            self.depend("%s (>= %s~)" % (tpl_ma, vrange.minver))
+                            self.depend(f"{tpl_ma} (>= {vrange.minver}~)")
                         if vrange.maxver:  # maximum version specified
-                            self.depend("%s (<< %s)" % (tpl_ma, vrange.maxver + 1))
+                            self.depend(f"{tpl_ma} (<< {vrange.maxver + 1})")
 
                 for regex in options.regexpr or []:
                     args += " -X '%s'" % regex.pattern.replace("'", r"'\''")
@@ -280,7 +280,7 @@ class Dependencies:
                     parse_pydep(self.impl, fn, bdep=self.bdep, **section_options)
                 )
             for fpath in stats["egg-info"]:
-                with open(fpath, "r", encoding="utf-8") as fp:
+                with open(fpath, encoding="utf-8") as fp:
                     for line in fp:
                         if line.startswith("Requires: "):
                             req = line[10:].strip()

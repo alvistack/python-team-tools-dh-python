@@ -1,8 +1,9 @@
 import os
 from argparse import Namespace
+from collections.abc import Sequence
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Sequence, cast
+from typing import Any, cast
 from unittest import TestCase
 
 from dhpython.interpreter import Interpreter

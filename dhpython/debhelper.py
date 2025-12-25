@@ -107,7 +107,7 @@ class DebHelper:
         skip_pkgs = options.no_package
 
         try:
-            with open("debian/control", "r", encoding="utf-8") as fp:
+            with open("debian/control", encoding="utf-8") as fp:
                 paragraphs: list[dict[str, str]] = [{}]
                 field = None
                 for lineno, line in enumerate(fp, 1):
@@ -130,8 +130,10 @@ class DebHelper:
                     field, value = line.split(":", 1)
                     field = field.lower()
                     paragraphs[-1][field] = value.strip()
-        except IOError:
-            raise Exception("cannot find debian/control file")
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                raise Exception("cannot find debian/control file")
+            raise
 
         # Trailing new lines?
         if not paragraphs[-1]:
@@ -225,11 +227,11 @@ class DebHelper:
 
     def has_acted_on_package(self, package: str) -> bool:
         try:
-            with open("debian/{}.debhelper.log".format(package), encoding="utf-8") as f:
+            with open(f"debian/{package}.debhelper.log", encoding="utf-8") as f:
                 for line in f:
                     if line.strip() == self.command:
                         return True
-        except IOError as e:
+        except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
         return False
@@ -254,9 +256,9 @@ class DebHelper:
                 continue
 
             for when, templates in autoscripts.items():
-                fn = "debian/%s.%s.debhelper" % (package, when)
+                fn = f"debian/{package}.{when}.debhelper"
                 if exists(fn):
-                    with open(fn, "r", encoding="utf-8") as datafile:
+                    with open(fn, encoding="utf-8") as datafile:
                         data = datafile.read()
                 else:
                     data = ""
@@ -270,7 +272,7 @@ class DebHelper:
                         )
                         if not exists(fpath):
                             fpath = "/usr/share/debhelper/autoscripts/%s" % tpl_name
-                        with open(fpath, "r", encoding="utf-8") as tplfile:
+                        with open(fpath, encoding="utf-8") as tplfile:
                             tpl = tplfile.read()
                         if self.options.compile_all and args:
                             # TODO: should args be checked to contain dir name?
@@ -279,14 +281,15 @@ class DebHelper:
                             tpl = tpl.replace("#PACKAGE#", package)
                         else:
                             arch = environ["DEB_HOST_ARCH"]
-                            tpl = tpl.replace("#PACKAGE#", "%s:%s" % (package, arch))
+                            tpl = tpl.replace("#PACKAGE#", f"{package}:{arch}")
                         tpl = tpl.replace("#ARGS#", i)
                         if tpl not in data and tpl not in new_data:
                             new_data += "\n%s" % tpl
                 if new_data:
-                    data += "\n# Automatically added by {}".format(
-                        basename(argv[0])
-                    ) + "{}\n# End automatically added section\n".format(new_data)
+                    data += (
+                        f"\n# Automatically added by {basename(argv[0])}"
+                        + f"{new_data}\n# End automatically added section\n"
+                    )
                     with open(fn, "w", encoding="utf-8") as fp:
                         fp.write(data)
 
@@ -297,7 +300,7 @@ class DebHelper:
                 continue
             fn = "debian/%s.substvars" % package
             if exists(fn):
-                with open(fn, "r", encoding="utf-8") as datafile:
+                with open(fn, encoding="utf-8") as datafile:
                     data = datafile.read()
             else:
                 data = ""
@@ -308,7 +311,7 @@ class DebHelper:
                     line = data[p + len("%s=" % name) : p + e if e > -1 else None]
                     items = [i.strip() for i in line.split(",") if i]
                     if e > -1 and data[p + e :].strip():
-                        data = "%s\n%s" % (data[:p], data[p + e :])
+                        data = f"{data[:p]}\n{data[p + e :]}"
                     else:
                         data = data[:p]
                 else:
@@ -319,7 +322,7 @@ class DebHelper:
                 if items:
                     if data:
                         data += "\n"
-                    data += "%s=%s\n" % (name, ", ".join(items))
+                    data += "{}={}\n".format(name, ", ".join(items))
             data = data.replace("\n\n", "\n")
             if data:
                 with open(fn, "w", encoding="utf-8") as fp:
@@ -331,12 +334,12 @@ class DebHelper:
             values = settings.get("rtupdates")
             if not values:
                 continue
-            d = "debian/{}/{}".format(package, RT_LOCATIONS[self.impl])
+            d = f"debian/{package}/{RT_LOCATIONS[self.impl]}"
             if not exists(d):
                 makedirs(d)
-            fn = "%s/%s.rtupdate" % (d, package)
+            fn = f"{d}/{package}.rtupdate"
             if exists(fn):
-                with open(fn, "r", encoding="utf-8") as fp:
+                with open(fn, encoding="utf-8") as fp:
                     data = fp.read()
             else:
                 data = "#! /bin/sh\nset -e"
@@ -353,9 +356,7 @@ class DebHelper:
         if not self.options.write_log:
             return
         for package, _ in self.packages.items():
-            with open(
-                "debian/{}.debhelper.log".format(package), "a", encoding="utf-8"
-            ) as f:
+            with open(f"debian/{package}.debhelper.log", "a", encoding="utf-8") as f:
                 f.write(self.command + "\n")
 
     def save(self) -> None:

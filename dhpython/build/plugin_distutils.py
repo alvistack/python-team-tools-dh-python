@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 import logging
+from collections.abc import Callable
 from functools import wraps
 from glob import glob1
 from os import remove
@@ -26,7 +27,6 @@ from os.path import exists, isdir, join
 from shutil import rmtree, move
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Concatenate,
     Literal,
     ParamSpec,

@@ -24,12 +24,13 @@ import logging
 import argparse
 import re
 import sys
+from collections.abc import Callable
 from enum import StrEnum, auto
 from os import environ, getcwd, makedirs, remove
 from os.path import abspath, exists, isdir, join
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Callable, Literal, overload, cast
+from typing import Literal, overload, cast
 
 INTERP_VERSION_RE = re.compile(r"^python(?P<version>3\.\d+)(?P<dbg>-dbg)?$")
 logging.basicConfig(
@@ -155,7 +156,7 @@ def main(cfg: argparse.Namespace) -> None:
                 m = INTERP_VERSION_RE.match(ipreter)
                 if m:
                     ver = m.group("version")
-                    updated = set(tpl.format(version=ver) for tpl in tpls)
+                    updated = {tpl.format(version=ver) for tpl in tpls}
                     if updated:
                         plugin.SUPPORTED_INTERPRETERS.update(updated)
 
@@ -221,17 +222,17 @@ def main(cfg: argparse.Namespace) -> None:
         if interpreter:
             # try PYBUILD_NAME_python3.3-dbg (or hardcoded interpreter)
             i = interpreter.format(version=version or "")
-            opt = "PYBUILD_{}_{}".format(name.upper(), i)
+            opt = f"PYBUILD_{name.upper()}_{i}"
             if opt in environ:
                 return environ[opt]
             # try PYBUILD_NAME_python3-dbg (if not checked above)
             if "{version}" in interpreter and version:
                 i = interpreter.format(version=version.major)
-                opt = "PYBUILD_{}_{}".format(name.upper(), i)
+                opt = f"PYBUILD_{name.upper()}_{i}"
                 if opt in environ:
                     return environ[opt]
         # try PYBUILD_NAME
-        opt = "PYBUILD_{}".format(name.upper())
+        opt = f"PYBUILD_{name.upper()}"
         if opt in environ:
             return environ[opt]
         # try command line args
@@ -278,7 +279,7 @@ def main(cfg: argparse.Namespace) -> None:
         else:
             package = "PYBUILD_NAME_not_set"
         if cfg.name and get_option("destdir", interpreter, version) is None:
-            destdir = "debian/{}".format(package)
+            destdir = f"debian/{package}"
         destdir = abspath(destdir)
 
         args = cast(Args, dict(context["args"]))
@@ -321,7 +322,7 @@ def main(cfg: argparse.Namespace) -> None:
         ):
             pp.insert(
                 0,
-                ("/usr/lib/python{0}/plat-{1}").format(
+                ("/usr/lib/python{}/plat-{}").format(
                     version, arch_data["DEB_HOST_MULTIARCH"]
                 ),
             )
@@ -348,7 +349,7 @@ def main(cfg: argparse.Namespace) -> None:
 
     def is_disabled(step: Step, interpreter: str, version: Version) -> bool:
         i = interpreter
-        prefix = "{}/".format(step)
+        prefix = f"{step}/"
         disabled = (get_option("disable", i, version) or "").split()
         for item in disabled:
             if item in (step, "1"):
@@ -378,11 +379,11 @@ def main(cfg: argparse.Namespace) -> None:
         if "ENV" in args:
             env.update(args["ENV"])
 
-        before_cmd = get_option("before_{}".format(step), interpreter, version)
+        before_cmd = get_option(f"before_{step}", interpreter, version)
         if before_cmd:
             log_file: str | Literal[False]
             if cfg.quiet:
-                log_file = join(args["home_dir"], "before_{}_cmd.log".format(step))
+                log_file = join(args["home_dir"], f"before_{step}_cmd.log")
             else:
                 log_file = False
             command = before_cmd.format(**args)
@@ -405,10 +406,10 @@ def main(cfg: argparse.Namespace) -> None:
             remove(fpath)
         func(context, args)
 
-        after_cmd = get_option("after_{}".format(step), interpreter, version)
+        after_cmd = get_option(f"after_{step}", interpreter, version)
         if after_cmd:
             if cfg.quiet:
-                log_file = join(args["home_dir"], "after_{}_cmd.log".format(step))
+                log_file = join(args["home_dir"], f"after_{step}_cmd.log")
             else:
                 log_file = False
             command = after_cmd.format(**args)

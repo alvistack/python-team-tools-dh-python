@@ -130,15 +130,13 @@ for line in data.splitlines():
             processed[dist_name] = pkg_name
 
 for impl, details in result.items():
-    with open("{}_fallback".format(impl), "w") as fp:
+    with open(f"{impl}_fallback", "w") as fp:
         overrides = OVERRIDES[impl]
         lines = []
         for egg, value in overrides.items():
             if value:
-                lines.append("{} {}\n".format(egg, value))
+                lines.append(f"{egg} {value}\n")
         lines.extend(
-            "{} {}\n".format(egg, pkg)
-            for egg, pkg in details.items()
-            if egg not in overrides
+            f"{egg} {pkg}\n" for egg, pkg in details.items() if egg not in overrides
         )
         fp.writelines(sorted(lines))

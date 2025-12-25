@@ -189,18 +189,18 @@ class Interpreter:
         if consider_default_ver and (not version or version == self.default_version):
             version = "3"
         if self.debug:
-            return "python{}-dbg".format(version)
+            return f"python{version}-dbg"
         return self.name + str(version)
 
     def binary(self, version: "Version | None" = None) -> str:
-        return "{}{}".format(self.path, self._vstr(version))
+        return f"{self.path}{self._vstr(version)}"
 
     @property
     def binary_dv(self) -> str:
         """Like binary(), but returns path to default intepreter symlink
         if version matches default one for given implementation.
         """
-        return "{}{}".format(self.path, self._vstr(consider_default_ver=True))
+        return f"{self.path}{self._vstr(consider_default_ver=True)}"
 
     @property
     def default_version(self) -> "Version | None":
@@ -285,7 +285,7 @@ class Interpreter:
         if gdb:
             path = "/usr/lib/debug%s" % path
         if package:
-            path = "debian/%s%s" % (package, path)
+            path = f"debian/{package}{path}"
 
         return path
 
@@ -310,13 +310,11 @@ class Interpreter:
                     result.append(res)
 
         if gdb:
-            result = ["/usr/lib/debug{}".format(i) for i in result]
+            result = [f"/usr/lib/debug{i}" for i in result]
             if self.impl.startswith("cpython"):
-                result.append(
-                    "/usr/lib/debug/usr/lib/pyshared/python{}".format(version)
-                )
+                result.append(f"/usr/lib/debug/usr/lib/pyshared/python{version}")
         if package:
-            result = ["debian/{}{}".format(package, i) for i in result]
+            result = [f"debian/{package}{i}" for i in result]
 
         return result
 
@@ -338,7 +336,7 @@ class Interpreter:
         cache_key = f"should_ignore_{self.impl}"
         if cache_key not in self.__class__._re_cache:
             expr = [v for k, v in INTERPRETER_DIR_TPLS.items() if k != self.impl]
-            regexp = re.compile("|".join("({})".format(i) for i in expr))
+            regexp = re.compile("|".join(f"({i})" for i in expr))
             self.__class__._re_cache[cache_key] = regexp
         else:
             regexp = self.__class__._re_cache[cache_key]
@@ -360,7 +358,7 @@ class Interpreter:
         except Exception:
             result = ""
             log.debug("cannot get include path", exc_info=True)
-        result = "/usr/include/{}".format(self.name)
+        result = f"/usr/include/{self.name}"
         version = self.version
         assert version
         if self.debug:
@@ -388,7 +386,7 @@ class Interpreter:
             ldlibrary = ldlibrary.replace(".a", ".so")
         if libpl and ldlibrary:
             return join(libpl, ldlibrary)
-        raise Exception("cannot find library file for {}".format(self))
+        raise Exception(f"cannot find library file for {self}")
 
     def check_extname(self, fname: str, version: "Version | None" = None) -> str | None:
         """Return extension file name if file can be renamed."""
@@ -408,7 +406,7 @@ class Interpreter:
         if info["ver"] and (not version or version.minor is None):
             # get version from soabi if version is not set of only major
             # version number is set
-            version = Version("%s.%s" % (info["ver"][0], info["ver"][1]))
+            version = Version("{}.{}".format(info["ver"][0], info["ver"][1]))
 
         if info["stableabi"] and version < Version("3.13"):
             # We added support for stableabi multiarch filenames in 3.13
@@ -463,7 +461,7 @@ class Interpreter:
         'python3-bar-dbg'
         """
         name = name.replace("_", "-")
-        result = "python3-{}".format(name)
+        result = f"python3-{name}"
         if self.debug:
             result += "-dbg"
         return result
@@ -491,7 +489,7 @@ class Interpreter:
         self, command: str, version: "str | Version | None" = None, cache: bool = True
     ) -> list[str] | str:
         version = Version(version or self.version)
-        exe = "{}{}".format(self.path, self._vstr(version))
+        exe = f"{self.path}{self._vstr(version)}"
         command = "{} -c '{}'".format(exe, command.replace("'", "'"))
         if cache and command in self.__class__._cmd_cache:
             return self.__class__._cmd_cache[command]

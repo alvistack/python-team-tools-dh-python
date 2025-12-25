@@ -53,11 +53,11 @@ def cpython_versions(major: int) -> CPythonVersions:
     default_ver: tuple[int, int] | None = None
     supported_vers: tuple[tuple[int, int], ...] = ()
     ver = str(major)
-    supported = environ.get("DEBPYTHON{}_SUPPORTED".format(ver))
-    default = environ.get("DEBPYTHON{}_DEFAULT".format(ver))
+    supported = environ.get(f"DEBPYTHON{ver}_SUPPORTED")
+    default = environ.get(f"DEBPYTHON{ver}_DEFAULT")
     if not supported or not default:
         config = ConfigParser()
-        config.read("/usr/share/python{}/debian_defaults".format(ver))
+        config.read(f"/usr/share/python{ver}/debian_defaults")
         if not default:
             default = config.get("DEFAULT", "default-version", fallback="")[6:]
         if not supported:
@@ -83,7 +83,7 @@ def cpython_versions(major: int) -> CPythonVersions:
 def from_file(fpath: str) -> None:
     if not exists(fpath):
         raise ValueError("missing interpreter: %s" % fpath)
-    command = "{} --version".format(fpath)
+    command = f"{fpath} --version"
     with Popen(command, shell=True, stdout=PIPE, encoding="utf-8") as process:
         stdout, _ = process.communicate()
 
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     if sys.argv[1] == "default":
         print(".".join(str(i) for i in DEFAULT[sys.argv[2]]))
     elif sys.argv[1] == "supported":
-        print(",".join((".".join(str(i) for i in v) for v in SUPPORTED[sys.argv[2]])))
+        print(",".join(".".join(str(i) for i in v) for v in SUPPORTED[sys.argv[2]]))

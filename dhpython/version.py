@@ -20,7 +20,8 @@
 
 import logging
 import re
-from typing import Iterable, TypeAlias
+from collections.abc import Iterable
+from typing import TypeAlias
 from os.path import exists
 
 from dhpython import _defaults
@@ -103,7 +104,7 @@ class Version:
         """
         result = str(self.major)
         if self.minor is not None:
-            result += ".{}".format(self.minor)
+            result += f".{self.minor}"
         return result
 
     def __hash__(self) -> int:
@@ -117,12 +118,12 @@ class Version:
         >>> repr(Version(major=2))
         "Version('2')"
         """
-        result = "Version('{}".format(self)
+        result = f"Version('{self}"
         for name in ("micro", "releaselevel", "serial"):
             value = getattr(self, name)
             if not value:
                 break
-            result += ".{}".format(value)
+            result += f".{value}"
         return result + "')"
 
     def __add__(self, other: int | str) -> "Version":
@@ -299,11 +300,11 @@ class VersionRange:
         if self.minver == self.maxver:
             return str(self.minver)
         elif self.minver is None:
-            return "-{}".format(self.maxver)
+            return f"-{self.maxver}"
         elif self.maxver is None:
-            return "{}-".format(self.minver)
+            return f"{self.minver}-"
         else:
-            return "{}-{}".format(self.minver, self.maxver)
+            return f"{self.minver}-{self.maxver}"
 
     def __repr__(self) -> str:
         """Return version range string.
@@ -474,14 +475,14 @@ def get_requested_versions(
         if minv == maxv:
             versions = set([minv] if minv in supported(impl) else tuple())
         else:
-            versions = set(v for v in supported(impl) if minv <= v < maxv)
+            versions = {v for v in supported(impl) if minv <= v < maxv}
 
     if available:
         interpreter = Interpreter(impl=impl)
-        versions = set(v for v in versions if exists(interpreter.binary(v)))
+        versions = {v for v in versions if exists(interpreter.binary(v))}
     elif available is False:
         interpreter = Interpreter(impl=impl)
-        versions = set(v for v in versions if not exists(interpreter.binary(v)))
+        versions = {v for v in versions if not exists(interpreter.binary(v))}
 
     return versions
 

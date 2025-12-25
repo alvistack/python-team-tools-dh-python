@@ -3,9 +3,10 @@ import logging
 import platform
 import unittest
 from argparse import Namespace
-from unittest.mock import patch
+from collections.abc import Callable, Sequence
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Sequence, cast
+from typing import Any, cast
+from unittest.mock import patch
 
 from dhpython.fs import ScanResult
 from dhpython.pydist import PyDist, Standard

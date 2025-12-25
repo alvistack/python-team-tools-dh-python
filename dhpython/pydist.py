@@ -26,10 +26,11 @@ import os
 import re
 import subprocess
 from argparse import Namespace
+from collections.abc import Callable
 from enum import Enum, StrEnum, auto
 from functools import cache, partial
 from os.path import exists, isdir, join
-from typing import Callable, Literal, NamedTuple, TypedDict, cast
+from typing import Literal, NamedTuple, TypedDict, cast
 
 if __name__ == "__main__":
     import sys
@@ -190,7 +191,7 @@ def load(impl: str) -> dict[str, list[PyDist]]:
         to_check.extend(join(dname, i) for i in os.listdir(dname))
 
     fbdir = os.environ.get("DH_PYTHON_DIST", "/usr/share/dh-python/dist/")
-    fbname = join(fbdir, "{}_fallback".format(impl))
+    fbname = join(fbdir, f"{impl}_fallback")
     if exists(fbname):  # fall back generated at dh-python build time
         to_check.append(fbname)  # last one!
 
@@ -203,7 +204,7 @@ def load(impl: str) -> dict[str, list[PyDist]]:
                 if line.startswith("#") or not line:
                     continue
                 if not (m := PYDIST_RE.search(line)):
-                    raise Exception("invalid pydist line: %s (in %s)" % (line, fpath))
+                    raise Exception(f"invalid pydist line: {line} (in {fpath})")
                 data = m.groupdict()
                 dist = PyDist(
                     name=normalize_name(data["name"]),
@@ -645,7 +646,7 @@ def parse_pydep(
     section: str | None = None
     modification = RequirementModification(action=ModificationAction.KEEP)
     processed = []
-    with open(fname, "r", encoding="utf-8") as fp:
+    with open(fname, encoding="utf-8") as fp:
         for line in fp:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -737,7 +738,7 @@ def parse_requires_dist(
     )
     result = NewDependencies(depends=[], recommends=[], suggests=[])
     section = None
-    with open(fname, "r", encoding="utf-8") as fp:
+    with open(fname, encoding="utf-8") as fp:
         metadata = email.message_from_string(fp.read())
     requires = metadata.get_all("Requires-Dist", [])
     result_key: Literal["depends", "recommends", "suggests"]
@@ -775,9 +776,7 @@ def sensible_pname(impl: str, dist_name: str) -> str:
 
 def ci_regexp(name: str) -> str:
     """Return case insensitive dpkg -S regexp."""
-    return "".join(
-        "[%s%s]" % (i.upper(), i) if i.isalpha() else i for i in name.lower()
-    )
+    return "".join(f"[{i.upper()}{i}]" if i.isalpha() else i for i in name.lower())
 
 
 PEP386_PRE_VER_RE = re.compile(r"[-.]?(alpha|beta|rc|dev|a|b|c)")

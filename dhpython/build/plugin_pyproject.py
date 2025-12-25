@@ -22,7 +22,8 @@
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, override
+from typing import override
+from collections.abc import Iterator
 import logging
 import os.path as osp
 import shutil

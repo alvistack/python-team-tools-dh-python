@@ -24,12 +24,13 @@ import os
 import re
 import sys
 from argparse import Namespace
+from collections.abc import Iterable, Sequence
 from filecmp import cmp as cmpfile
 from os.path import lexists, exists, isdir, islink, join, realpath, split, splitext
 from pathlib import Path
 from shutil import rmtree
 from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
-from typing import Iterable, Literal, Sequence, TypedDict
+from typing import Literal, TypedDict
 
 from dhpython import MULTIARCH_DIR_TPL
 from dhpython.tools import fix_shebang, clean_egg_name
@@ -180,7 +181,7 @@ def merge_WHEEL(src: str | Path, dst: str | Path) -> int:
     """
     log.debug("Merging WHEEL file %s into %s", src, dst)
     missing = missing_lines(src, dst)
-    with open(dst, "at", encoding="UTF-8") as fh:
+    with open(dst, "a", encoding="UTF-8") as fh:
         for line in missing:
             if line.startswith("Tag: "):
                 fh.write(line)

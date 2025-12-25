@@ -20,6 +20,7 @@
 
 import logging
 from argparse import Namespace
+from collections.abc import Callable
 from functools import wraps
 from glob import glob1
 from os import environ, remove, walk, makedirs
@@ -30,7 +31,6 @@ from shutil import rmtree, copyfile, copytree, which
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     ClassVar,
     Concatenate,
     Literal,
@@ -81,7 +81,7 @@ def copy_test_files(
                 tpl = tpl.format(i=args['interpreter'].name,
                                  v=args['version'],
                                  m=args['version'].major)
-                fpath = join(args['dir'], 'debian/pybuild{}.testfiles'.format(tpl))
+                fpath = join(args['dir'], f'debian/pybuild{tpl}.testfiles')
                 if exists(fpath):
                     with open(fpath, encoding='utf-8') as fp:
                         # overwrite files_to_copy if .testfiles file found
@@ -227,9 +227,9 @@ class Base:
 
         dh = DebHelper(build_options())
         # Plugins that rely on repository contents to build MANIFEST
-        clean_sources_txt = not set(
-            ('python3-setuptools-scm', 'python3-setuptools-git')
-        ).intersection(set(dh.build_depends))
+        clean_sources_txt = not {
+            'python3-setuptools-scm', 'python3-setuptools-git'
+        }.intersection(set(dh.build_depends))
 
         for root, dirs, file_names in walk(context['dir']):
             for name in dirs[:]:
@@ -430,7 +430,7 @@ def shell_command(
 
         log_file: str | Literal[False]
         if self.cfg.quiet:
-            log_file = join(args['home_dir'], '{}_cmd.log'.format(func.__name__))
+            log_file = join(args['home_dir'], f'{func.__name__}_cmd.log')
         else:
             log_file = False
 

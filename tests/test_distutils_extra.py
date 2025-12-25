@@ -28,7 +28,7 @@ class TestDistutilsExtra(unittest.TestCase):
         {
             "compile": False,
             "dist-info": set(),
-            "egg-info": set(("PKG-INFO",)),
+            "egg-info": {"PKG-INFO"},
             "ext_no_version": set(),
             "ext_stableabi": set(),
             "ext_vers": set(),

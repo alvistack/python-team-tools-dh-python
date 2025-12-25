@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 # Copyright © 2010-2013 Piotr Ożarowski <piotr@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,6 +21,7 @@
 import logging
 import os
 import re
+from collections.abc import Callable, Iterable
 from contextlib import ExitStack
 from datetime import datetime
 from functools import cache
@@ -30,7 +30,7 @@ from shutil import rmtree
 from os.path import exists, getsize, isdir, islink, join, split
 from pathlib import Path
 from subprocess import Popen, PIPE
-from typing import Callable, Iterable, Literal, TextIO, NamedTuple, overload
+from typing import Literal, TextIO, NamedTuple, overload
 
 
 log = logging.getLogger("dhpython")
@@ -127,7 +127,7 @@ def fix_shebang(fpath: str | Path, replacement: str | None = None) -> bool | Non
         try:
             with open(fpath, "rb") as fp:
                 fcontent = fp.readlines()
-        except IOError:
+        except OSError:
             log.error("cannot open %s", fpath)
             return False
         # do not catch IOError here, the file is zeroed at this stage so it's
@@ -175,7 +175,7 @@ def parse_ns(
     """Parse namespace_packages.txt files."""
     result = set(other or [])
     for fpath in fpaths:
-        with open(fpath, "r", encoding="utf-8") as fp:
+        with open(fpath, encoding="utf-8") as fp:
             for line in fp:
                 if line:
                     result.add(line.strip())
@@ -286,10 +286,8 @@ def execute(
                     open(log_output, "a", encoding="utf-8")
                 )
             assert isinstance(log_output, TextIO)
-            log_output.write(
-                "\n# command executed on {}".format(datetime.now().isoformat())
-            )
-            log_output.write("\n$ {}\n".format(command))
+            log_output.write(f"\n# command executed on {datetime.now().isoformat()}")
+            log_output.write(f"\n$ {command}\n")
             log_output.flush()
             output = log_output
 
@@ -382,7 +380,7 @@ def pyremove(interpreter: "Interpreter", package: str, vrange: str) -> None:
             if not line.strip() or line.startswith("#"):
                 continue
             if not (m := REMOVE_RE.match(line)):
-                raise ValueError("unrecognized line: %s: %s" % (package, line))
+                raise ValueError(f"unrecognized line: {package}: {line}")
             details = m.groupdict()
             myvers = versions & get_requested_versions(impl, details["vrange"])
             if not myvers:

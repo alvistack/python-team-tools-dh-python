@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 # Copyright © 2010-2013 Piotr Ożarowski <piotr@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
