@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from functools import cache, partial
 from os.path import exists, isdir, join
@@ -150,6 +151,15 @@ class RequirementModification(NamedTuple):
     alternative: str | None = None
 
 
+@dataclass
+class PyDist:
+    name: str
+    versions: set[Version]
+    dependency: str
+    standard: Standard | None
+    rules: list[str]
+
+
 def validate(fpath: str) -> bool:
     """Check if pydist file looks good."""
     with open(fpath, encoding="utf-8") as fp:
@@ -163,14 +173,6 @@ def validate(fpath: str) -> bool:
                 )
                 return False
     return True
-
-
-class PyDist(TypedDict):
-    name: str
-    versions: set[Version]
-    dependency: str
-    standard: Standard | None
-    rules: list[str]
 
 
 @cache
@@ -213,7 +215,7 @@ def load(impl: str) -> dict[str, list[PyDist]]:
                     rules=data["rules"].split(";") if data["rules"] else [],
                     standard=cast(Standard | None, data["standard"]),
                 )
-                result.setdefault(dist["name"], []).append(dist)
+                result.setdefault(dist.name, []).append(dist)
     return result
 
 
@@ -278,17 +280,17 @@ def guess_dependency(
     if details:
         log.debug("dependency: module %s is known to pydist: %r", name, details)
         for item in details:
-            if version and version not in item.get("versions", version):
+            if version and version not in item.versions:
                 # rule doesn't match version, try next one
                 continue
-            if not item["dependency"]:
+            if not item.dependency:
                 log.debug("dependency: requirement ignored")
                 return None  # this requirement should be ignored
-            if item["dependency"].endswith(")"):
+            if item.dependency.endswith(")"):
                 # no need to translate versions if version is hardcoded in
                 # Debian dependency
                 log.debug("dependency: requirement already has hardcoded version")
-                return merge_marker(item["dependency"])
+                return merge_marker(item.dependency)
             if req_d["operator"] == "==" and req_d["version"].endswith("*"):
                 # Translate "== 1.*" to "~= 1.0"
                 req_d["operator"] = "~="
@@ -296,11 +298,11 @@ def guess_dependency(
                 log.debug("dependency: translated wildcard version to semver limit")
             if (
                 req_d["version"]
-                and (item["standard"] or item["rules"])
+                and (item.standard or item.rules)
                 and req_d["operator"] not in (None, "!=")
             ):
                 o = _translate_op(req_d["operator"])
-                v = _translate(req_d["version"], item["rules"], item["standard"])
+                v = _translate(req_d["version"], item.rules, item.standard)
                 if req_d["operator"] == "==" and req_d["operator2"] is None:
                     # Loosen for Debian revisions
                     m = re.search(r"(.*)(\d+)(\D*)$", v)
@@ -311,24 +313,24 @@ def guess_dependency(
                     else:
                         max_v = v + ".0~"
                     d = (
-                        merge_marker(f"{item['dependency']} (>= {v})")
+                        merge_marker(f"{item.dependency} (>= {v})")
                         + ", "
-                        + merge_marker(f"{item['dependency']} (<< {max_v})")
+                        + merge_marker(f"{item.dependency} (<< {max_v})")
                     )
                 else:
-                    d = merge_marker(f"{item['dependency']} ({o} {v})")
+                    d = merge_marker(f"{item.dependency} ({o} {v})")
                 if req_d["version2"] and req_d["operator2"] not in (None, "!="):
                     o2 = _translate_op(req_d["operator2"])
-                    v2 = _translate(req_d["version2"], item["rules"], item["standard"])
-                    d += ", " + merge_marker(f"{item['dependency']} ({o2} {v2})")
+                    v2 = _translate(req_d["version2"], item.rules, item.standard)
+                    d += ", " + merge_marker(f"{item.dependency} ({o2} {v2})")
                 elif req_d["operator"] == "~=":
                     o2 = "<<"
                     v2 = _translate(
                         _max_compatible(req_d["version"]),
-                        item["rules"],
-                        item["standard"],
+                        item.rules,
+                        item.standard,
                     )
-                    d += ", " + merge_marker(f"{item['dependency']} ({o2} {v2})")
+                    d += ", " + merge_marker(f"{item.dependency} ({o2} {v2})")
                 log.debug("dependency: constructed version")
                 return d
             elif (
@@ -337,36 +339,31 @@ def guess_dependency(
                 and req_d["operator"] not in (None, "!=")
             ):
                 o = _translate_op(req_d["operator"])
-                d = merge_marker(f"{item['dependency']} ({o} {req_d['version']})")
+                d = merge_marker(f"{item.dependency} ({o} {req_d['version']})")
                 if req_d["version2"] and req_d["operator2"] not in (None, "!="):
                     o2 = _translate_op(req_d["operator2"])
                     d += ", " + merge_marker(
-                        f"{item['dependency']} ({o2} {req_d['version2']})"
+                        f"{item.dependency} ({o2} {req_d['version2']})"
                     )
                 elif req_d["operator"] == "~=":
                     o2 = "<<"
                     d += ", " + merge_marker(
-                        f"{item['dependency']} "
-                        f"({o2} {_max_compatible(req_d['version'])})"
+                        f"{item.dependency} ({o2} {_max_compatible(req_d['version'])})"
                     )
                 log.debug("dependency: constructed upstream version")
                 return d
             else:
-                if item["dependency"] in bdep:
-                    if (
-                        None in bdep[item["dependency"]]
-                        and bdep[item["dependency"]][None]
-                    ):
+                if item.dependency in bdep:
+                    if None in bdep[item.dependency] and bdep[item.dependency][None]:
                         log.debug("dependency: included in build-deps with limits ")
                         return merge_marker(
-                            f"{item['dependency']} "
-                            f"({bdep[item['dependency']][None]})"
+                            f"{item.dependency} ({bdep[item.dependency][None]})"
                         )
-                    # if arch in bdep[item['dependency']]:
+                    # if arch in bdep[item.dependency]:
                     # TODO: handle architecture specific dependencies from build depends
                     #       (current architecture is needed here)
                 log.debug("dependency: included in build-deps")
-                return merge_marker(item["dependency"])
+                return merge_marker(item.dependency)
 
     # search for Egg metadata file or directory (using dpkg -S)
     dpkg_query_tpl, regex_filter = PYDIST_DPKG_SEARCH_TPLS[impl]
