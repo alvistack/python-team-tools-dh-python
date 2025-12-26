@@ -32,25 +32,25 @@ class BuildSystem(Base):
     @override
     def clean(self, context: Context, args: Args) -> str:
         super().clean(context, args)
-        return args['args']
+        return args.args
 
     @shell_command
     @override
     def configure(self, context: Context, args: Args) -> str:
-        return args['args']
+        return args.args
 
     @shell_command
     @override
     def build(self, context: Context, args: Args) -> str:
-        return args['args']
+        return args.args
 
     @shell_command
     @override
     def install(self, context: Context, args: Args) -> str:
-        return args['args']
+        return args.args
 
     @copy_test_files()
     @shell_command
     @override
     def test(self, context: Context, args: Args) -> str:
-        return args['args'] or super().test_cmd(context, args)
+        return args.args or super().test_cmd(context, args)

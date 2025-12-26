@@ -286,40 +286,36 @@ def main(cfg: PybuildOptions) -> None:
         destdir = abspath(destdir)
 
         args = Args(
-            {
-                "ENV": {},
-                "autopkgtest": cfg.autopkgtest_only,
-                "package": package,
-                "interpreter": ipreter,
-                "version": version,
-                "args": get_option("%s_args" % step, interpreter, version, ""),
-                "dir": abspath(context.dir.format(version=version, interpreter=i)),
-                "destdir": destdir,
-                "build_dir": abspath(build_dir.format(version=version, interpreter=i)),
-                # versioned dist-packages even for Python 3.X - dh_python3 will fix it later
-                # (and will have a chance to compare files)
-                "install_dir": get_option(
-                    "install_dir",
-                    interpreter,
-                    version,
-                    DEFAULT_INSTALL_DIR,
-                ).format(version=version, interpreter=i),
-                "home_dir": abspath(home_dir),
-            }
+            ENV={},
+            autopkgtest=cfg.autopkgtest_only,
+            package=package,
+            interpreter=ipreter,
+            version=version,
+            args=get_option("%s_args" % step, interpreter, version, ""),
+            dir=abspath(context.dir.format(version=version, interpreter=i)),
+            destdir=destdir,
+            build_dir=abspath(build_dir.format(version=version, interpreter=i)),
+            # versioned dist-packages even for Python 3.X - dh_python3 will fix it later
+            # (and will have a chance to compare files)
+            install_dir=get_option(
+                "install_dir",
+                interpreter,
+                version,
+                DEFAULT_INSTALL_DIR,
+            ).format(version=version, interpreter=i),
+            home_dir=abspath(home_dir),
         )
-        args.update(context.args)  # type: ignore
-        env = args["ENV"]
-        pp_str = env.get("PYTHONPATH", context.ENV.get("PYTHONPATH"))
+        for k, v in context.args.items():
+            setattr(args, k, v)
+        pp_str = args.ENV.get("PYTHONPATH", context.ENV.get("PYTHONPATH"))
         pp = pp_str.split(":") if pp_str else []
         if step in {"build", "test", "autopkgtest"}:
             if step in {"test", "autopkgtest"}:
-                args["test_dir"] = join(
-                    args["destdir"], args["install_dir"].lstrip("/")
-                )
-                if args["test_dir"] not in pp:
-                    pp.append(args["test_dir"])
-            if args["build_dir"] not in pp:
-                pp.append(args["build_dir"])
+                args.test_dir = join(args.destdir, args.install_dir.lstrip("/"))
+                if args.test_dir not in pp:
+                    pp.append(args.test_dir)
+            if args.build_dir not in pp:
+                pp.append(args.build_dir)
         # cross compilation support for Python 2.x
         if version.major == 2 and arch_data.get("DEB_BUILD_ARCH") != arch_data.get(
             "DEB_HOST_ARCH"
@@ -330,24 +326,23 @@ def main(cfg: PybuildOptions) -> None:
                     version, arch_data["DEB_HOST_MULTIARCH"]
                 ),
             )
-        env["PYTHONPATH"] = ":".join(pp)
+        args.ENV["PYTHONPATH"] = ":".join(pp)
         # cross compilation support for Python <= 3.8 (see above)
         if version.major == 3:
             name = "_PYTHON_SYSCONFIGDATA_NAME"
-            value = env.get(name, context.ENV.get(name, ""))
+            value = args.ENV.get(name, context.ENV.get(name, ""))
             if (
                 version << "3.8"
                 and value.startswith("_sysconfigdata_")
                 and not value.startswith("_sysconfigdata_m")
             ):
-                value = env[name] = "_sysconfigdata_m%s" % value[15:]
+                value = args.ENV[name] = "_sysconfigdata_m%s" % value[15:]
             # update default from main() for -dbg interpreter
             if value and ipreter.debug and not value.startswith("_sysconfigdata_d"):
-                env[name] = "_sysconfigdata_d%s" % value[15:]
-        args["ENV"] = env
+                args.ENV[name] = "_sysconfigdata_d%s" % value[15:]
 
-        if not exists(args["build_dir"]):
-            makedirs(args["build_dir"])
+        if not exists(args.build_dir):
+            makedirs(args.build_dir)
 
         return args
 
@@ -380,24 +375,23 @@ def main(cfg: PybuildOptions) -> None:
         step = Step(func.__func__.__name__)  # type: ignore
         args = get_args(context, step, version, interpreter)
         env = dict(context.ENV)
-        if "ENV" in args:
-            env.update(args["ENV"])
+        env.update(args.ENV)
 
         before_cmd = get_option(f"before_{step}", interpreter, version)
         if before_cmd:
             log_file: str | Literal[False]
             if cfg.quiet:
-                log_file = join(args["home_dir"], f"before_{step}_cmd.log")
+                log_file = join(args.home_dir, f"before_{step}_cmd.log")
             else:
                 log_file = False
-            command = before_cmd.format(**args)
+            command = args.format(before_cmd)
             log.info(command)
             output = execute(command, cwd=context.dir, env=env, log_output=log_file)
             if output.returncode != 0:
                 msg = f"exit code={output.returncode}: {command}"
                 raise Exception(msg)
 
-        fpath = join(args["home_dir"], "testfiles_to_rm_before_install")
+        fpath = join(args.home_dir, "testfiles_to_rm_before_install")
         if step == Step.INSTALL and exists(fpath):
             with open(fpath, encoding="UTF-8") as fp:
                 for line in fp:
@@ -413,10 +407,10 @@ def main(cfg: PybuildOptions) -> None:
         after_cmd = get_option(f"after_{step}", interpreter, version)
         if after_cmd:
             if cfg.quiet:
-                log_file = join(args["home_dir"], f"after_{step}_cmd.log")
+                log_file = join(args.home_dir, f"after_{step}_cmd.log")
             else:
                 log_file = False
-            command = after_cmd.format(**args)
+            command = args.format(after_cmd)
             log.info(command)
             output = execute(command, cwd=context.dir, env=env, log_output=log_file)
             if output.returncode != 0:
@@ -435,7 +429,7 @@ def main(cfg: PybuildOptions) -> None:
         if ext_destdir:
             assert ext_pattern
             move_matching_files(
-                args["destdir"],
+                args.destdir,
                 ext_destdir,
                 ext_pattern,
                 get_option("ext_sub_pattern", i, version),

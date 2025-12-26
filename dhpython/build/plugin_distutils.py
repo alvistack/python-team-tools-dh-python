@@ -66,22 +66,22 @@ def create_pydistutils_cfg(
         *oargs: P.args,
         **kwargs: P.kwargs
     ) -> T:
-        fpath = join(args['home_dir'], '.pydistutils.cfg')
+        fpath = join(args.home_dir, '.pydistutils.cfg')
         if not exists(fpath):
             with open(fpath, 'w', encoding='utf-8') as fp:
                 lines = ['[clean]\n',
                          'all=1\n',
                          '[build]\n',
-                         'build_lib={}\n'.format(args['build_dir']),
+                         'build_lib={}\n'.format(args.build_dir),
                          '[install]\n',
                          'force=1\n',
                          'install_layout=deb\n',
                          'install_scripts=$base/bin\n',
-                         'install_lib={}\n'.format(args['install_dir']),
+                         'install_lib={}\n'.format(args.install_dir),
                          'prefix=/usr\n']
                 log.debug('pydistutils config file:\n%s', ''.join(lines))
                 fp.writelines(lines)
-        context.ENV['HOME'] = args['home_dir']
+        context.ENV['HOME'] = args.home_dir
         return func(self, context, args, *oargs, **kwargs)
 
     return wrapped_func
@@ -112,7 +112,7 @@ class BuildSystem(Base):
     @override
     def clean(self, context: Context, args: Args) -> str | Literal[0]:
         super().clean(context, args)
-        if exists(args['interpreter'].binary()):
+        if exists(args.interpreter.binary()):
             return '{interpreter} {setup_py} clean {args}'
         return 0  # no need to invoke anything
 
@@ -138,27 +138,27 @@ class BuildSystem(Base):
         except ImportError:
             raise Exception("wheel is required to build wheels for distutils/setuptools packages. Build-Depend on python3-wheel.")
         # Don't build a wheel in the deb install layout
-        fpath = join(args['home_dir'], '.pydistutils.cfg')
+        fpath = join(args.home_dir, '.pydistutils.cfg')
         remove(fpath)
         return '{interpreter.binary_dv} -c "import setuptools, runpy; runpy.run_path(\'{setup_py}\')" bdist_wheel {args}'
 
     @override
     def build_wheel(self, context: Context, args: Args) -> None:
         self._bdist_wheel(context, args)
-        dist_dir = join(args['dir'], 'dist')
+        dist_dir = join(args.dir, 'dist')
         wheels = glob1(dist_dir, '*.whl')
         n_wheels = len(wheels)
         if n_wheels != 1:
             raise Exception(f"Expected 1 wheel, found {n_wheels}")
-        move(join(dist_dir, wheels[0]), args['home_dir'])
+        move(join(dist_dir, wheels[0]), args.home_dir)
 
     @shell_command
     @create_pydistutils_cfg
     @override
     def install(self, context: Context, args: Args) -> str:
         # remove egg-info dirs from build_dir
-        for fname in glob1(args['build_dir'], '*.egg-info'):
-            fpath = join(args['build_dir'], fname)
+        for fname in glob1(args.build_dir, '*.egg-info'):
+            fpath = join(args.build_dir, fname)
             if isdir(fpath):
                 rmtree(fpath)
             else:

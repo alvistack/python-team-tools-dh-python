@@ -25,11 +25,9 @@ from glob import glob1
 from os import environ, remove, walk, makedirs
 from os.path import exists, isdir, join
 from pathlib import Path
-from shlex import quote
 from shutil import rmtree, copyfile, copytree, which
 from typing import (
     TYPE_CHECKING,
-    Any,
     ClassVar,
     Concatenate,
     Literal,
@@ -78,10 +76,10 @@ def copy_test_files(
             files_to_copy = {'pyproject.toml', 'pytest.ini', 'test', 'tests'}
             # check debian/pybuild_pythonX.Y.testfiles
             for tpl in ('_{i}{v}', '_{i}{m}', ''):
-                tpl = tpl.format(i=args['interpreter'].name,
-                                 v=args['version'],
-                                 m=args['version'].major)
-                fpath = join(args['dir'], f'debian/pybuild{tpl}.testfiles')
+                tpl = tpl.format(i=args.interpreter.name,
+                                 v=args.version,
+                                 m=args.version.major)
+                fpath = join(args.dir, f'debian/pybuild{tpl}.testfiles')
                 if exists(fpath):
                     with open(fpath, encoding='utf-8') as fp:
                         # overwrite files_to_copy if .testfiles file found
@@ -102,8 +100,8 @@ def copy_test_files(
                 if not dest_suffix or dest_suffix.endswith('/'):
                     dest_suffix = join(dest_suffix, name.rsplit('/', 1)[-1])
 
-                src_dpath = join(args['dir'], name)
-                dst_dpath = join(dest.format(**args), dest_suffix)
+                src_dpath = join(args.dir, name)
+                dst_dpath = join(args.format(dest), dest_suffix)
                 if exists(src_dpath):
                     if not exists(dst_dpath):
                         log.debug("Copying %s to %s for tests", src_dpath, dst_dpath)
@@ -113,12 +111,12 @@ def copy_test_files(
                         else:
                             copyfile(src_dpath, dst_dpath)
                         files_to_remove.add(dst_dpath + '\n')
-                    if not args['args'] and 'PYBUILD_TEST_ARGS' not in context.ENV\
+                    if not args.args and 'PYBUILD_TEST_ARGS' not in context.ENV\
                        and (self.cfg.test_pytest or self.cfg.test_nose) \
                        and name in add_to_args:
-                        args['args'] = name
+                        args.args = name
             if files_to_remove and filelist:
-                with open(filelist.format(**args), 'a', encoding="UTF-8") as fp:
+                with open(args.format(filelist), 'a', encoding="UTF-8") as fp:
                     fp.writelines(files_to_remove)
 
             return func(self, context, args, *oargs, **kwargs)
@@ -206,7 +204,7 @@ class Base:
         return result
 
     def clean(self, context: Context, args: Args) -> None:
-        tox_dir = join(args['dir'], '.tox')
+        tox_dir = join(args.dir, '.tox')
         if isdir(tox_dir):
             try:
                 rmtree(tox_dir)
@@ -284,11 +282,11 @@ class Base:
             return 'cd {build_dir}; {interpreter} -m pytest {args}'
         elif self.cfg.test_tox:
             tox_config = None
-            if exists(join(args['dir'], 'tox.ini')):
+            if exists(join(args.dir, 'tox.ini')):
                 tox_config = '{dir}/tox.ini'
-            elif exists(join(args['dir'], 'pyproject.toml')):
+            elif exists(join(args.dir, 'pyproject.toml')):
                 tox_config = '{dir}/pyproject.toml'
-            elif exists(join(args['dir'], 'setup.cfg')):
+            elif exists(join(args.dir, 'setup.cfg')):
                 tox_config = '{dir}/setup.cfg'
             else:
                 raise Exception("tox config not found. "
@@ -301,16 +299,16 @@ class Base:
                    '-e', 'py{version.major}{version.minor}',
                    '-x', 'testenv.passenv+=_PYTHON_HOST_PLATFORM',
             ]
-            if args['autopkgtest']:
+            if args.autopkgtest:
                 tox_cmd += ['--skip-pkg-install']
 
-            if not args['autopkgtest']:
+            if not args.autopkgtest:
                 wheel = self.built_wheel(context, args)
                 if not wheel:
                     self.build_wheel(context, args)
                     wheel = self.built_wheel(context, args)
                 assert wheel
-                args['wheel'] = wheel
+                args.wheel = wheel
                 tox_cmd += ['--installpkg', '{wheel}']
 
             tox_cmd.append('{args}')
@@ -331,7 +329,7 @@ class Base:
                 "test discovery problems.\nUse --test-unittest to explicitly "
                 "select the unittest runner.")
             # As this is the fallback option, we allow 0 discovered tests.
-            args['ignore_no_tests'] = True
+            args.ignore_no_tests = True
             return 'cd {build_dir}; {interpreter} -m unittest discover -v {args}'
 
     def build_wheel(self, context: Context, args: Args) -> None:
@@ -340,7 +338,7 @@ class Base:
     def built_wheel(self, context: Context, args: Args) -> str | None:
         """Return the path to any built wheels we can find"""
         # pylint: disable=unused-argument
-        wheels = list(Path(args['home_dir']).glob('*.whl'))
+        wheels = list(Path(args.home_dir).glob('*.whl'))
         n_wheels = len(wheels)
         if n_wheels > 1:
             raise Exception(f"Expecting to have built exactly 1 wheel, but found {n_wheels}")
@@ -380,10 +378,9 @@ class Base:
     ) -> ExecutionResult | ExecutionResultWithOutput:
         if log_file is False and self.cfg.really_quiet:
             log_file = None
-        command = command.format(**args)
+        command = args.format(command)
         env = dict(context.ENV)
-        if 'ENV' in args:
-            env.update(args['ENV'])
+        env.update(args.ENV)
         log.info(command)
         return execute(command, cwd=context.dir, env=env, log_output=log_file)
 
@@ -393,15 +390,15 @@ class Base:
         if len(cfg.print_args) == 1 and len(cfg.interpreter) == 1 and '{version}' not in cfg.interpreter[0]:
             i = cfg.print_args[0]
             if '{' in i:
-                print(i.format(**args))
+                print(args.format(i))
             else:
-                print(args.get(i, ''))
+                print(args.as_dict().get(i, ''))
         else:
             for i in cfg.print_args:
                 if '{' in i:
-                    print(i.format(**args))
+                    print(args.format(i))
                 else:
-                    print('{} {}: {}'.format(args['interpreter'], i, args.get(i, '')))
+                    print('{} {}: {}'.format(args.interpreter, i, args.as_dict().get(i, '')))
 
 
 def shell_command(
@@ -426,26 +423,19 @@ def shell_command(
             log.warning('missing command '
                      '(plugin=%s, method=%s, interpreter=%s, version=%s)',
                      self.NAME, func.__name__,
-                     args.get('interpreter'), args.get('version'))
+                     args.interpreter, args.version)
             return
 
         log_file: str | Literal[False]
         if self.cfg.quiet:
-            log_file = join(args['home_dir'], f'{func.__name__}_cmd.log')
+            log_file = join(args.home_dir, f'{func.__name__}_cmd.log')
         else:
             log_file = False
 
-        quoted_args: dict[str, Any] = {}
-        for k, v in args.items():
-            if k in ('dir', 'destdir') or k.endswith('_dir'):
-                assert isinstance(v, str)
-                quoted_args[k] = quote(v)
-            else:
-                quoted_args[k] = v
-        command = command.format(**quoted_args)
+        command = args.format_quoted(command)
 
         output = self.execute(context, args, command=command, log_file=log_file)
-        if output.returncode == 5 and args.get('ignore_no_tests', False):
+        if output.returncode == 5 and args.ignore_no_tests:
             # Temporary hack (see Base.test)
             pass
         elif output.returncode != 0:
@@ -503,7 +493,7 @@ def create_setuptools_parallel_cfg(
             *oargs: P.args,
             **kwargs: P.kwargs,
         ) -> T:
-            fpath = join(args['home_dir'], 'setuptools-build_ext-parallel.cfg')
+            fpath = join(args.home_dir, 'setuptools-build_ext-parallel.cfg')
             if not exists(fpath):
                 with open(fpath, 'w', encoding='utf-8') as fp:
                     lines = ['[build_ext]\n',

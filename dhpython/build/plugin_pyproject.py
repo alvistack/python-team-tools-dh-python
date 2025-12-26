@@ -96,11 +96,10 @@ class BuildSystem(Base):
     @override
     def clean(self, context: Context, args: Args) -> None:
         super().clean(context, args)
-        if osp.exists(args['interpreter'].binary()):
-            log.debug("removing '%s' (and everything under it)",
-                      args['build_dir'])
-            if osp.isdir(args['build_dir']):
-                shutil.rmtree(args['build_dir'])
+        if osp.exists(args.interpreter.binary()):
+            log.debug("removing '%s' (and everything under it)", args.build_dir)
+            if osp.isdir(args.build_dir):
+                shutil.rmtree(args.build_dir)
 
     @override
     def configure(self, context: Context, args: Args) -> None:
@@ -121,7 +120,7 @@ class BuildSystem(Base):
             return [
                 # build_dir is where we unpack the wheel, so we need to build
                 # elsewhere.
-                f"build-dir={args['home_dir']}/meson-build",
+                f"build-dir={args.home_dir}/meson-build",
                 "compile-args=--verbose",
                 # From Debhelper's meson.pm
                 "setup-args=--wrap-mode=nodownload",
@@ -137,14 +136,13 @@ class BuildSystem(Base):
     @override
     def build_wheel(self, context: Context, args: Args) -> str:
         """ build a wheel using the PEP517 builder defined by upstream """
-        log.info('Building wheel for %s with "build" module',
-                 args['interpreter'])
+        log.info('Building wheel for %s with "build" module', args.interpreter)
         config_settings = self._backend_config_settings(args)
         context.ENV['FLIT_NO_NETWORK'] = '1'
-        context.ENV['HOME'] = args['home_dir']
+        context.ENV['HOME'] = args.home_dir
         return ('{interpreter} -m build '
                 '--skip-dependency-check --no-isolation --wheel '
-                '--outdir ' + args['home_dir'] + ' ' +
+                '--outdir ' + args.home_dir + ' ' +
                 ' '.join(('--config-setting ' + setting)
                          for setting in config_settings) +
                 ' {args}'
@@ -164,11 +162,10 @@ class BuildSystem(Base):
 
     def unpack_wheel(self, context: Context, args: Args) -> None:
         """ unpack the wheel into pybuild's normal  """
-        log.info('Unpacking wheel built for %s with "installer" module',
-                 args['interpreter'])
+        log.info('Unpacking wheel built for %s with "installer" module', args.interpreter)
         extras = {}
         for extra in ('scripts', 'data', 'include'):
-            path = Path(args["home_dir"]) / extra
+            path = Path(args.home_dir) / extra
             if path.exists():
                 log.warning('%s directory already exists, skipping unpack. '
                             'Is the Python package being built twice?',
@@ -177,13 +174,13 @@ class BuildSystem(Base):
             extras[extra] = str(path)
         destination = SchemeDictionaryDestination(
             {
-                'platlib': args['build_dir'],
-                'purelib': args['build_dir'],
-                'scripts': extras['scripts'],
-                'data': extras['data'],
-                'headers': extras['include'],
+                'platlib': args.build_dir,
+                'purelib': args.build_dir,
+                'scripts': extras["scripts"],
+                'data': extras["data"],
+                'headers': extras["include"],
             },
-            interpreter=args['interpreter'].binary_dv,
+            interpreter=args.interpreter.binary_dv,
             script_kind='posix',
         )
 
@@ -196,8 +193,7 @@ class BuildSystem(Base):
 
     @override
     def install(self, context: Context, args: Args) -> None:
-        log.info('Copying package built for %s to destdir',
-                 args['interpreter'])
+        log.info('Copying package built for %s to destdir', args.interpreter)
         try:
             paths = sysconfig.get_paths(scheme='deb_system')
         except KeyError:
@@ -207,7 +203,7 @@ class BuildSystem(Base):
 
         # start by copying the data, scripts, and headers
         for extra in ('data', 'scripts', 'include'):
-            src_dir = Path(args['home_dir']) / extra
+            src_dir = Path(args.home_dir) / extra
             if not src_dir.exists():
                 continue
             if extra == 'include':
@@ -216,11 +212,11 @@ class BuildSystem(Base):
                         source.read_dist_info("METADATA")
                     )
                     extra_path = osp.join(
-                        args['interpreter'].include_dir, metadata["Name"]
+                        args.interpreter.include_dir, metadata["Name"]
                     )
             else:
                 extra_path = paths[extra]
-            target_dir = args['destdir'] + extra_path
+            target_dir = args.destdir + extra_path
             log.debug('Copying %s directory contents from %s -> %s',
                       extra, src_dir, target_dir)
             shutil.copytree(
@@ -230,8 +226,8 @@ class BuildSystem(Base):
             )
 
         # then copy the modules
-        module_dir = args['build_dir']
-        target_dir = args['destdir'] + args['install_dir']
+        module_dir = args.build_dir
+        target_dir = args.destdir + args.install_dir
         log.debug('Copying module contents from %s -> %s',
                   module_dir, target_dir)
         shutil.copytree(
@@ -243,8 +239,8 @@ class BuildSystem(Base):
     @shell_command
     @override
     def test(self, context: Context, args: Args) -> str:
-        scripts = Path(args["home_dir"]) / 'scripts'
+        scripts = Path(args.home_dir) / 'scripts'
         if scripts.exists():
             context.ENV['PATH'] = f"{scripts}:{context.ENV['PATH']}"
-        context.ENV['HOME'] = args['home_dir']
+        context.ENV['HOME'] = args.home_dir
         return super().test_cmd(context, args)

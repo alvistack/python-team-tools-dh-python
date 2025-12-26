@@ -18,14 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from dataclasses import dataclass, field, replace
-from typing import NotRequired, TypedDict
+from dataclasses import asdict, dataclass, field, replace
+from typing import Any
+from shlex import quote
 
 from dhpython.interpreter import Interpreter
 from dhpython.version import Version
 
 
-class Args(TypedDict):
+@dataclass
+class Args:
     ENV: dict[str, str]
     args: str
     autopkgtest: bool
@@ -38,12 +40,26 @@ class Args(TypedDict):
     package: str
     version: Version
     # during tests only:
-    test_dir: NotRequired[str]
+    test_dir: str | None = None
     # Injected by base:
-    ignore_no_tests: NotRequired[bool]
-    wheel: NotRequired[str]
+    ignore_no_tests: bool = False
+    wheel: str | None = None
     # Injected by plugin_distutils:
-    setup_py: NotRequired[str]
+    setup_py: str | None = None
+
+    def format(self, template: str) -> str:
+        return template.format(**self.as_dict())
+
+    def format_quoted(self, template: str) -> str:
+        quoted = self.as_dict()
+        for k, v in quoted.items():
+            if v and (k in ('dir', 'destdir') or k.endswith('_dir')):
+                assert isinstance(v, str)
+                quoted[k] = quote(v)
+        return template.format(**quoted)
+
+    def as_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass

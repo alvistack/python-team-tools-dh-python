@@ -41,9 +41,9 @@ class BuildSystem(Base):
     def configure(self, context: Context, args: Args) -> str:
         # Can't be specified on the command line, directly
         # https://github.com/mesonbuild/meson/issues/9671
-        with open(join(args['build_dir'], 'pybuild-meson-native.ini'), 'w', encoding="UTF-8") as f:
+        with open(join(args.build_dir, 'pybuild-meson-native.ini'), 'w', encoding="UTF-8") as f:
             f.write('[binaries]\n')
-            f.write("python3 = '" + args['interpreter'].binary_dv + "'\n")
+            f.write(f"python3 = '{args.interpreter.binary_dv}'\n")
 
         return ('dh_auto_configure --buildsystem=meson'
                 ' --builddirectory={build_dir} --'
