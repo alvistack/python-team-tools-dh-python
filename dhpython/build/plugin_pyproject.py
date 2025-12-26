@@ -140,8 +140,8 @@ class BuildSystem(Base):
         log.info('Building wheel for %s with "build" module',
                  args['interpreter'])
         config_settings = self._backend_config_settings(args)
-        context['ENV']['FLIT_NO_NETWORK'] = '1'
-        context['ENV']['HOME'] = args['home_dir']
+        context.ENV['FLIT_NO_NETWORK'] = '1'
+        context.ENV['HOME'] = args['home_dir']
         return ('{interpreter} -m build '
                 '--skip-dependency-check --no-isolation --wheel '
                 '--outdir ' + args['home_dir'] + ' ' +
@@ -245,6 +245,6 @@ class BuildSystem(Base):
     def test(self, context: Context, args: Args) -> str:
         scripts = Path(args["home_dir"]) / 'scripts'
         if scripts.exists():
-            context['ENV']['PATH'] = f"{scripts}:{context['ENV']['PATH']}"
-        context['ENV']['HOME'] = args['home_dir']
+            context.ENV['PATH'] = f"{scripts}:{context.ENV['PATH']}"
+        context.ENV['HOME'] = args['home_dir']
         return super().test_cmd(context, args)

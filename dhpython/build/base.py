@@ -113,7 +113,7 @@ def copy_test_files(
                         else:
                             copyfile(src_dpath, dst_dpath)
                         files_to_remove.add(dst_dpath + '\n')
-                    if not args['args'] and 'PYBUILD_TEST_ARGS' not in context['ENV']\
+                    if not args['args'] and 'PYBUILD_TEST_ARGS' not in context.ENV\
                        and (self.cfg.test_pytest or self.cfg.test_nose) \
                        and name in add_to_args:
                         args['args'] = name
@@ -185,7 +185,7 @@ class Base:
         for tpl in self.REQUIRED_FILES:
             found = False
             for ftpl in tpl.split('|'):
-                res = glob1(context['dir'], ftpl)
+                res = glob1(context.dir, ftpl)
                 if res:
                     found = True
                     self.DETECTED_REQUIRED_FILES.setdefault(tpl, []).extend(res)
@@ -197,7 +197,7 @@ class Base:
 
         self.DETECTED_OPTIONAL_FILES = {}
         for ftpl, score in self.OPTIONAL_FILES.items():
-            res = glob1(context['dir'], ftpl)
+            res = glob1(context.dir, ftpl)
             if res:
                 result += score
                 self.DETECTED_OPTIONAL_FILES.setdefault(ftpl, []).extend(res)
@@ -214,7 +214,7 @@ class Base:
                 log.debug('cannot remove %s', tox_dir)
 
         for fn in self.CLEAN_FILES:
-            path = join(context['dir'], fn)
+            path = join(context.dir, fn)
             if isdir(path):
                 try:
                     rmtree(path)
@@ -232,7 +232,7 @@ class Base:
             'python3-setuptools-scm', 'python3-setuptools-git'
         }.intersection(set(dh.build_depends))
 
-        for root, dirs, file_names in walk(context['dir']):
+        for root, dirs, file_names in walk(context.dir):
             for name in dirs[:]:
                 if name == '__pycache__' or (
                         clean_sources_txt and name.endswith('.egg-info')):
@@ -381,11 +381,11 @@ class Base:
         if log_file is False and self.cfg.really_quiet:
             log_file = None
         command = command.format(**args)
-        env = dict(context['ENV'])
+        env = dict(context.ENV)
         if 'ENV' in args:
             env.update(args['ENV'])
         log.info(command)
-        return execute(command, cwd=context['dir'], env=env, log_output=log_file)
+        return execute(command, cwd=context.dir, env=env, log_output=log_file)
 
     def print_args(self, context: Context, args: Args) -> None:
         # pylint: disable=unused-argument
@@ -510,7 +510,7 @@ def create_setuptools_parallel_cfg(
                              f'parallel={get_parallel()}\n']
                     log.debug('parallel build extension config file:\n%s', ''.join(lines))
                     fp.writelines(lines)
-            context['ENV']['DIST_EXTRA_CONFIG'] = fpath
+            context.ENV['DIST_EXTRA_CONFIG'] = fpath
             return func(self, context, args, *oargs, **kwargs)
 
         if 'DIST_EXTRA_CONFIG' in environ or (

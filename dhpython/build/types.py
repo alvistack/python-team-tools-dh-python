@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from dataclasses import dataclass, field, replace
 from typing import NotRequired, TypedDict
 
 from dhpython.interpreter import Interpreter
@@ -45,8 +46,12 @@ class Args(TypedDict):
     setup_py: NotRequired[str]
 
 
-class Context(TypedDict):
+@dataclass
+class Context:
     ENV: dict[str, str]
-    args: Args
     dir: str
     destdir: str
+    args: dict[str, str] = field(default_factory=dict)
+
+    def copy(self) -> "Context":
+        return replace(self)

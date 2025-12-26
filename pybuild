@@ -29,7 +29,7 @@ from os import environ, makedirs, remove
 from os.path import abspath, exists, isdir, join
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Literal, overload, cast
+from typing import Literal, overload
 
 from dhpython import build, PKG_PREFIX_MAP
 from dhpython.build.options import (
@@ -115,7 +115,6 @@ def main(cfg: PybuildOptions) -> None:
                 selected_plugin = build_dep.split("-", 2)[2]
                 break
 
-    context: dict[str, str | dict[str, str]]  # proto-context
     if selected_plugin:
         certainty = 99
         Plugin = build.plugins.get(selected_plugin)
@@ -123,7 +122,7 @@ def main(cfg: PybuildOptions) -> None:
             log.error("unrecognized build system: %s", selected_plugin)
             sys.exit(10)
         plugin = Plugin(cfg)
-        context = {"ENV": env, "args": {}, "dir": cfg.dir}
+        context = Context(ENV=env, destdir="debian/tmp", dir=cfg.dir)
         plugin.detect(context)
     else:
         plugin, certainty = None, 0
@@ -138,11 +137,7 @@ def main(cfg: PybuildOptions) -> None:
                     exc_info=cfg.verbose,
                 )
                 continue
-            tmp_context: dict[str, str | dict[str, str]] = {
-                "ENV": env,
-                "args": {},
-                "dir": cfg.dir,
-            }
+            tmp_context = Context(ENV=env, destdir="debian/tmp", dir=cfg.dir)
             tmp_certainty = tmp_plugin.detect(tmp_context)
             log.debug("Plugin %s: certainty %i", Plugin.NAME, tmp_certainty)
             if tmp_certainty and tmp_certainty > certainty:
@@ -281,7 +276,7 @@ def main(cfg: PybuildOptions) -> None:
             "build_dir", interpreter, version, default=join(home_dir, "build")
         )
 
-        destdir = context["destdir"].format(version=version, interpreter=i)
+        destdir = context.destdir.format(version=version, interpreter=i)
         if cfg.name:
             package = ipreter.suggest_pkg_name(cfg.name)
         else:
@@ -290,15 +285,15 @@ def main(cfg: PybuildOptions) -> None:
             destdir = f"debian/{package}"
         destdir = abspath(destdir)
 
-        args = cast(Args, dict(context["args"]))
-        args.update(
+        args = Args(
             {
+                "ENV": {},
                 "autopkgtest": cfg.autopkgtest_only,
                 "package": package,
                 "interpreter": ipreter,
                 "version": version,
                 "args": get_option("%s_args" % step, interpreter, version, ""),
-                "dir": abspath(context["dir"].format(version=version, interpreter=i)),
+                "dir": abspath(context.dir.format(version=version, interpreter=i)),
                 "destdir": destdir,
                 "build_dir": abspath(build_dir.format(version=version, interpreter=i)),
                 # versioned dist-packages even for Python 3.X - dh_python3 will fix it later
@@ -312,8 +307,9 @@ def main(cfg: PybuildOptions) -> None:
                 "home_dir": abspath(home_dir),
             }
         )
-        env = dict(args.get("ENV", {}))
-        pp_str = env.get("PYTHONPATH", context["ENV"].get("PYTHONPATH"))
+        args.update(context.args)  # type: ignore
+        env = args["ENV"]
+        pp_str = env.get("PYTHONPATH", context.ENV.get("PYTHONPATH"))
         pp = pp_str.split(":") if pp_str else []
         if step in {"build", "test", "autopkgtest"}:
             if step in {"test", "autopkgtest"}:
@@ -338,7 +334,7 @@ def main(cfg: PybuildOptions) -> None:
         # cross compilation support for Python <= 3.8 (see above)
         if version.major == 3:
             name = "_PYTHON_SYSCONFIGDATA_NAME"
-            value = env.get(name, context["ENV"].get(name, ""))
+            value = env.get(name, context.ENV.get(name, ""))
             if (
                 version << "3.8"
                 and value.startswith("_sysconfigdata_")
@@ -383,7 +379,7 @@ def main(cfg: PybuildOptions) -> None:
     ) -> None:
         step = Step(func.__func__.__name__)  # type: ignore
         args = get_args(context, step, version, interpreter)
-        env = dict(context["ENV"])
+        env = dict(context.ENV)
         if "ENV" in args:
             env.update(args["ENV"])
 
@@ -396,7 +392,7 @@ def main(cfg: PybuildOptions) -> None:
                 log_file = False
             command = before_cmd.format(**args)
             log.info(command)
-            output = execute(command, cwd=context["dir"], env=env, log_output=log_file)
+            output = execute(command, cwd=context.dir, env=env, log_output=log_file)
             if output.returncode != 0:
                 msg = f"exit code={output.returncode}: {command}"
                 raise Exception(msg)
@@ -422,7 +418,7 @@ def main(cfg: PybuildOptions) -> None:
                 log_file = False
             command = after_cmd.format(**args)
             log.info(command)
-            output = execute(command, cwd=context["dir"], env=env, log_output=log_file)
+            output = execute(command, cwd=context.dir, env=env, log_output=log_file)
             if output.returncode != 0:
                 msg = f"exit code={output.returncode}: {command}"
                 raise Exception(msg)
@@ -484,9 +480,9 @@ def main(cfg: PybuildOptions) -> None:
             for version in iversions:
                 if is_disabled(step, i, version):
                     continue
-                c = cast(Context, dict(context))
-                c["dir"] = get_option("dir", i, version, cfg.dir)
-                c["destdir"] = get_option("destdir", i, version, default_destdir)
+                c = context.copy()
+                c.dir = get_option("dir", i, version, cfg.dir)
+                c.destdir = get_option("destdir", i, version, default_destdir)
                 try:
                     run(func, i, version, c)
                 except Exception as err:
@@ -527,9 +523,9 @@ def main(cfg: PybuildOptions) -> None:
                 if key in context_map:
                     c = context_map[key]
                 else:
-                    c = cast(Context, dict(context))
-                    c["dir"] = get_option("dir", i, version, cfg.dir)
-                    c["destdir"] = get_option("destdir", i, version, default_destdir)
+                    context.copy()
+                    c.dir = get_option("dir", i, version, cfg.dir)
+                    c.destdir = get_option("destdir", i, version, default_destdir)
                     context_map[key] = c
 
                 if not is_disabled(Step.CLEAN, i, version):

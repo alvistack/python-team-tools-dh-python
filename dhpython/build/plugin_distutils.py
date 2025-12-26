@@ -81,7 +81,7 @@ def create_pydistutils_cfg(
                          'prefix=/usr\n']
                 log.debug('pydistutils config file:\n%s', ''.join(lines))
                 fp.writelines(lines)
-        context['ENV']['HOME'] = args['home_dir']
+        context.ENV['HOME'] = args['home_dir']
         return func(self, context, args, *oargs, **kwargs)
 
     return wrapped_func
@@ -102,9 +102,9 @@ class BuildSystem(Base):
     def detect(self, context: Context) -> int:
         result = super().detect(context)
         if _setup_tpl in self.DETECTED_REQUIRED_FILES:
-            context['args']['setup_py'] = self.DETECTED_REQUIRED_FILES[_setup_tpl][0]
+            context.args['setup_py'] = self.DETECTED_REQUIRED_FILES[_setup_tpl][0]
         else:
-            context['args']['setup_py'] = 'setup.py'
+            context.args['setup_py'] = 'setup.py'
         return result
 
     @shell_command
