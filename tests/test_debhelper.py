@@ -92,10 +92,10 @@ class TestControlBlockParsing(DebHelperTestCase):
         )
 
     def test_parses_arch(self) -> None:
-        self.assertEqual(self.dh.packages["python3-foo-ext"]["arch"], "any")
+        self.assertEqual(self.dh.packages["python3-foo-ext"].arch, "any")
 
     def test_parses_arch_all(self) -> None:
-        self.assertEqual(self.dh.packages["python3-foo"]["arch"], "all")
+        self.assertEqual(self.dh.packages["python3-foo"].arch, "all")
 
 
 class TestControlSkipIndep(DebHelperTestCase):

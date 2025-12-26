@@ -21,10 +21,11 @@
 import errno
 import logging
 import re
+from dataclasses import dataclass
 from os import makedirs, chmod, environ
 from os.path import basename, exists, join, dirname
 from sys import argv
-from typing import NamedTuple, TypeAlias, TypedDict
+from typing import NamedTuple, TypeAlias
 
 from dhpython import DEPENDS_SUBSTVARS, PKG_NAME_TPLS, RT_LOCATIONS, RT_TPLS
 
@@ -42,7 +43,8 @@ parse_dep = re.compile(
 ).match
 
 
-class PackageData(TypedDict):
+@dataclass
+class PackageData:
     substvars: dict[str, list[str]]
     autoscripts: dict[str, dict[str, list[str]]]
     rtupdates: list[tuple[str, str]]
@@ -195,9 +197,9 @@ class DebHelper:
             )
             if (
                 options.arch is False
-                and pkg["arch"] != "all"
+                and pkg.arch != "all"
                 or options.arch is True
-                and pkg["arch"] == "all"
+                and pkg.arch == "all"
             ):
                 # TODO: check also if arch matches current architecture:
                 continue
@@ -238,20 +240,20 @@ class DebHelper:
 
     def addsubstvar(self, package: str, name: str, value: str) -> None:
         """debhelper's addsubstvar"""
-        self.packages[package]["substvars"].setdefault(name, []).append(value)
+        self.packages[package].substvars.setdefault(name, []).append(value)
 
     def autoscript(self, package: str, when: str, template: str, args: str) -> None:
         """debhelper's autoscript"""
-        self.packages[package]["autoscripts"].setdefault(when, {}).setdefault(
+        self.packages[package].autoscripts.setdefault(when, {}).setdefault(
             template, []
         ).append(args)
 
     def add_rtupdate(self, package: str, value: tuple[str, str]) -> None:
-        self.packages[package]["rtupdates"].append(value)
+        self.packages[package].rtupdates.append(value)
 
     def save_autoscripts(self) -> None:
         for package, settings in self.packages.items():
-            autoscripts = settings.get("autoscripts")
+            autoscripts = settings.autoscripts
             if not autoscripts:
                 continue
 
@@ -277,7 +279,7 @@ class DebHelper:
                         if self.options.compile_all and args:
                             # TODO: should args be checked to contain dir name?
                             tpl = tpl.replace("-p #PACKAGE#", "")
-                        elif settings["arch"] == "all":
+                        elif settings.arch == "all":
                             tpl = tpl.replace("#PACKAGE#", package)
                         else:
                             arch = environ["DEB_HOST_ARCH"]
@@ -295,7 +297,7 @@ class DebHelper:
 
     def save_substvars(self) -> None:
         for package, settings in self.packages.items():
-            substvars = settings.get("substvars")
+            substvars = settings.substvars
             if not substvars:
                 continue
             fn = "debian/%s.substvars" % package
@@ -331,7 +333,7 @@ class DebHelper:
     def save_rtupdate(self) -> None:
         for package, settings in self.packages.items():
             pkg_arg = "" if self.options.compile_all else "-p %s" % package
-            values = settings.get("rtupdates")
+            values = settings.rtupdates
             if not values:
                 continue
             d = f"debian/{package}/{RT_LOCATIONS[self.impl]}"
