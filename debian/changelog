@@ -1,3 +1,9 @@
+dh-python (7.20251227) unstable; urgency=medium
+
+  * Refactor internals to use dataclasses.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 27 Dec 2025 20:40:29 -0400
+
 dh-python (7.20251225) unstable; urgency=medium
 
   [ Stefano Rivera ]
