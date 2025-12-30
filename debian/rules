@@ -1,14 +1,13 @@
 #! /usr/bin/make -f
 
+SHELL := /bin/bash
+
 %:
 	dh $@
 
-clean:
-	make clean
-	dh_clean
-
 override_dh_auto_test:
-	make tests
+
+override_dh_auto_clean:
 
 override_dh_auto_install:
 	DESTDIR=debian/dh-python PREFIX=/usr make install
