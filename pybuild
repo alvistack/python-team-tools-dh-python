@@ -517,7 +517,7 @@ def main(cfg: PybuildOptions) -> None:
                 if key in context_map:
                     c = context_map[key]
                 else:
-                    context.copy()
+                    c = context.copy()
                     c.dir = get_option("dir", i, version, cfg.dir)
                     c.destdir = get_option("destdir", i, version, default_destdir)
                     context_map[key] = c
