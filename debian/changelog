@@ -1,3 +1,9 @@
+dh-python (7.20251231) unstable; urgency=medium
+
+  * Fix a regression in pybuild in 7.20251227. (Closes: #1124229)
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 31 Dec 2025 12:15:31 -0400
+
 dh-python (7.20251227) unstable; urgency=medium
 
   * Refactor internals to use dataclasses.
