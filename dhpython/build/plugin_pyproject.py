@@ -61,6 +61,9 @@ def _build_backend() -> str | None:
     except FileNotFoundError:
         # Not a PEP517 package
         return None
+    except tomllib.TOMLDecodeError as e:
+        log.warning("pyproject.toml: TOMLDecodeError: %s", str(e))
+        return None
 
 
 class BuildSystem(Base):
