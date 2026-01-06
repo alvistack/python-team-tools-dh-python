@@ -135,7 +135,7 @@ class BuildSystem(Base):
         return []
 
     @shell_command
-    @create_setuptools_parallel_cfg(backend=_build_backend())
+    @create_setuptools_parallel_cfg(backend=_build_backend)
     @override
     def build_wheel(self, context: Context, args: Args) -> str:
         """ build a wheel using the PEP517 builder defined by upstream """

@@ -460,7 +460,7 @@ def get_parallel() -> int:
 
 
 def create_setuptools_parallel_cfg(
-    backend: str | None = None
+    backend: Callable[[], str | None] | None = None
 ) -> Callable[
         [Callable[Concatenate[BC, Context, Args, P], T]],
         Callable[Concatenate[BC, Context, Args, P], T],
@@ -503,8 +503,13 @@ def create_setuptools_parallel_cfg(
             context.ENV['DIST_EXTRA_CONFIG'] = fpath
             return func(self, context, args, *oargs, **kwargs)
 
-        if 'DIST_EXTRA_CONFIG' in environ or (
-                backend is not None and backend != "setuptools.build_meta"):
+        if 'DIST_EXTRA_CONFIG' in environ:
             return func
+
+        if backend is not None:
+            pyproject_backend = backend()
+            if pyproject_backend is not None and pyproject_backend != "setuptools.build_meta":
+                return func
+
         return cast(Callable[Concatenate[BC, Context, Args, P], T], wrapped_func)
     return decorator
