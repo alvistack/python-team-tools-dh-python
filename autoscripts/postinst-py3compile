@@ -1,5 +1,5 @@
 if command -v py3compile >/dev/null 2>&1; then
-	py3compile -p #PACKAGE# #ARGS#
+	py3compile -p #PACKAGE# #ARGS# || true
 fi
 if command -v pypy3compile >/dev/null 2>&1; then
 	pypy3compile -p #PACKAGE# #ARGS# || true
