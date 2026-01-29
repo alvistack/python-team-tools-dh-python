@@ -1,3 +1,10 @@
+dh-python (7.20260129) unstable; urgency=medium
+
+  * Bump Standards-Version to 4.7.3, drop Priority: optional.
+  * Ignore more py3compile failures.
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 29 Jan 2026 09:38:36 -0400
+
 dh-python (7.20260125) unstable; urgency=medium
 
   * Catch TOMLDecodeError in plugin_pyproject
