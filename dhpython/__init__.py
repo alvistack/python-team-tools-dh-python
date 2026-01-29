@@ -77,6 +77,6 @@ RT_TPLS = {
     "cpython3": """
 if [ "$1" = rtupdate ]; then
 \tpy3clean {pkg_arg} {dname}
-\tpy3compile {pkg_arg} {args} {dname}
+\tpy3compile {pkg_arg} {args} {dname} || true
 fi""",
 }
