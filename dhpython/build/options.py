@@ -65,7 +65,7 @@ class PybuildOptions:
     test_stestr: bool = environ.get("PYBUILD_TEST_STESTR") == "1"
     test_unittest: bool = environ.get("PYBUILD_TEST_UNITTEST") == "1"
     test_custom: bool = environ.get("PYBUILD_TEST_CUSTOM") == "1"
-    dir: str = getcwd()
+    dir: str = environ.get("PYBUILD_DIR", getcwd())
     # We handle this default manually, because --name affects it
     destdir: str | None = None
     ext_destdir: str | None = environ.get("PYBUILD_EXT_DESTDIR")
