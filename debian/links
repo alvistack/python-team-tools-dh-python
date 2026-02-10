@@ -1,3 +1,4 @@
 /usr/share/dh-python/dh_python3		/usr/bin/dh_python3
 /usr/share/dh-python/pybuild		/usr/bin/pybuild
 /usr/share/dh-python/pybuild-autopkgtest	/usr/bin/pybuild-autopkgtest
+/usr/share/man/man1/pybuild-autopkgtest.1	/usr/share/man/man1/autopkgtest-pkg-pybuild.1
