@@ -46,6 +46,7 @@ class Args:
     wheel: str | None = None
     # Injected by plugin_distutils:
     setup_py: str | None = None
+    parallel: int = 1
 
     def format(self, template: str) -> str:
         return template.format(**self.as_dict())

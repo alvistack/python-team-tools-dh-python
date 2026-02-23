@@ -448,24 +448,13 @@ def shell_command(
     return cast(Callable[Concatenate[BC, Context, Args, P], None], wrapped_func)
 
 
-def get_parallel() -> int:
-    """Determine the allowable level of build parallelism with DEB_BUILD_OPTIONS."""
-    parallel = 1
-    if 'DEB_BUILD_OPTIONS' in environ:
-        for option in environ['DEB_BUILD_OPTIONS'].split():
-            key, assign, value = option.partition('=')
-            if key == "parallel" and assign == "=":
-                parallel = int(value)
-    return parallel
-
-
 def create_setuptools_parallel_cfg(
     backend: Callable[[], str | None] | None = None
 ) -> Callable[
         [Callable[Concatenate[BC, Context, Args, P], T]],
         Callable[Concatenate[BC, Context, Args, P], T],
 ]:
-    """Enable parallel building of extensions, respecting DEB_BUILD_OPTIONS.
+    """Enable parallel building of extensions
 
     An adaption of Michał Górny's technique described in
     https://blogs.gentoo.org/mgorny/2024/03/15/optimizing-parallel-extension-builds-in-pep517-builds
@@ -497,7 +486,7 @@ def create_setuptools_parallel_cfg(
             if not exists(fpath):
                 with open(fpath, 'w', encoding='utf-8') as fp:
                     lines = ['[build_ext]\n',
-                             f'parallel={get_parallel()}\n']
+                             f'parallel={args.parallel}\n']
                     log.debug('parallel build extension config file:\n%s', ''.join(lines))
                     fp.writelines(lines)
             context.ENV['DIST_EXTRA_CONFIG'] = fpath

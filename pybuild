@@ -284,6 +284,7 @@ def main(cfg: PybuildOptions) -> None:
         if cfg.name and get_option("destdir", interpreter, version) is None:
             destdir = f"debian/{package}"
         destdir = abspath(destdir)
+        parallel = cfg.parallel
 
         args = Args(
             ENV={},
@@ -304,6 +305,7 @@ def main(cfg: PybuildOptions) -> None:
                 DEFAULT_INSTALL_DIR,
             ).format(version=version, interpreter=i),
             home_dir=abspath(home_dir),
+            parallel=parallel,
         )
         for k, v in context.args.items():
             setattr(args, k, v)

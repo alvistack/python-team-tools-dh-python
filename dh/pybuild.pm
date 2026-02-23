@@ -2,8 +2,6 @@
 #
 # Copyright: © 2012-2013 Piotr Ożarowski
 
-# TODO:
-# * support for dh --parallel
 
 package Debian::Debhelper::Buildsystem::pybuild;
 
@@ -122,6 +120,8 @@ sub pybuild_commands {
 		}
 	}
 
+	my $parallel = $this->get_parallel();
+	push @options, "--parallel=$parallel";
 	my @deps;
 	if ($ENV{'PYBUILD_INTERPRETERS'}) {
 		push @result, ['pybuild', "--$step", @options];

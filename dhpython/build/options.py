@@ -78,6 +78,7 @@ class PybuildOptions:
     versions: list[Version] = field(default_factory=list)
     interpreter: list[str] = field(default_factory=list)
     disable: str | None = None
+    parallel: int = 1
     custom_tests: bool = False
 
 
@@ -349,5 +350,10 @@ def build_parser() -> ArgumentParser:
     )
     limit.add_argument(
         "--disable", metavar="ITEMS", help="disable action, interpreter or version"
+    )
+    limit.add_argument(
+        "-j",
+        "--parallel",
+        help="specify number of parallel jobs [default: 1]",
     )
     return parser

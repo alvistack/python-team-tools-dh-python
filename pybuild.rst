@@ -232,6 +232,8 @@ LIMITATIONS
         disable action, interpreter, version or any mix of them.
         Note that f.e. python3 and python3-dbg are two different interpreters,
         --disable test/python3 doesn't disable python3-dbg's tests.
+  -j NUM, --parallel NUM
+	specify number of parallel jobs [default: 1]
 
 disable examples
 ~~~~~~~~~~~~~~~~
