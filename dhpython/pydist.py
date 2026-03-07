@@ -367,7 +367,7 @@ def guess_dependency(
 
     # search for Egg metadata file or directory (using dpkg -S)
     dpkg_query_tpl, regex_filter = PYDIST_DPKG_SEARCH_TPLS[impl]
-    dpkg_query = dpkg_query_tpl.format(ci_regexp(normalize_name(name)))
+    dpkg_query = dpkg_query_tpl.format(ci_regexp(dist_info_normalize_name(name)))
 
     log.debug("invoking dpkg -S %s", dpkg_query)
     process = subprocess.run(
@@ -763,6 +763,11 @@ def parse_requires_dist(
 def normalize_name(name: str) -> str:
     """Normalize a distribution name."""
     return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def dist_info_normalize_name(name: str) -> str:
+    """Normalize a name for use in a .dist-info path."""
+    return re.sub(r"[-_.]+", "_", name).lower()
 
 
 def sensible_pname(impl: str, dist_name: str) -> str:
