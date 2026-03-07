@@ -29,7 +29,6 @@ from typing import NamedTuple, TypeAlias
 
 from dhpython import DEPENDS_SUBSTVARS, PKG_NAME_TPLS, RT_LOCATIONS, RT_TPLS
 
-
 log = logging.getLogger("dhpython")
 parse_dep = re.compile(
     r"""[,\s]*

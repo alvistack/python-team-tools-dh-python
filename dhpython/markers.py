@@ -29,7 +29,6 @@ private: https://github.com/pypa/packaging/issues/496
 import re
 from typing import Literal, NamedTuple, cast
 
-
 SIMPLE_ENV_MARKER_RE = re.compile(
     r"""
     (?P<marker>[a-z_]+)

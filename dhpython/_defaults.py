@@ -26,7 +26,6 @@ from os.path import exists
 from subprocess import Popen, PIPE
 from typing import NamedTuple
 
-
 SUPPORTED: dict[str, tuple[tuple[int, int], ...]] = {
     "cpython3": ((3, 8),),
 }

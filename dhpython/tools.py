@@ -416,8 +416,7 @@ INSTALL_RE = re.compile(
     )?
     \s*  # optional version range:
     (?P<vrange>%s)?$
-"""
-    % RANGE_PATTERN,
+""" % RANGE_PATTERN,
     re.VERBOSE,
 )
 REMOVE_RE = re.compile(
@@ -425,7 +424,6 @@ REMOVE_RE = re.compile(
     (?P<pattern>.+?)  # file pattern
     \s*  # optional version range:
     (?P<vrange>%s)?$
-"""
-    % RANGE_PATTERN,
+""" % RANGE_PATTERN,
     re.VERBOSE,
 )

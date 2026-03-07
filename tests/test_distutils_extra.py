@@ -47,8 +47,8 @@ class TestDistutilsExtra(unittest.TestCase):
         os.chdir(self.tempdir.name)
         self.addCleanup(os.chdir, old_wd)
         with open(self.tempdir.name + "/PKG-INFO", "w", encoding="UTF-8") as f:
-            f.write(
-                """Metadata-Version: 2.1
+            f.write("""\
+Metadata-Version: 2.1
 Name: gTranscribe
 Version: 0.11
 Summary: gTranscribe
@@ -59,8 +59,7 @@ License: GPL-3
 Requires: bar
 
 gTranscribe is a software focused on easy transcription of spoken words.
-"""
-            )
+""")
         cleanup = prime_pydist(self.impl, self.pydist)
         self.addCleanup(cleanup)
         self.d.parse(stats, self.options)
