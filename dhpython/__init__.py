@@ -80,3 +80,6 @@ if [ "$1" = rtupdate ]; then
 \tpy3compile {pkg_arg} {args} {dname} || true
 fi""",
 }
+
+# Delete in dh_python3 and pybuild clean
+CACHE_DIRECTORIES = frozenset({".pytest_cache", ".coverage"})

@@ -37,6 +37,7 @@ from typing import (
     overload,
 )
 
+from dhpython import CACHE_DIRECTORIES
 from dhpython.debhelper import DebHelper, build_options
 from dhpython.exceptions import RequiredCommandMissingException
 from dhpython.tools import execute, ExecutionResult, ExecutionResultWithOutput
@@ -151,7 +152,7 @@ class Base:
         'python{version}', 'python{version}-dbg'
     }
     # files and directories to remove during clean step (other than .pyc):
-    CLEAN_FILES = {'.pytest_cache', '.coverage'}
+    CLEAN_FILES = CACHE_DIRECTORIES
 
     def __init__(self, cfg: PybuildOptions) -> None:
         self.cfg = cfg

@@ -31,7 +31,7 @@ from shutil import rmtree
 from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
 from typing import Literal, TypedDict
 
-from dhpython import MULTIARCH_DIR_TPL
+from dhpython import CACHE_DIRECTORIES, MULTIARCH_DIR_TPL
 from dhpython.tools import fix_shebang, clean_egg_name
 from dhpython.interpreter import EXTFILE_RE, Interpreter
 from dhpython.options import DHPythonOptions
@@ -90,8 +90,11 @@ def share_files(
         if i.endswith(".pyc"):  # f.e. when tests were invoked on installed files
             os.remove(fpath1)
             continue
-        if i == ".coverage":  # from running tests with coverage
-            os.remove(fpath1)
+        if i in CACHE_DIRECTORIES:
+            if os.path.isdir(fpath1):
+                rmtree(fpath1)
+            else:
+                os.remove(fpath1)
             continue
         if not options.no_ext_rename and splitext(i)[-1] == ".so":
             # try to rename extension here as well (in :meth:`scan` info about
