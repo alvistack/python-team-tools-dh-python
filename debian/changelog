@@ -1,3 +1,22 @@
+dh-python (7.20260309) unstable; urgency=medium
+
+  [ Stefano Rivera ]
+  * Take PYBUILD_DIR into account earlier (for detection) (Closes: #1126096)
+  * dh_python3: In fallback .dist-info discovery, expect package names to be
+    normalized with an _
+  * dh_python3: Remove .pytest_cache directories
+  * Delete .pdm-build in dh_python3 and pybuild clean. (Closes: #1126061)
+  * Update pydist data
+  * Drop Rules-Requires-Root: no, no longer needed.
+
+  [ Colin Watson ]
+  * Add autopkgtest-pkg-pybuild.1 manual page symlink
+
+  [ أحمد المحمودي (Ahmed El-Mahmoudy) ]
+  * Fix for detection of parallel build option (See: #1127763)
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 09 Mar 2026 19:03:03 -0400
+
 dh-python (7.20260129) unstable; urgency=medium
 
   * Bump Standards-Version to 4.7.3, drop Priority: optional.
