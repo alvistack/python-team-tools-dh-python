@@ -17,7 +17,6 @@ Build-Depends:
 Standards-Version: 4.7.3
 Vcs-Git: https://salsa.debian.org/python-team/tools/dh-python.git
 Vcs-Browser: https://salsa.debian.org/python-team/tools/dh-python
-Rules-Requires-Root: no
 
 Package: dh-python
 Architecture: all
