@@ -82,4 +82,4 @@ fi""",
 }
 
 # Delete in dh_python3 and pybuild clean
-CACHE_DIRECTORIES = frozenset({".pytest_cache", ".coverage"})
+CACHE_DIRECTORIES = frozenset({".coverage", ".pdm-build", ".pytest_cache"})
