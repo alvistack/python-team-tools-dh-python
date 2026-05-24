@@ -1,3 +1,11 @@
+dh-python (7.20260524) unstable; urgency=medium
+
+  * Fix crash in "pybuild --interpreter python3.x" (Closes: #1137486)
+  * Fix crash with DEB_BUILD_OPTIONS=terse (Closes: #1135722, LP: #2150227)
+  * Don't require substvars with debhelper compat level >= 14 (Closes: #1133706)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 24 May 2026 18:48:39 -0400
+
 dh-python (7.20260309) unstable; urgency=medium
 
   [ Stefano Rivera ]
