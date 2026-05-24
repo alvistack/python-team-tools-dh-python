@@ -26,11 +26,12 @@ from contextlib import ExitStack
 from datetime import datetime
 from functools import cache
 from glob import glob
+from io import TextIOBase
 from shutil import rmtree
 from os.path import exists, getsize, isdir, islink, join, split
 from pathlib import Path
 from subprocess import Popen, PIPE
-from typing import TYPE_CHECKING, Literal, TextIO, NamedTuple, overload
+from typing import TYPE_CHECKING, Literal, NamedTuple, TextIO, overload
 
 if TYPE_CHECKING:
     from dhpython.version import VersionRange
@@ -287,7 +288,7 @@ def execute(
                 log_output = stack.enter_context(
                     open(log_output, "a", encoding="utf-8")
                 )
-            assert isinstance(log_output, TextIO)
+            assert isinstance(log_output, TextIOBase)
             log_output.write(f"\n# command executed on {datetime.now().isoformat()}")
             log_output.write(f"\n$ {command}\n")
             log_output.flush()
