@@ -224,8 +224,11 @@ class TestNoCompatLevel(DebHelperTestCase):
         "Package: foo",
         "Architecture: all",
     ]
-    parse_control = True
+    parse_control = False
 
     def test_compat(self) -> None:
-        with self.assertRaises(Exception):
-            self.dh.compat()
+        with self.assertRaisesRegex(
+            Exception, r"Unable to determine debhelper compatibility version."
+        ):
+            dh = DebHelper(self.build_options(), impl=self.impl)
+            dh.compat()

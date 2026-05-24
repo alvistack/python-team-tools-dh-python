@@ -203,7 +203,10 @@ class DebHelper:
                 # TODO: check also if arch matches current architecture:
                 continue
 
-            if not binary_package.startswith(PKG_NAME_TPLS[impl]):
+            if (
+                not binary_package.startswith(PKG_NAME_TPLS[impl])
+                and self.compat() < 14
+            ):
                 # package doesn't have common prefix (python3-)
                 # so lets check if Depends/Recommends contains the
                 # appropriate substvar
