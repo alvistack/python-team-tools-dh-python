@@ -185,7 +185,7 @@ def main(cfg: PybuildOptions) -> None:
             m = INTERP_VERSION_RE.match(i)
             if m:
                 log.debug("defaulting to version hardcoded in interpreter name")
-                versions = [Version(v) for v in m.group("version")]
+                versions = [Version(m.group("version"))]
             else:
                 IMAP = {v: k for k, v in PKG_PREFIX_MAP.items()}
                 if i in IMAP:
