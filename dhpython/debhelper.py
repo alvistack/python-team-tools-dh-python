@@ -226,6 +226,23 @@ class DebHelper:
             list(self.packages.keys()),
         )
 
+    def compat(self) -> int:
+        if "debhelper-compat" in self.build_depends:
+            version = self.build_depends["debhelper-compat"][None]
+            assert version.startswith("=")
+            assert version[1:].strip().isdigit()
+            return int(version[1:].strip())
+
+        if exists("debian/compat"):
+            with open("debian/compat", encoding="UTF-8") as f:
+                compat = int(f.read())
+            if compat >= 15:
+                raise Exception(
+                    f"debian/compat is no longer supported for level {compat}."
+                )
+            return compat
+        raise Exception("Unable to determine debhelper compatibility version.")
+
     def has_acted_on_package(self, package: str) -> bool:
         try:
             with open(f"debian/{package}.debhelper.log", encoding="utf-8") as f:

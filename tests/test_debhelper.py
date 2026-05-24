@@ -10,6 +10,7 @@ class DebHelperTestCase(unittest.TestCase):
     impl = "cpython3"
     control: list[str] = []
     options: dict[str, Any] = {}
+    compat: int | None = None
     parse_control = True
 
     def build_options(self) -> Options:
@@ -26,13 +27,17 @@ class DebHelperTestCase(unittest.TestCase):
         os.mkdir("debian")
         with open("debian/control", "w", encoding="UTF-8") as f:
             f.write("\n".join(self.control))
+        if self.compat:
+            with open("debian/compat", "w", encoding="UTF-8") as f:
+                f.write(f"{self.compat}\n")
         if self.parse_control:
             self.dh = DebHelper(self.build_options(), impl=self.impl)
 
 
 CONTROL = [
     "Source: foo-src",
-    "Build-Depends: python3-all,",
+    "Build-Depends: debhelper-compat (= 13), ",
+    " python3-all, ",
     " python-all",
     "\t, bar (<< 2) [amd64],",
     " baz (>= 1.0)",
@@ -75,6 +80,7 @@ class TestControlBlockParsing(DebHelperTestCase):
         self.assertEqual(
             self.dh.build_depends,
             {
+                "debhelper-compat": {None: "= 13"},
                 "python3-all": {None: None},
                 "python-all": {None: None},
                 "bar": {"amd64": "<< 2"},
@@ -96,6 +102,9 @@ class TestControlBlockParsing(DebHelperTestCase):
 
     def test_parses_arch_all(self) -> None:
         self.assertEqual(self.dh.packages["python3-foo"].arch, "all")
+
+    def test_compat(self) -> None:
+        self.assertEqual(self.dh.compat(), 13)
 
 
 class TestControlSkipIndep(DebHelperTestCase):
@@ -190,3 +199,33 @@ class TestRemainingPackages(DebHelperTestCase):
         self.assertEqual(
             list(self.dh.packages.keys()), ["python3-foo-ext", "foo", "recfoo"]
         )
+
+
+class TestLegacyCompatFile(DebHelperTestCase):
+    control = [
+        "Source: foo-src",
+        "Build-Depends: python3-all",
+        "",
+        "Package: foo",
+        "Architecture: all",
+    ]
+    compat = 10
+    parse_control = True
+
+    def test_compat(self) -> None:
+        self.assertEqual(self.dh.compat(), 10)
+
+
+class TestNoCompatLevel(DebHelperTestCase):
+    control = [
+        "Source: foo-src",
+        "Build-Depends: python3-all",
+        "",
+        "Package: foo",
+        "Architecture: all",
+    ]
+    parse_control = True
+
+    def test_compat(self) -> None:
+        with self.assertRaises(Exception):
+            self.dh.compat()
