@@ -6,7 +6,7 @@ from typing import Any
 from unittest import TestCase
 
 from dhpython.interpreter import Interpreter
-from dhpython.fs import Scan, merge_WHEEL, share_files
+from dhpython.fs import Scan, share_files
 from dhpython.options import DHPythonOptions
 from dhpython.version import Version
 
@@ -35,19 +35,6 @@ class FSTestCase(TestCase):
         assert isinstance(contents, str)
         with path.open("r") as f:
             self.assertMultiLineEqual(contents, f.read())
-
-
-class MergeTagsTest(FSTestCase):
-    a: Path
-    b: Path
-    files = {
-        "a": ("foo", "Tag: A"),
-        "b": ("foo", "Tag: B"),
-    }
-
-    def test_merge_wheel(self) -> None:
-        merge_WHEEL(self.a, self.b)
-        self.assertFileContents(self.b, ("foo", "Tag: B", "Tag: A"))
 
 
 class ShareFilesTestCase(FSTestCase):

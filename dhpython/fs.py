@@ -175,25 +175,6 @@ def missing_lines(src: str | Path, dst: str | Path) -> list[str]:
     return missing
 
 
-def merge_WHEEL(src: str | Path, dst: str | Path) -> int:
-    """Merge the source .dist-info/WHEEL file into the destination
-
-    Note that after editing the WHEEL file, the sha256 included in
-    the .dist-info/RECORD file will be incorrect and will need fixing
-    using the fix_merged_RECORD() function.
-    """
-    log.debug("Merging WHEEL file %s into %s", src, dst)
-    missing = missing_lines(src, dst)
-    with open(dst, "a", encoding="UTF-8") as fh:
-        for line in missing:
-            if line.startswith("Tag: "):
-                fh.write(line)
-            else:
-                log.warning("WHEEL merge discarded line %s", line)
-
-    return len(missing)
-
-
 def write_INSTALLER(distdir: str) -> None:
     """Write 'debian' as the INSTALLER"""
     log.debug("Writing INSTALLER in %s", distdir)
