@@ -183,16 +183,18 @@ def write_INSTALLER(distdir: str) -> None:
         f.write("debian\n")
 
 
-def remove_RECORD(distdir: str) -> None:
-    """Remove RECORD from a .dist-info.
+def remove_WHEEL_RECORD(distdir: str) -> None:
+    """Remove WHEEL and RECORD from a .dist-info directory.
 
-    Having this breaks multi-arch installation, as the contents differ.
+    Having either of these breaks multi-arch installation, as the contents
+    differ.
     """
-    log.debug("Deleting RECORD in %s", distdir)
-    try:
-        os.remove(join(distdir, "RECORD"))
-    except FileNotFoundError:
-        pass
+    log.debug("Deleting WHEEL and RECORD in %s", distdir)
+    for name in ("RECORD", "WHEEL"):
+        try:
+            os.remove(join(distdir, name))
+        except FileNotFoundError:
+            pass
 
 
 ScanResult = TypedDict(
@@ -591,7 +593,7 @@ class Scan:
 
         if file_names:
             write_INSTALLER(dpath)
-            remove_RECORD(dpath)
+            remove_WHEEL_RECORD(dpath)
             if "METADATA" in file_names:
                 self.result["dist-info"].add(join(dpath, "METADATA"))
 
