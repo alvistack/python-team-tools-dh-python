@@ -1,3 +1,9 @@
+dh-python (7.20260606) unstable; urgency=medium
+
+  * Remove *.dist-info/WHEEL - incompatible with multi-arch (Closes: #1137616)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 06 Jun 2026 13:08:33 -0400
+
 dh-python (7.20260524) unstable; urgency=medium
 
   * Fix crash in "pybuild --interpreter python3.x" (Closes: #1137486)
