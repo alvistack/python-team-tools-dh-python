@@ -180,6 +180,35 @@ class TestControlMissingPackage(DebHelperTestCase):
             DebHelper(self.build_options())
 
 
+class TestControlMinimalSpacing(DebHelperTestCase):
+    control = [
+        "Source:foo-src",
+        "Build-Depends:debhelper-compat(=13),python3-all",
+        "",
+        "Architecture:all",
+        "Package:python3-foo",
+        "Depends:${python3:Depends}",
+    ]
+
+    def test_parses_source(self) -> None:
+        self.assertEqual(self.dh.source_name, "foo-src")
+
+    def test_parses_build_depends(self) -> None:
+        self.assertEqual(
+            self.dh.build_depends,
+            {"debhelper-compat": {None: "=13"}, "python3-all": {None: None}},
+        )
+
+    def test_parses_packages(self) -> None:
+        self.assertEqual(list(self.dh.packages), ["python3-foo"])
+
+    def test_parses_arch_all(self) -> None:
+        self.assertEqual(self.dh.packages["python3-foo"].arch, "all")
+
+    def test_compat(self) -> None:
+        self.assertEqual(self.dh.compat(), 13)
+
+
 class TestRemainingPackages(DebHelperTestCase):
     control = CONTROL
     options = {
