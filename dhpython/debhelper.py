@@ -87,6 +87,7 @@ class DebHelper:
     options: Options
     packages: dict[str, PackageData]
     build_depends: BD
+    dh_compat: str | None = None
 
     def __init__(self, options: Options, impl: str = "cpython3") -> None:
         self.options = options
@@ -146,6 +147,8 @@ class DebHelper:
             )
 
         self.source_name = paragraphs[0]["source"]
+        if "x-dh-compat" in paragraphs[0]:
+            self.dh_compat = paragraphs[0]["x-dh-compat"].strip()
         if self.impl == "cpython3" and "x-python3-version" in paragraphs[0]:
             self.python_version = paragraphs[0]["x-python3-version"]
             if len(self.python_version.split(",")) > 2:
@@ -230,6 +233,11 @@ class DebHelper:
         )
 
     def compat(self) -> int:
+        if self.dh_compat is not None:
+            if not self.dh_compat.isdigit():
+                raise Exception(f"Invalid X-DH-Compat value: {self.dh_compat!r}")
+            return int(self.dh_compat)
+
         if "debhelper-compat" in self.build_depends:
             version = self.build_depends["debhelper-compat"][None]
             assert version.startswith("=")

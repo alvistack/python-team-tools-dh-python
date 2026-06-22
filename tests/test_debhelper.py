@@ -245,6 +245,37 @@ class TestLegacyCompatFile(DebHelperTestCase):
         self.assertEqual(self.dh.compat(), 10)
 
 
+class TestXDHCompat(DebHelperTestCase):
+    control = [
+        "Source: foo-src",
+        "Build-Depends: debhelper",
+        "X-DH-Compat: 14",
+        "",
+        "Package: foo",
+        "Architecture: all",
+    ]
+
+    def test_compat(self) -> None:
+        self.assertEqual(self.dh.compat(), 14)
+
+
+class TestXDHCompatInvalid(DebHelperTestCase):
+    control = [
+        "Source: foo-src",
+        "Build-Depends: debhelper",
+        "X-DH-Compat: not-a-number",
+        "",
+        "Package: foo",
+        "Architecture: all",
+    ]
+    parse_control = False
+
+    def test_compat(self) -> None:
+        with self.assertRaisesRegex(Exception, r"Invalid X-DH-Compat value"):
+            dh = DebHelper(self.build_options(), impl=self.impl)
+            dh.compat()
+
+
 class TestNoCompatLevel(DebHelperTestCase):
     control = [
         "Source: foo-src",
