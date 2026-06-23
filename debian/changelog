@@ -1,3 +1,15 @@
+dh-python (7.20260623) unstable; urgency=medium
+
+  [ Colin Watson ]
+  * Improve parsing of Build-Depends with unconventional spacing
+    (Closes: #1140059)
+
+  [ Christopher Obbard ]
+  * Support reading compat level from debian/control X-DH-Compat field
+    (Closes: #1139649)
+
+ -- Stefano Rivera <stefanor@debian.org>  Tue, 23 Jun 2026 07:58:54 -0400
+
 dh-python (7.20260606) unstable; urgency=medium
 
   * Remove *.dist-info/WHEEL - incompatible with multi-arch (Closes: #1137616)
