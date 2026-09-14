@@ -21,7 +21,7 @@
 import logging
 from collections.abc import Callable
 from functools import wraps
-from glob import glob1
+from glob import glob
 from os import environ, remove, walk, makedirs
 from os.path import exists, isdir, join
 from pathlib import Path
@@ -184,7 +184,7 @@ class Base:
         for tpl in self.REQUIRED_FILES:
             found = False
             for ftpl in tpl.split('|'):
-                res = glob1(context.dir, ftpl)
+                res = glob(ftpl, root_dir=context.dir)
                 if res:
                     found = True
                     self.DETECTED_REQUIRED_FILES.setdefault(tpl, []).extend(res)
@@ -196,7 +196,7 @@ class Base:
 
         self.DETECTED_OPTIONAL_FILES = {}
         for ftpl, score in self.OPTIONAL_FILES.items():
-            res = glob1(context.dir, ftpl)
+            res = glob(ftpl, root_dir=context.dir)
             if res:
                 result += score
                 self.DETECTED_OPTIONAL_FILES.setdefault(ftpl, []).extend(res)

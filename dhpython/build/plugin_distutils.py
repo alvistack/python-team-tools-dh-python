@@ -21,7 +21,7 @@
 import logging
 from collections.abc import Callable
 from functools import wraps
-from glob import glob1
+from glob import glob
 from os import remove
 from os.path import exists, isdir, join
 from shutil import rmtree, move
@@ -146,7 +146,7 @@ class BuildSystem(Base):
     def build_wheel(self, context: Context, args: Args) -> None:
         self._bdist_wheel(context, args)
         dist_dir = join(args.dir, 'dist')
-        wheels = glob1(dist_dir, '*.whl')
+        wheels = glob('*.whl', root_dir=dist_dir)
         n_wheels = len(wheels)
         if n_wheels != 1:
             raise Exception(f"Expected 1 wheel, found {n_wheels}")
@@ -157,7 +157,7 @@ class BuildSystem(Base):
     @override
     def install(self, context: Context, args: Args) -> str:
         # remove egg-info dirs from build_dir
-        for fname in glob1(args.build_dir, '*.egg-info'):
+        for fname in glob('*.egg-info', root_dir=args.build_dir):
             fpath = join(args.build_dir, fname)
             if isdir(fpath):
                 rmtree(fpath)
