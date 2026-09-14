@@ -1,3 +1,12 @@
+dh-python (7.20260914) UNRELEASED; urgency=medium
+
+  * Team upload.
+  * Replace deprecated glob.glob1 with glob.glob(root_dir=...)
+  * Fix minor version extraction from SOABI tag in Interpreter.check_extname
+  * Add test cases for Python 3.15 in test_interpreter and test_fs
+
+ -- Maximiliano Curia <maxy@debian.org>  Mon, 14 Sep 2026 09:14:50 +0200
+
 dh-python (7.20260623) unstable; urgency=medium
 
   [ Colin Watson ]
