@@ -406,7 +406,7 @@ class Interpreter:
         if info["ver"] and (not version or version.minor is None):
             # get version from soabi if version is not set of only major
             # version number is set
-            version = Version("{}.{}".format(info["ver"][0], info["ver"][1]))
+            version = Version(f"{info['ver'][0]}.{info['ver'][1:]}")
 
         if info["stableabi"] and version < Version("3.13"):
             # We added support for stableabi multiarch filenames in 3.13

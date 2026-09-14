@@ -197,6 +197,14 @@ class TestInterpreter(unittest.TestCase):
             i.check_extname("_module.so"), rf"_module.cpython-{pyver}-MYARCH.so"
         )
 
+    def test_unversioned_interpreter_with_versioned_so(self) -> None:
+        i = Interpreter("python3")
+        pyver = "{}{}".format(*sys.version_info[:2])
+        self.assertEqual(
+            i.check_extname(f"foo.cpython-{pyver}.so"),
+            rf"foo.cpython-{pyver}-MYARCH.so",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
