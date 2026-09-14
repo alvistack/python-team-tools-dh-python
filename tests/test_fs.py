@@ -211,3 +211,18 @@ class VersionedExtensionDependenciesTest(ScanTestCase):
         self.assertEqual(self.scan.result["ext_vers"], {Version("3.14")})
         self.assertEqual(self.scan.result["ext_no_version"], set())
         self.assertEqual(self.scan.result["ext_stableabi"], set())
+
+
+class VersionedExtension315DependenciesTest(ScanTestCase):
+    files = {
+        (
+            "debian/python3-test/usr/lib/python3/dist-packages/"
+            "foo.cpython-315-x86_64-linux-gnu.so"
+        ): "contents",
+    }
+
+    def test_scan(self) -> None:
+        self.assertEqual(self.scan.result["public_vers"], {Version("3")})
+        self.assertEqual(self.scan.result["ext_vers"], {Version("3.15")})
+        self.assertEqual(self.scan.result["ext_no_version"], set())
+        self.assertEqual(self.scan.result["ext_stableabi"], set())

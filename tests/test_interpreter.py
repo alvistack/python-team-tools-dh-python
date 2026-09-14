@@ -152,6 +152,41 @@ class TestInterpreter(unittest.TestCase):
             r"foo/bar/baz.cpython-314d-MYARCH.so",
         )
 
+    @unittest.skipUnless(exists("/usr/bin/python3.15"), "python3.15 is not installed")
+    def test_python315(self) -> None:
+        i = Interpreter("python3.15")
+        self.assertEqual(i.check_extname("foo.so"), r"foo.cpython-315-MYARCH.so")
+        self.assertIsNone(i.check_extname("foo.cpython-35m.so"))  # different version
+        self.assertIsNone(
+            i.check_extname("foo.cpython-315-OTHER.so")
+        )  # different architecture
+        self.assertEqual(
+            i.check_extname("foo.cpython-315.so"), r"foo.cpython-315-MYARCH.so"
+        )
+        self.assertEqual(i.check_extname("foo.abi3.so"), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname("foo.abi3-OTHER.so"))
+        self.assertEqual(
+            i.check_extname("foo/bar/bazmodule.so"),
+            r"foo/bar/baz.cpython-315-MYARCH.so",
+        )
+
+    @unittest.skipUnless(
+        exists("/usr/bin/python3.15-dbg"), "python3.15-dbg is not installed"
+    )
+    def test_python315dbg(self) -> None:
+        i = Interpreter("python3.15-dbg")
+        self.assertEqual(i.check_extname("foo.so"), r"foo.cpython-315d-MYARCH.so")
+        self.assertIsNone(i.check_extname("foo.cpython-35m.so"))  # different version
+        self.assertIsNone(
+            i.check_extname("foo.cpython-315-OTHER.so")
+        )  # different architecture
+        self.assertEqual(i.check_extname("foo.abi3.so"), "foo.abi3-MYARCH.so")
+        self.assertIsNone(i.check_extname("foo.abi3-OTHER.so"))
+        self.assertEqual(
+            i.check_extname("foo/bar/bazmodule.so"),
+            r"foo/bar/baz.cpython-315d-MYARCH.so",
+        )
+
     def test_python3(self) -> None:
         i = Interpreter("python{}.{}".format(*sys.version_info[:2]))
         pyver = "{}{}".format(*sys.version_info[:2])
