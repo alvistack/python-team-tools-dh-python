@@ -3,8 +3,8 @@ Section: python
 Priority: optional
 Maintainer: Piotr Ożarowski <piotr@debian.org>
 Build-Depends: debhelper-compat (= 12)
- , flit
  , python3-all
+ , python3-flit
  , pybuild-plugin-pyproject
 # , dh-python
 Rules-Requires-Root: no

@@ -1,21 +1,22 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3,<5"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "foo"
-author = "Stefano Rivera"
-requires = [
+[project]
+name = "foo"
+authors = [{name="Stefano Rivera"}]
+dependencies = [
     "cachy",
     "importlib-metadata ; python_version < '3.5'"
 ]
+dynamic = ["version", "description"]
 
-[tool.flit.metadata.requires-extra]
+[project.optional-dependencies]
 test = [
     "tox",
 ]
 
-[tool.flit.scripts]
+[project.scripts]
 foo = "foo:main"
 
 [tool.flit.external-data]
