@@ -28,9 +28,9 @@ Provides:
  dh-sequence-python3,
 Suggests:
  dpkg-dev,
- flit,
  libdpkg-perl,
  python3-build,
+ python3-flit,
  python3-installer,
  python3-wheel,
 Breaks:
