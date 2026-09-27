@@ -13,9 +13,9 @@ Restrictions: allow-stderr
 Tests: nosetests
 Depends:
  dh-python,
- flit,
  python3-all,
  python3-all-dbg,
+ python3-flit,
  python3-nose2,
 Restrictions: allow-stderr
 
@@ -25,10 +25,10 @@ Depends:
  debhelper,
  dh-python,
  fakeroot,
- flit,
  pybuild-plugin-pyproject,
  python3-all-dev,
  python3-cachy,
+ python3-flit,
  python3-poetry-core,
  python3-pytest,
  python3-setuptools,
