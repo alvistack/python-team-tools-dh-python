@@ -60,7 +60,6 @@ pyupgrade:
 
 # TESTS
 nose:
-	#nosetests3 --verbose --with-doctest --with-coverage
 	nose2-3 --verbose --plugin nose2.plugins.doctests --with-doctest
 
 tests: nose

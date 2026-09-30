@@ -113,7 +113,7 @@ def copy_test_files(
                             copyfile(src_dpath, dst_dpath)
                         files_to_remove.add(dst_dpath + '\n')
                     if not args.args and 'PYBUILD_TEST_ARGS' not in context.ENV\
-                       and (self.cfg.test_pytest or self.cfg.test_nose) \
+                       and self.cfg.test_pytest \
                        and name in add_to_args:
                         args.args = name
             if files_to_remove and filelist:
@@ -277,8 +277,6 @@ class Base:
     def test_cmd(self, context: Context, args: Args) -> str:
         if self.cfg.test_nose2:
             return 'cd {build_dir}; {interpreter} -m nose2 -v {args}'
-        elif self.cfg.test_nose:
-            return 'cd {build_dir}; {interpreter} -m nose -v {args}'
         elif self.cfg.test_pytest:
             return 'cd {build_dir}; {interpreter} -m pytest {args}'
         elif self.cfg.test_tox:

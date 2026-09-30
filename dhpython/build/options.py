@@ -58,7 +58,6 @@ class PybuildOptions:
     before_test: str | None = None
     test_args: str | None = None
     after_test: str | None = None
-    test_nose: bool = environ.get("PYBUILD_TEST_NOSE") == "1"
     test_nose2: bool = environ.get("PYBUILD_TEST_NOSE2") == "1"
     test_pytest: bool = environ.get("PYBUILD_TEST_PYTEST") == "1"
     test_tox: bool = environ.get("PYBUILD_TEST_TOX") == "1"
@@ -237,11 +236,6 @@ def build_parser() -> ArgumentParser:
         "TESTS",
         """\
         unittest\'s discover is used by default (if available)""",
-    )
-    tests.add_argument(
-        "--test-nose",
-        action="store_true",
-        help="use nose module in --test step",
     )
     tests.add_argument(
         "--test-nose2",

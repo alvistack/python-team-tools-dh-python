@@ -91,9 +91,6 @@ TESTS
     default. But if no tests are found, this is ignored. Use
     `--test-unittest` to require tests to be run.
 
-    --test-nose
-        use nose module in test step, remember to add python3-nose to
-        Build-Depends.
     --test-nose2
         use nose2 module in test step, remember to add python3-nose2 to
         Build-Depends.

@@ -188,7 +188,6 @@ sub pybuild_commands {
 		if (($step eq 'test' or $step eq 'autopkgtest') and
 				$ENV{'PYBUILD_TEST_PYTEST'} ne '1' and
 				$ENV{'PYBUILD_TEST_NOSE2'} ne '1' and
-				$ENV{'PYBUILD_TEST_NOSE'} ne '1' and
 				$ENV{'PYBUILD_TEST_CUSTOM'} ne '1' and
 				$ENV{'PYBUILD_TEST_TOX'} ne '1' and
 				$ENV{'PYBUILD_TEST_STESTR'} ne '1') {
@@ -198,8 +197,6 @@ sub pybuild_commands {
 				push @py3opts, '--test-pytest'}
 			elsif (grep {$_ eq 'python3-nose2'} @deps and $ENV{'PYBUILD_TEST_NOSE2'} ne '0') {
 				push @py3opts, '--test-nose2'}
-			elsif (grep {$_ eq 'python3-nose'} @deps and $ENV{'PYBUILD_TEST_NOSE'} ne '0') {
-				push @py3opts, '--test-nose'}
 			elsif (grep {$_ eq 'python3-stestr'} @deps and $ENV{'PYBUILD_TEST_STESTR'} ne '0') {
                                push @py3opts, '--test-stestr'}
 		}

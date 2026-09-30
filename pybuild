@@ -553,8 +553,7 @@ def parse_args(argv: list[str]) -> PybuildOptions:
         ]
 
     if (
-        args.test_nose
-        or args.test_nose2
+        args.test_nose2
         or args.test_pytest
         or args.test_tox
         or args.test_stestr
