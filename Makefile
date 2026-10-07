@@ -62,10 +62,13 @@ pyupgrade:
 nose:
 	nose2-3 --verbose --plugin nose2.plugins.doctests --with-doctest
 
-tests: nose
+perl_tests:
+	prove -v t/*.t
+
+tests: nose perl_tests
 	make -C tests
 
 test%:
 	make -C tests $@
 
-.PHONY: clean tests test% check_versions
+.PHONY: clean perl_tests tests test% check_versions

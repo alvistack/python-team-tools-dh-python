@@ -19,6 +19,12 @@ Depends:
  python3-nose2,
 Restrictions: allow-stderr
 
+Tests: perl
+Depends:
+ dh-python,
+ libdebhelper-perl,
+ libdpkg-perl,
+
 Tests: pybuild
 Depends:
  build-essential,
