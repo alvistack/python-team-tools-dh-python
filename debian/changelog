@@ -11,7 +11,10 @@ dh-python (7.20260914) UNRELEASED; urgency=medium
   * autopkgtest: update tpb02 scenario for Flit 4 (Closes: #1148893)
   * drop leftover python3-nose support
 
- -- Stefano Rivera <stefanor@debian.org>  Wed, 14 Oct 2026 14:45:53 +0200
+  [ Benjamin Drung ]
+  * Make (native) versions PEP440 compliant
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 14 Oct 2026 15:25:42 +0200
 
 dh-python (7.20260623) unstable; urgency=medium
 
