@@ -1,11 +1,17 @@
 dh-python (7.20260914) UNRELEASED; urgency=medium
 
-  * Team upload.
+  [ Maximiliano Curia ]
   * Replace deprecated glob.glob1 with glob.glob(root_dir=...)
   * Fix minor version extraction from SOABI tag in Interpreter.check_extname
   * Add test cases for Python 3.15 in test_interpreter and test_fs
 
- -- Maximiliano Curia <maxy@debian.org>  Mon, 14 Sep 2026 09:14:50 +0200
+  [ Alexandre Detiste ]
+  * Suggests python3-flit instead of flit: (Closes: #1148887)
+  * autopkgtest: replace flit dependency with python3-flit (Close: #1148888)
+  * autopkgtest: update tpb02 scenario for Flit 4 (Closes: #1148893)
+  * drop leftover python3-nose support
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 14 Oct 2026 14:45:53 +0200
 
 dh-python (7.20260623) unstable; urgency=medium
 
