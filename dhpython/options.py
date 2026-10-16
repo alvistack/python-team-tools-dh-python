@@ -30,6 +30,7 @@ from dhpython.version import VersionRange
 class DHPythonOptions:
     O: list[str] = field(default_factory=list)
     accept_upstream_versions: bool = False
+    allow_build_directory_module_name: bool = False
     arch: bool | None = None
     clean_dbg_pkg: bool = True
     compile_all: bool = False
@@ -221,6 +222,14 @@ def build_parser() -> ArgumentParser:
         "--no-ext-rename",
         action="store_true",
         help="do not add magic tags nor multiarch tuples to extension file " "names)",
+    )
+    parser.add_argument(
+        "--allow-build-directory-module-name",
+        action="store_true",
+        help=(
+            "allow the package to install a module named after a common build "
+            "directory (e.g. build, doc, or debian)"
+        ),
     )
     parser.add_argument(
         "--no-shebang-rewrite", action="store_true", help="do not rewrite shebangs"

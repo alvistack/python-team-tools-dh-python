@@ -285,7 +285,38 @@ class Scan:
                         assert isinstance(version, Version)
                         self.result["public_vers"].add(version)
                     for name in dirs[:]:
-                        if name in ("test", "tests") or name.startswith("."):
+                        if name in (
+                            "build",
+                            "debian",
+                            "dist",
+                            "doc",
+                            "docs",
+                            "src",
+                            "target",
+                            "test",
+                            "tests",
+                        ):
+                            if options.allow_build_directory_module_name:
+                                continue
+                            # False-positive (e.g. python3-build)?
+                            if self.package in (
+                                name,
+                                interpreter.suggest_pkg_name(name),
+                            ):
+                                continue
+                            log.error(
+                                (
+                                    "%s includes a common build directory name "
+                                    "'%s' as a module. "
+                                    "Likely due to a mis-configured build "
+                                    "system installing things it shouldn't."
+                                ),
+                                self.package,
+                                name,
+                            )
+                            raise SystemExit(1)
+                    for name in dirs[:]:
+                        if name.startswith("."):
                             log.debug("removing dist-packages/%s", name)
                             rmtree(join(root, name))
                             dirs.remove(name)

@@ -226,3 +226,49 @@ class VersionedExtension315DependenciesTest(ScanTestCase):
         self.assertEqual(self.scan.result["ext_vers"], {Version("3.15")})
         self.assertEqual(self.scan.result["ext_no_version"], set())
         self.assertEqual(self.scan.result["ext_stableabi"], set())
+
+
+class CommonModuleNameTests(FSTestCase):
+    impl = "cpython3"
+    options: dict[str, Any] = {}
+    package = "python3-test"
+    files = {
+        "debian/python3-test/usr/lib/python3/dist-packages/build/__init__.py": "",
+    }
+
+    def scan(self) -> None:
+        pwd = os.getcwd()
+        try:
+            os.chdir(self.tempdir.name)
+            Scan(
+                interpreter=Interpreter(self.impl),
+                package=self.package,
+                options=DHPythonOptions(**self.options),
+            )
+        finally:
+            os.chdir(pwd)
+
+    def test_error(self) -> None:
+        with (
+            self.assertRaises(SystemExit),
+            self.assertLogs("dhpython") as cm,
+        ):
+            self.scan()
+        self.assertEqual(
+            cm.output,
+            [
+                "ERROR:dhpython:python3-test includes a common build directory "
+                "name 'build' as a module. Likely due to a mis-configured "
+                "build system installing things it shouldn't."
+            ],
+        )
+
+    def test_matching_package_name(self) -> None:
+        self.package = "python3-build"
+        self.scan()
+
+    def test_explicit_override(self) -> None:
+        self.options = {
+            "allow_build_directory_module_name": True,
+        }
+        self.scan()

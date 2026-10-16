@@ -227,6 +227,9 @@ OPTIONS
 
 --ignore-shebangs	do not translate shebangs into Debian dependencies
 
+--allow-build-directory-module-name	allow the package to install a
+  module named after a common build directory (e.g. build, doc, or debian)
+
 SEE ALSO
 ========
 * /usr/share/doc/python3/python-policy.txt.gz
