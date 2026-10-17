@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 import difflib
+import errno
 import logging
 import os
 import re
@@ -26,6 +27,7 @@ import sys
 from collections.abc import Iterable, Sequence
 from filecmp import cmp as cmpfile
 from os.path import lexists, exists, isdir, islink, join, realpath, split, splitext
+from pathlib import Path
 from shutil import rmtree
 from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
 from typing import Literal, TypedDict
@@ -162,8 +164,20 @@ def share_files(
 
     try:
         os.removedirs(srcdir)
-    except OSError:
-        pass
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            return
+        if e.errno != errno.ENOTEMPTY:
+            raise
+        log.error(
+            "Not everything in '%s' was able to be merged into '%s'.", srcdir, dstdir
+        )
+        if not options.allow_unmerged_dist_packages:
+            remaining_files = "\n".join(
+                sorted(str(file) for file in Path(srcdir).rglob("*") if file.is_file())
+            )
+            log.info("Remaining files: %s", remaining_files)
+            raise SystemExit(1)
 
 
 def write_INSTALLER(distdir: str) -> None:

@@ -230,6 +230,10 @@ OPTIONS
 --allow-build-directory-module-name	allow the package to install a
   module named after a common build directory (e.g. build, doc, or debian)
 
+--allow-unmerged-dist-packages	don't abort if there were parts of the
+  `dist-packages` trees from multiple Python versions that we couldn't
+  merge.
+
 SEE ALSO
 ========
 * /usr/share/doc/python3/python-policy.txt.gz

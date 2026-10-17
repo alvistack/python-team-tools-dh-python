@@ -150,6 +150,41 @@ class EntryPointsMergeTest(ShareFilesTestCase):
         self.assertEqual(self.destPath(expected_path).read_text(), "default\n")
 
 
+class FailedMergeTest(ShareFilesTestCase):
+    files = {
+        "default/foo.py": ("default",),
+        "next/foo.py": ("next",),
+    }
+
+    def test_merge(self) -> None:
+        self.share_files(srcdir=f"{self.tempdir.name}/default")
+        with self.assertRaises(SystemExit), self.assertLogs("dhpython") as cm:
+            self.share_files(srcdir=f"{self.tempdir.name}/next")
+        self.assertEqual(
+            cm.output,
+            [
+                (
+                    f"WARNING:dhpython:Paths differ: "
+                    f"{self.tempdir.name}/next/foo.py and "
+                    f"{self.destdir.name}/foo.py"
+                ),
+                (
+                    f"ERROR:dhpython:Not everything in "
+                    f"'{self.tempdir.name}/next' was able to be "
+                    f"merged into '{self.destdir.name}'."
+                ),
+                f"INFO:dhpython:Remaining files: {self.tempdir.name}/next/foo.py",
+            ],
+        )
+
+    def test_override(self) -> None:
+        self.share_files(srcdir=f"{self.tempdir.name}/default")
+        self.share_files(
+            srcdir=f"{self.tempdir.name}/next",
+            options={"allow_unmerged_dist_packages": True},
+        )
+
+
 class ScanTestCase(FSTestCase):
     impl = "cpython3"
     options: dict[str, Any] = {}

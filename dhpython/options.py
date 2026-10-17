@@ -31,6 +31,7 @@ class DHPythonOptions:
     O: list[str] = field(default_factory=list)
     accept_upstream_versions: bool = False
     allow_build_directory_module_name: bool = False
+    allow_unmerged_dist_packages: bool = False
     arch: bool | None = None
     clean_dbg_pkg: bool = True
     compile_all: bool = False
@@ -233,6 +234,14 @@ def build_parser() -> ArgumentParser:
     )
     parser.add_argument(
         "--no-shebang-rewrite", action="store_true", help="do not rewrite shebangs"
+    )
+    parser.add_argument(
+        "--allow-unmerged-dist-packages",
+        action="store_true",
+        help=(
+            "don't abort if there were parts of the 'dist-packages' trees from "
+            "multiple Python versions that we couldn't"
+        ),
     )
     parser.add_argument(
         "private_dir",
