@@ -116,6 +116,15 @@ def share_files(
             # do not rename directories here - all .so files have to be renamed first
             os.renames(fpath1, fpath2)
             continue
+        if srcdir.endswith((".egg-info", ".dist-info")):
+            # Only keep the entry_points.txt from the default Python version
+            # build. This will be the version version processed and already
+            # renamed, above.
+            # It's probably something embedding the python binary name in an
+            # entry point.
+            if i == "entry_points.txt":
+                os.remove(fpath1)
+                continue
         ext_m = EXTFILE_RE.search(i)
         if islink(fpath1):
             # move symlinks without changing them if they point to the same place

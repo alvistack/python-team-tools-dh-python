@@ -47,13 +47,22 @@ class ShareFilesTestCase(FSTestCase):
         self.addCleanup(self.destdir.cleanup)
         self.interpreter = Interpreter(self.impl)
 
-    def share_files(self, options: dict[str, Any] | None = None) -> None:
+    def share_files(
+        self,
+        srcdir: str | None = None,
+        interpreter: Interpreter | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> None:
+        if srcdir is None:
+            srcdir = self.tempdir.name
+        if interpreter is None:
+            interpreter = self.interpreter
         if options is None:
             options = self.options
         share_files(
-            self.tempdir.name,
+            srcdir,
             self.destdir.name,
-            self.interpreter,
+            interpreter,
             DHPythonOptions(**options),
         )
 
@@ -125,6 +134,20 @@ class CExtensionsRenameTest(ShareFilesTestCase):
     def test_no_ext_rename(self) -> None:
         self.share_files(options={"no_ext_rename": True})
         self.assertTrue(self.destPath(self.ext_filename).exists())
+
+
+class EntryPointsMergeTest(ShareFilesTestCase):
+    files = {
+        "default/foo.dist-info/entry_points.txt": ("default",),
+        "next/foo.dist-info/entry_points.txt": ("non-default",),
+    }
+
+    def test_merge(self) -> None:
+        self.share_files(srcdir=f"{self.tempdir.name}/default")
+        self.share_files(srcdir=f"{self.tempdir.name}/next")
+        expected_path = "foo.dist-info/entry_points.txt"
+        self.assertTrue(self.destPath(expected_path).exists())
+        self.assertEqual(self.destPath(expected_path).read_text(), "default\n")
 
 
 class ScanTestCase(FSTestCase):
