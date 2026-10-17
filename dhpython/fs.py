@@ -26,7 +26,6 @@ import sys
 from collections.abc import Iterable, Sequence
 from filecmp import cmp as cmpfile
 from os.path import lexists, exists, isdir, islink, join, realpath, split, splitext
-from pathlib import Path
 from shutil import rmtree
 from stat import ST_MODE, S_IXUSR, S_IXGRP, S_IXOTH
 from typing import Literal, TypedDict
@@ -156,23 +155,6 @@ def share_files(
         os.removedirs(srcdir)
     except OSError:
         pass
-
-
-## Functions to merge parts of the .dist-info metadata directory together
-
-
-def missing_lines(src: str | Path, dst: str | Path) -> list[str]:
-    """Find all the lines in the text file src that are not in dst"""
-    with open(dst, encoding="UTF-8") as fh:
-        current = {k: None for k in fh.readlines()}
-
-    missing = []
-    with open(src, encoding="UTF-8") as fh:
-        for line in fh.readlines():
-            if line not in current:
-                missing.append(line)
-
-    return missing
 
 
 def write_INSTALLER(distdir: str) -> None:
