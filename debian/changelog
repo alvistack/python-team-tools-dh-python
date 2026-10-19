@@ -1,4 +1,4 @@
-dh-python (7.20260914) UNRELEASED; urgency=medium
+dh-python (7.20261019) UNRELEASED; urgency=medium
 
   [ Maximiliano Curia ]
   * Replace deprecated glob.glob1 with glob.glob(root_dir=...)
@@ -14,7 +14,14 @@ dh-python (7.20260914) UNRELEASED; urgency=medium
   [ Benjamin Drung ]
   * Make (native) versions PEP440 compliant
 
- -- Stefano Rivera <stefanor@debian.org>  Wed, 14 Oct 2026 15:25:42 +0200
+  [ Stefano Rivera ]
+  * Ignore the pep517 to pyproject rename in blame
+  * dh_python3: Throw an error if a package ships a public module that's
+    probably a build directory
+  * Only keep entry_points.txt from the default Python version
+  * dh_python3: Abort if we were unable to merge dist-packages directories
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 19 Oct 2026 19:11:39 +0200
 
 dh-python (7.20260623) unstable; urgency=medium
 
