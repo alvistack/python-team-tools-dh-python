@@ -10,6 +10,7 @@ check:
 	grep -q 'pypy3compile -p python3-foo -V 3\.1-3\.9' debian/python3-foo/DEBIAN/postinst
 	grep -q 'py3clean -p python3-foo\s*$$' debian/python3-foo/DEBIAN/prerm
 	test ! -f debian/python3-foo/usr/lib/python3/dist-packages/.coverage
+	test ! -d debian/python3-foo/usr/lib/python3/dist-packages/.hypothesis
 
 clean:
 	./debian/rules clean

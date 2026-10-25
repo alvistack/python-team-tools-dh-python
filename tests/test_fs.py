@@ -199,6 +199,18 @@ class PyCleanTest(ShareFilesTestCase):
         self.assertFalse(self.destPath("foo.pyo").exists())
 
 
+class HypothesisCleanTest(ShareFilesTestCase):
+    files = {
+        "foo.py": ("foo"),
+        ".hypothesis/foo": ("foo"),
+    }
+
+    def test_removes_license_files(self) -> None:
+        self.share_files()
+        self.assertTrue(self.destPath("foo.py").exists())
+        self.assertFalse(self.destPath(".hypothesis").exists())
+
+
 class ScanTestCase(FSTestCase):
     impl = "cpython3"
     options: dict[str, Any] = {}
