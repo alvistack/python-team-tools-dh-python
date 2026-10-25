@@ -321,16 +321,6 @@ class Scan:
                                 name,
                             )
                             raise SystemExit(1)
-                    for name in dirs[:]:
-                        if name.startswith("."):
-                            log.debug("removing dist-packages/%s", name)
-                            rmtree(join(root, name))
-                            dirs.remove(name)
-                    for name in file_names[:]:
-                        if name.startswith("."):
-                            log.debug("removing dist-packages/%s", name)
-                            os.remove(join(root, name))
-                            file_names.remove(name)
             else:
                 self.current_private_dir = self.check_private_dir(root)
                 if not self.current_private_dir:
