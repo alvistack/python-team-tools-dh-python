@@ -1,3 +1,10 @@
+dh-python (7.20261025) unstable; urgency=medium
+
+  * dh_python3: Remove .pyo files early in share_files.
+  * Delete .hypothesis in dh_python3 and pybuild clean.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 25 Oct 2026 16:48:18 +0200
+
 dh-python (7.20261019) unstable; urgency=medium
 
   [ Maximiliano Curia ]
