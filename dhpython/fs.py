@@ -88,7 +88,8 @@ def share_files(
         fpath1 = join(srcdir, i)
         if not lexists(fpath1):  # removed in rename_ext
             continue
-        if i.endswith(".pyc"):  # f.e. when tests were invoked on installed files
+        # f.e. when tests were invoked on installed files
+        if i.endswith((".pyc", ".pyo")):
             os.remove(fpath1)
             continue
         if i in CACHE_DIRECTORIES:

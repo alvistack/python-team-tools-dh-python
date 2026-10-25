@@ -185,6 +185,20 @@ class FailedMergeTest(ShareFilesTestCase):
         )
 
 
+class PyCleanTest(ShareFilesTestCase):
+    files = {
+        "foo.py": ("foo"),
+        "foo.pyc": ("foo"),
+        "foo.pyo": ("foo"),
+    }
+
+    def test_removes_license_files(self) -> None:
+        self.share_files()
+        self.assertTrue(self.destPath("foo.py").exists())
+        self.assertFalse(self.destPath("foo.pyc").exists())
+        self.assertFalse(self.destPath("foo.pyo").exists())
+
+
 class ScanTestCase(FSTestCase):
     impl = "cpython3"
     options: dict[str, Any] = {}
