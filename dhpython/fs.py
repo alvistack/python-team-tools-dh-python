@@ -59,6 +59,7 @@ def fix_locations(
             if isdir(srcdir):
                 # TODO: what about relative symlinks?
                 log.debug("moving files from %s to %s", srcdir, dstdir)
+                remove_dotfiles(srcdir)
                 share_files(srcdir, dstdir, interpreter, options)
                 try:
                     os.removedirs(srcdir)
@@ -70,11 +71,21 @@ def fix_locations(
         for srcdir in interpreter.old_sitedirs(package, gdb=True):
             if isdir(srcdir):
                 log.debug("moving files from %s to %s", srcdir, dstdir)
+                remove_dotfiles(srcdir)
                 share_files(srcdir, dstdir, interpreter, options)
                 try:
                     os.removedirs(srcdir)
                 except OSError:
                     pass
+
+
+def remove_dotfiles(directory: str) -> None:
+    """Remove all hidden files and directories from directory."""
+    for entry in Path(directory).glob(".*"):
+        if entry.is_dir():
+            rmtree(entry)
+        else:
+            entry.unlink()
 
 
 def share_files(
