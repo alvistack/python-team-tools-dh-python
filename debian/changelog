@@ -1,3 +1,11 @@
+dh-python (7.20261030) unstable; urgency=medium
+
+  * Clean .cache directories (Closes: #1151813)
+  * Remove all hidden files and directories from dist-packages
+    (Closes: #1152571)
+
+ -- Stefano Rivera <stefanor@debian.org>  Fri, 30 Oct 2026 17:14:34 +0200
+
 dh-python (7.20261025) unstable; urgency=medium
 
   * dh_python3: Remove .pyo files early in share_files.
